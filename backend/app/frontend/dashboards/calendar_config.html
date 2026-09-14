@@ -1,0 +1,259 @@
+<!-- CENTRO NERVOSO ATENDIT 24/7 - COCKPIT OPERACIONAL E CRM -->
+<div style="width:100%; max-width:1400px; margin:0 auto;">
+    
+    <!-- BARRA DE NAVEGAÇÃO DAS 5 ABAS PRINCIPAIS -->
+    <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; border-bottom:1px solid #E2E8F0; padding-bottom:12px;">
+        <button id="btn-sub-grid" data-alvo="cal-view-grid" class="cal-tab" style="padding:10px 18px; background:#0DA2B6; color:white; border:1px solid #0DA2B6; border-radius:8px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px;">
+            <span>📅</span> Operação de Agenda
+        </button>
+        <button id="btn-sub-crm" data-alvo="cal-view-crm" class="cal-tab" style="padding:10px 18px; background:white; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+            <span>📊</span> Cockpit CRM & Funil
+        </button>
+        <button id="btn-sub-asis-tobe" data-alvo="cal-view-asis-tobe" class="cal-tab" style="padding:10px 18px; background:white; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+            <span>⚡</span> AS-IS ➔ TO-BE & Encaixes
+        </button>
+        <button id="btn-sub-config" data-alvo="cal-view-config" class="cal-tab" style="padding:10px 18px; background:white; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+            <span>🔌</span> Provedores & Sync
+        </button>
+        <button id="btn-sub-messages" data-alvo="cal-view-messages" class="cal-tab" style="padding:10px 18px; background:white; color:#475569; border:1px solid #CBD5E1; border-radius:8px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+            <span>✉️</span> Réguas de Notificações
+        </button>
+    </div>
+
+    <!-- AVISOS DO SISTEMA -->
+    <div id="cal-aviso" style="display:none; padding:14px 18px; border-radius:8px; margin-bottom:18px; font-size:0.92rem;"></div>
+
+    <!-- ================================================================= -->
+    <!-- [ABA 1] OPERAÇÃO DE AGENDA (MULTI-VISÃO: MÊS / SEMANA / DIA)     -->
+    <!-- ================================================================= -->
+    <div id="cal-view-grid">
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:14px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span id="cal-grid-titulo" style="font-size:1.3rem; font-weight:800; color:#0F172A; min-width:220px;">—</span>
+                    <button id="cal-nav-anterior" type="button" style="padding:7px 14px; border-radius:6px; border:1px solid #CBD5E1; background:#FFF; cursor:pointer; font-weight:bold;">&lt;</button>
+                    <button id="cal-nav-proximo" type="button" style="padding:7px 14px; border-radius:6px; border:1px solid #CBD5E1; background:#FFF; cursor:pointer; font-weight:bold;">&gt;</button>
+                    <button id="cal-nav-hoje" type="button" style="padding:7px 16px; border-radius:6px; border:1px solid #CBD5E1; background:#F8FAFC; cursor:pointer; font-weight:700; color:#334155;">Hoje</button>
+                    
+                    <!-- SELETOR DE MODO DE VISÃO -->
+                    <div style="display:inline-flex; border:1px solid #CBD5E1; border-radius:8px; overflow:hidden; margin-left:12px;">
+                        <button id="cal-view-btn-dia" type="button" onclick="calMudarModo('dia')" style="padding:7px 16px; border:none; background:#FFF; color:#475569; font-weight:600; cursor:pointer;">Dia</button>
+                        <button id="cal-view-btn-semana" type="button" onclick="calMudarModo('semana')" style="padding:7px 16px; border:none; background:#FFF; color:#475569; font-weight:600; border-left:1px solid #CBD5E1; border-right:1px solid #CBD5E1; cursor:pointer;">Semana</button>
+                        <button id="cal-view-btn-mes" type="button" onclick="calMudarModo('mes')" style="padding:7px 16px; border:none; background:#0DA2B6; color:#FFF; font-weight:700; cursor:pointer;">Mês</button>
+                    </div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span id="cal-grid-resumo" style="color:#64748B; font-size:0.9rem; font-weight:500;"></span>
+                    <button type="button" onclick="calAbrirModalNovo()" style="padding:9px 18px; background:#059669; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                        <span>+</span> Novo Agendamento / Encaixe
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTAINER DA GRADE DINÂMICA -->
+            <div id="cal-grid-corpo" style="background:#F8FAFC; padding:16px; border-radius:10px; min-height:450px; border:1px solid #E2E8F0;"></div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [ABA 2] COCKPIT CRM & FUNIL EM TEMPO REAL                        -->
+    <!-- ================================================================= -->
+    <div id="cal-view-crm" style="display:none;">
+        <!-- CARDS DE INDICADORES -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+            <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E2E8F0; border-left:5px solid #0DA2B6;">
+                <div style="color:#64748B; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Atendimentos Hoje</div>
+                <div id="crm-card-hoje" style="font-size:2rem; font-weight:800; color:#0F172A; margin:6px 0;">0</div>
+                <div style="color:#059669; font-size:0.8rem; font-weight:600;">● Agenda em execução 24/7</div>
+            </div>
+            <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E2E8F0; border-left:5px solid #3B82F6;">
+                <div style="color:#64748B; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Esta Semana</div>
+                <div id="crm-card-semana" style="font-size:2rem; font-weight:800; color:#0F172A; margin:6px 0;">0</div>
+                <div style="color:#64748B; font-size:0.8rem;">Compromissos confirmados</div>
+            </div>
+            <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E2E8F0; border-left:5px solid #8B5CF6;">
+                <div style="color:#64748B; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Volume do Mês</div>
+                <div id="crm-card-mes" style="font-size:2rem; font-weight:800; color:#0F172A; margin:6px 0;">0</div>
+                <div style="color:#64748B; font-size:0.8rem;">Total acumulado no ciclo</div>
+            </div>
+            <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E2E8F0; border-left:5px solid #EF4444;">
+                <div style="color:#64748B; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Desistências / No-Shows</div>
+                <div id="crm-card-desistencias" style="font-size:2rem; font-weight:800; color:#DC2626; margin:6px 0;">0</div>
+                <div style="color:#DC2626; font-size:0.8rem; font-weight:600;">Oportunidades de reativação</div>
+            </div>
+        </div>
+
+        <!-- FUNIL E TABELA DE CLIENTES -->
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="margin:0; font-size:1.15rem; color:#0F172A; font-weight:700;">Painel de Atendimentos & Gestão de Clientes</h3>
+                <button type="button" onclick="calCarregarCRM()" style="padding:7px 14px; background:#F1F5F9; border:1px solid #CBD5E1; border-radius:6px; font-size:0.85rem; cursor:pointer; font-weight:600;">Atualizar Dados</button>
+            </div>
+            <div id="crm-tabela-conteudo" style="overflow-x:auto;">
+                <div style="color:#64748B; padding:20px; text-align:center;">Carregando métricas do CRM…</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [ABA 3] MOTOR AS-IS ➔ TO-BE (OTIMIZADOR DE ENCAIXES E VAGAS)     -->
+    <!-- ================================================================= -->
+    <div id="cal-view-asis-tobe" style="display:none;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(400px, 1fr)); gap:20px;">
+            <!-- DIAGNÓSTICO AS-IS -->
+            <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                    <span style="font-size:1.4rem;">🔍</span>
+                    <h3 style="margin:0; font-size:1.15rem; color:#0F172A; font-weight:800;">DIAGNÓSTICO AS-IS (Vagas & Desistências)</h3>
+                </div>
+                <p style="color:#64748B; font-size:0.88rem; margin-top:0;">Mapeamento em tempo real de horários ociosos ou cancelados que geram perda de receita:</p>
+                <div id="asis-lista-buracos" style="display:grid; gap:10px; margin-top:16px;">
+                    <div style="padding:14px; border-radius:8px; background:#F8FAFC; border:1px dashed #CBD5E1; color:#64748B; font-size:0.88rem;">Analisando grade de horários…</div>
+                </div>
+            </div>
+
+            <!-- PROPOSTA TO-BE -->
+            <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0; border-top:4px solid #059669;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                    <span style="font-size:1.4rem;">🎯</span>
+                    <h3 style="margin:0; font-size:1.15rem; color:#065F46; font-weight:800;">PROPOSTA TO-BE (Encaixes Sugeridos)</h3>
+                </div>
+                <p style="color:#64748B; font-size:0.88rem; margin-top:0;">Cruzamento inteligente com a <strong>Lista de Espera (Waitlist)</strong> para antecipação ativa:</p>
+                <div id="tobe-lista-sugestoes" style="display:grid; gap:10px; margin-top:16px;">
+                    <div style="padding:14px; border-radius:8px; background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; font-size:0.88rem;">Nenhum cliente aguardando encaixe no momento.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [ABA 4] PROVEDORES & CONEXÕES (GOOGLE + MICROSOFT + CALENDLY)     -->
+    <!-- ================================================================= -->
+    <div id="cal-view-config" style="display:none;">
+        <div style="background:white; padding:26px; border-radius:12px; border:1px solid #E2E8F0; text-align:left; max-width:850px;">
+            <h3 style="margin:0 0 4px 0; color:#0f172a; font-size:1.15rem; font-weight:700;">Conectar suas Agendas Externas</h3>
+            <p style="margin:0 0 22px 0; color:#64748B; font-size:0.9rem;">
+                O ATENDIT opera com múltiplos provedores em paralelo para que sua inteligência consulte disponibilidade e bloqueie horários sem conflito.
+            </p>
+
+            <div id="cal-estado-conexao" style="padding:18px; border-radius:10px; background:#F8FAFC; border:1px solid #E2E8F0; margin-bottom:22px;">
+                <span style="color:#64748B; font-size:0.9rem;">Verificando conexões ativas…</span>
+            </div>
+
+            <div style="display:grid; gap:14px;">
+                <!-- GOOGLE -->
+                <button id="btn-conectar-google" type="button"
+                        style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:white; color:#3c4043; border:1px solid #dadce0; border-radius:8px; font-weight:600; font-size:0.95rem; cursor:pointer;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.3rem;">🗓️</span>
+                        <span>Google Calendar</span>
+                    </div>
+                    <span style="color:#059669; font-size:0.85rem; font-weight:700;">Gerenciar Conexão →</span>
+                </button>
+
+                <!-- MICROSOFT 365 -->
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.3rem;">📧</span>
+                        <div>
+                            <strong style="color:#0F172A; font-size:0.95rem;">Microsoft 365 (Outlook / Graph)</strong>
+                            <div style="color:#059669; font-size:0.82rem; font-weight:600;">● Conectado (manfredhaut1@hotmail.com)</div>
+                        </div>
+                    </div>
+                    <span style="background:#ECFDF5; color:#065F46; padding:4px 10px; border-radius:6px; font-size:0.8rem; font-weight:700;">Ativo</span>
+                </div>
+
+                <!-- CALENDLY -->
+                <div style="border:1px solid #E2E8F0; border-radius:8px; padding:16px; background:#FCFDFE;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                        <span style="font-size:1.2rem;">📆</span>
+                        <strong style="font-size:0.95rem; color:#334155;">Calendly</strong>
+                    </div>
+                    <p style="margin:0 0 12px 0; color:#64748B; font-size:0.8rem;">
+                        Sincronização bidirecional: os agendamentos realizados no seu Calendly são integrados automaticamente ao funil.
+                    </p>
+                    <label style="display:block; font-size:0.78rem; font-weight:600; color:#334155; margin-bottom:4px;">Personal Access Token</label>
+                    <input type="password" id="cal-calendly-token" placeholder="Cole o token da API do Calendly" style="width:100%; padding:9px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.85rem; margin-bottom:10px;">
+                    <label style="display:block; font-size:0.78rem; font-weight:600; color:#334155; margin-bottom:4px;">Link público de agendamento</label>
+                    <input type="text" id="cal-calendly-link" placeholder="https://calendly.com/seu-nome/consulta" style="width:100%; padding:9px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.85rem; margin-bottom:12px;">
+                    <button id="btn-conectar-calendly" type="button" style="padding:9px 18px; background:#0DA2B6; color:#fff; border:none; border-radius:6px; font-weight:600; font-size:0.88rem; cursor:pointer;">Conectar Calendly</button>
+                    <div id="cal-calendly-status" style="display:none; margin-top:10px; padding:9px 12px; border-radius:6px; font-size:0.82rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [ABA 5] RÉGUAS DE MENSAGENS E NOTIFICAÇÕES                        -->
+    <!-- ================================================================= -->
+    <div id="cal-view-messages" style="display:none;">
+        <div style="background:white; padding:25px; border-radius:12px; border:1px solid #E2E8F0; text-align:left; max-width:850px;">
+            <h3 style="margin:0 0 6px 0; color:#0f172a; font-size:1.15rem; font-weight:700;">Mensagens Automáticas de Atendimento</h3>
+            <p style="margin:0 0 16px 0; color:#64748B; font-size:0.88rem;">Configure os textos que a IA e os robôs disparam em cada etapa da jornada:</p>
+            <div id="cal-tpl-status" style="display:none; padding:10px 14px; border-radius:6px; margin-bottom:16px; font-size:0.85rem;"></div>
+
+            <div style="display:grid; gap:16px;">
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:700; color:#334155; margin-bottom:4px;">1. Confirmação Imediata de Agendamento</label>
+                    <textarea id="tpl-confirmation" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;"></textarea>
+                    <small id="hint-confirmation" style="color:#94A3B8; font-size:0.75rem;"></small>
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:700; color:#334155; margin-bottom:4px;">2. Lembrete Antecipado (Prevenção de No-Show)</label>
+                    <textarea id="tpl-reminder" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;"></textarea>
+                    <small id="hint-reminder" style="color:#94A3B8; font-size:0.75rem;"></small>
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:700; color:#334155; margin-bottom:4px;">3. Oferta Ativa de Encaixe (Waitlist TO-BE)</label>
+                    <textarea id="tpl-waitlist_offer" rows="4" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;"></textarea>
+                    <small id="hint-waitlist_offer" style="color:#94A3B8; font-size:0.75rem;"></small>
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:700; color:#334155; margin-bottom:4px;">4. Pós-Atendimento & Retenção</label>
+                    <textarea id="tpl-post_appointment" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;"></textarea>
+                    <small id="hint-post_appointment" style="color:#94A3B8; font-size:0.75rem;"></small>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button id="btn-salvar-templates" type="button" style="background:#0DA2B6; color:white; border:none; padding:12px 24px; border-radius:6px; font-weight:bold; cursor:pointer;">Salvar Mensagens</button>
+                <button id="btn-recarregar-templates" type="button" style="background:white; color:#475569; border:1px solid #CBD5E1; padding:12px 20px; border-radius:6px; font-weight:600; cursor:pointer;">Descartar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODAL PARA NOVO AGENDAMENTO / ENCAIXE MANUAL -->
+<div id="modal-novo-agendamento" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:12px; width:90%; max-width:480px; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:1.2rem; color:#0F172A; font-weight:800;">Novo Encaixe / Agendamento</h3>
+            <button type="button" onclick="calFecharModalNovo()" style="background:none; border:none; font-size:1.3rem; cursor:pointer; color:#64748B;">&times;</button>
+        </div>
+        <form id="form-novo-encaixe" onsubmit="calSalvarNovoEncaixe(event)">
+            <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:4px;">Nome do Cliente</label>
+            <input type="text" id="novo-nome" required placeholder="Ex: Maria Santos" style="width:100%; padding:9px; border-radius:6px; border:1px solid #CBD5E1; margin-bottom:12px; font-size:0.9rem;">
+            
+            <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:4px;">Telefone / WhatsApp</label>
+            <input type="text" id="novo-fone" required placeholder="Ex: 47999998888" style="width:100%; padding:9px; border-radius:6px; border:1px solid #CBD5E1; margin-bottom:12px; font-size:0.9rem;">
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:4px;">Data</label>
+                    <input type="date" id="novo-data" required style="width:100%; padding:8px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:4px;">Horário</label>
+                    <input type="time" id="novo-hora" required value="09:00" style="width:100%; padding:8px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;">
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button type="button" onclick="calFecharModalNovo()" style="padding:9px 16px; border:1px solid #CBD5E1; background:white; border-radius:6px; font-weight:600; cursor:pointer;">Cancelar</button>
+                <button type="submit" id="btn-salvar-encaixe" style="padding:9px 20px; background:#059669; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer;">Confirmar Encaixe</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATENDIT - Painel do Cliente</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --bg-sidebar: #0f172a; --bg-main: #f8fafc; --card-bg: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; --cyan: #0da2b6; --border: #e2e8f0; --green: #10b981; }
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-main); color: var(--text-dark); display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 260px; min-width: 260px; background: var(--bg-sidebar); color: #fff; display: flex; flex-direction: column; justify-content: space-between; }
+        .sidebar-brand { padding: 22px 20px; font-size: 1.15rem; font-weight: 800; border-bottom: 1px solid #334155; color: var(--cyan); }
+        .menu { padding: 15px 0; display: flex; flex-direction: column; gap: 4px; }
+        .menu-item { padding: 12px 20px; color: #94a3b8; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; font-weight: 500; cursor: pointer; border-left: 3px solid transparent; }
+        .menu-item:hover, .menu-item.active { background: #1e293b; color: #ffffff; border-left-color: var(--cyan); }
+        .sidebar-footer { padding: 15px 20px; border-top: 1px solid #334155; }
+        .btn-voltar { display: block; width: 100%; padding: 10px; background: #e11d48; color: #ffffff; border-radius: 6px; font-size: 0.85rem; font-weight: 600; text-align: center; text-decoration: none; }
+        .btn-voltar:hover { background: #be123c; }
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar { background: #ffffff; border-bottom: 1px solid var(--border); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .tenant-badge { background: #e2e8f0; color: #334155; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
+        .content-area { padding: 25px 30px; display: flex; gap: 25px; flex: 1; }
+        .dashboard-container { flex: 3; }
+        .copilot-sidebar { flex: 1; min-width: 320px; background: #ffffff; border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; height: fit-content; }
+        .copilot-header { padding: 15px 20px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 0.95rem; color: #101c24; }
+        .copilot-body { padding: 20px; font-size: 0.9rem; }
+        .copilot-bubble { background: #e0f7fa; color: #006064; padding: 14px; border-radius: 10px; line-height: 1.5; }
+        .copilot-input-box { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+        .copilot-input-box input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; outline: none; }
+        .copilot-input-box button { background: #074f57; color: white; border: none; padding: 0 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div>
+            <div class="sidebar-brand">Painel do ATENDiT</div>
+            <nav class="menu">
+                <a class="menu-item active" onclick="loadView('faturamento', this)">📊 Painel Principal</a>
+                <a class="menu-item" onclick="loadView('ia_config', this)">⚙️ Configurações do Atendente</a>
+                <a class="menu-item" onclick="loadView('link_whatsapp', this)">📲 Conexão WhatsApp</a>
+                <a class="menu-item" onclick="loadView('calendar_config', this)">📅 Configuração do Calendário</a>
+                <a class="menu-item" onclick="loadView('rag_management', this)">📁 Gestão de Documentos</a>
+                <a class="menu-item" onclick="loadView('fila_atendimento', this)">💬 Atendimento (Chat)</a>
+                <a class="menu-item" onclick="loadView('gemini_config', this)">🧠 Configuração da IA</a>
+            </nav>
+        </div>
+        <div class="sidebar-footer">
+            <a href="/" class="btn-voltar">← Voltar para Apresentação</a>
+        </div>
+    </div>
+    <div class="main-wrapper">
+        <header class="topbar">
+            <h3 id="topbar-title" style="font-size: 1.1rem; font-weight: 700;">Resumo Geral e Dados da Conta</h3>
+            <div class="tenant-badge" id="tenant-badge">Tenant ID: Carregando...</div>
+                <a href="/logout" id="btn-logout" title="Encerrar sessão" style="margin-left:12px; padding:6px 14px; background:#fff; color:#B91C1C; border:1px solid #FECACA; border-radius:6px; font-size:0.78rem; font-weight:600; text-decoration:none; cursor:pointer;">Sair</a>
+        </header>
+        <div class="content-area">
+            <div class="dashboard-container" id="main-content-area"></div>
+            <aside class="copilot-sidebar">
+                <div class="copilot-header">🤖 Assistente Virtual (Copiloto IA)</div>
+                <div class="copilot-body">
+                    <div class="copilot-bubble" id="copilot-response">Olá! Sou o Copiloto do ATENDIT. Como posso ajudar na gestão da sua estância agora?</div>
+                </div>
+                <div class="copilot-input-box">
+                    <input type="text" id="copilot-msg" placeholder="Digite uma dúvida para a IA...">
+                    <button onclick="execCopilot()">Enviar</button>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        const rawPath = window.location.pathname.replace(/^\/|\/$/g, '');
+        window.currentTenantSlug = (rawPath && rawPath !== 'cliente' && rawPath !== 'clientes') ? rawPath : 'mani';
+        window.currentTenantData = {};
+
+        async function fetchTenantData() {
+            try {
+                const res = await fetch(`/v1/tenants/${window.currentTenantSlug}`);
+                if (res.ok) {
+                    window.currentTenantData = await res.json();
+                } else {
+                    window.currentTenantData = { slug: window.currentTenantSlug, name: window.currentTenantSlug, email: '', phone: '', ai_number: '', agent_config: {} };
+                }
+            } catch (e) {
+                window.currentTenantData = { slug: window.currentTenantSlug, name: window.currentTenantSlug, email: '', phone: '', ai_number: '', agent_config: {} };
+            }
+
+            const badge = document.getElementById('tenant-badge');
+            if (window.currentTenantData.name && window.currentTenantData.name !== window.currentTenantSlug) {
+                badge.innerText = `Tenant ID: ${window.currentTenantSlug} (${window.currentTenantData.name})`;
+            } else {
+                badge.innerText = `Tenant ID: ${window.currentTenantSlug}`;
+            }
+        }
+
+        async function loadView(viewName, element) {
+            if (element) {
+                document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+            }
+
+            try {
+                const res = await fetch(`/dashboards/${viewName}`);
+                // 401 = sessao ausente/expirada. Sem este desvio, o painel
+                // mostraria "Erro ao carregar modulo" e o usuario nao saberia
+                // que so precisa entrar de novo.
+                if (res.status === 401) {
+                    window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+                if (!res.ok) throw new Error("Módulo não encontrado");
+                const html = await res.json();
+                const container = document.getElementById('main-content-area');
+                container.innerHTML = html;
+
+                // Executa a injeção de dados e a vinculação direta dos eventos para cada módulo
+                if (viewName === 'faturamento') {
+                    bindFaturamento();
+                } else if (viewName === 'ia_config') {
+                    bindIaConfig();
+                } else if (viewName === 'link_whatsapp') {
+                    bindLinkWhatsApp();
+                } else if (viewName === 'calendar_config') {
+                    bindCalendar();
+                }
+            } catch (err) {
+                console.error("Erro ao carregar view:", err);
+                document.getElementById('main-content-area').innerHTML = "<div style='padding:20px;color:red;'>Erro ao carregar módulo.</div>";
+            }
+        }
+
+        // --- 1. MÓDULO FATURAMENTO & CADASTRO ---
+        function bindFaturamento() {
+            const inNome = document.getElementById('txt-empresa-nome');
+            const inEmail = document.getElementById('txt-empresa-email');
+            const inWhats = document.getElementById('txt-empresa-whats');
+            const inAiWhats = document.getElementById('txt-empresa-aiwhats');
+            const btnSalvar = document.getElementById('btn-salvar-cad');
+
+            if (inNome) inNome.value = window.currentTenantData.name || '';
+            if (inEmail) inEmail.value = window.currentTenantData.email || '';
+            if (inWhats) inWhats.value = window.currentTenantData.phone || '';
+            if (inAiWhats) inAiWhats.value = window.currentTenantData.ai_number || '';
+
+            if (btnSalvar) {
+                btnSalvar.onclick = async function() {
+                    btnSalvar.innerText = "Salvando...";
+                    btnSalvar.disabled = true;
+                    const payload = {
+                        slug: window.currentTenantSlug,
+                        name: inNome.value,
+                        email: inEmail.value,
+                        phone: inWhats.value,
+                        ai_number: inAiWhats.value
+                    };
+                    try {
+                        const res = await fetch('/v1/tenants/update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            window.currentTenantData = data.tenant;
+                            document.getElementById('tenant-badge').innerText = `Tenant ID: ${window.currentTenantSlug} (${window.currentTenantData.name})`;
+                            alert('✓ Cadastro salvo com sucesso!');
+                        } else {
+                            alert('Erro ao salvar: ' + data.message);
+                        }
+                    } catch (e) {
+                        alert('Falha na comunicação ao salvar cadastro.');
+                    } finally {
+                        btnSalvar.innerText = "💾 Salvar Cadastro";
+                        btnSalvar.disabled = false;
+                    }
+                };
+            }
+        }
+
+        // --- 2. MÓDULO CONFIGURAÇÃO DO ATENDENTE IA ---
+        function bindIaConfig() {
+            const agent = window.currentTenantData.agent_config || {};
+            const inName = document.getElementById('cfg-agent-name');
+            const inTone = document.getElementById('cfg-agent-tone');
+            const inQuestions = document.getElementById('cfg-agent-questions');
+            const btnSave = document.getElementById('btn-save-agent');
+
+            if (inName) inName.value = agent.name || window.currentTenantData.name || 'Assistente Virtual';
+            if (inTone && agent.tone) inTone.value = agent.tone;
+            if (inQuestions && agent.questions) {
+                inQuestions.value = typeof agent.questions === 'string' ? agent.questions : JSON.stringify(agent.questions, null, 2);
+            }
+
+            if (btnSave) {
+                btnSave.onclick = async function() {
+                    btnSave.innerText = "Salvando no motor...";
+                    btnSave.disabled = true;
+                    const qRaw = inQuestions.value.trim();
+                    try {
+                        JSON.parse(qRaw);
+                    } catch (e) {
+                        alert('Erro: O campo de perguntas deve ser um JSON válido. Ex: ["Pergunta 1", "Pergunta 2"]');
+                        btnSave.innerText = "💾 Salvar Parâmetros no Motor";
+                        btnSave.disabled = false;
+                        return;
+                    }
+
+                    const payload = {
+                        slug: window.currentTenantSlug,
+                        agent_name: inName.value.trim(),
+                        tone: inTone.value,
+                        questions: qRaw
+                    };
+
+                    try {
+                        const res = await fetch('/v1/agent/config', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            window.currentTenantData = data.tenant;
+                            alert('✓ Parâmetros da IA gravados com sucesso no motor!');
+                        } else {
+                            alert('Erro ao gravar parâmetros: ' + data.message);
+                        }
+                    } catch (e) {
+                        alert('Falha ao conectar com o motor de IA.');
+                    } finally {
+                        btnSave.innerText = "💾 Salvar Parâmetros no Motor";
+                        btnSave.disabled = false;
+                    }
+                };
+            }
+        }
+
+        // --- 3. MÓDULO CONEXÃO WHATSAPP ---
+        function bindLinkWhatsApp() {
+            const inPhone = document.getElementById('wa-phone-input');
+            const btnQr = document.getElementById('btn-gen-qr');
+            const btnPair = document.getElementById('btn-gen-pair');
+            const qrBox = document.getElementById('wa-qr-box');
+            const qrPlaceholder = document.getElementById('wa-qr-placeholder');
+            const qrImg = document.getElementById('wa-qr-img');
+            const pairDisplay = document.getElementById('wa-pair-code');
+            const pairHint = document.getElementById('wa-pair-hint');
+
+            // Preenche o campo de telefone com o número da IA ou com o telefone do cadastro
+            const targetPhone = window.currentTenantData.ai_number || window.currentTenantData.phone || '';
+            if (inPhone) {
+                inPhone.value = targetPhone;
+            }
+
+            // Ação do Botão: Gerar Código QR
+            if (btnQr) {
+                btnQr.onclick = async function() {
+                    btnQr.innerText = "Gerando Barramento...";
+                    btnQr.disabled = true;
+                    if (qrPlaceholder) qrPlaceholder.innerText = "Conectando à Evolution API da estância...";
+
+                    try {
+                        const res = await fetch('/v1/whatsapp/qrcode', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ slug: window.currentTenantSlug })
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            if (qrPlaceholder) qrPlaceholder.style.display = 'none';
+                            if (qrImg) {
+                                qrImg.src = data.qrcode_url;
+                                qrImg.style.display = 'block';
+                            }
+                            btnQr.innerText = "Atualizar Código QR";
+                        } else {
+                            if (qrPlaceholder) qrPlaceholder.innerText = "Erro ao gerar: " + data.message;
+                            btnQr.innerText = "Tentar Novamente";
+                        }
+                    } catch (e) {
+                        if (qrPlaceholder) qrPlaceholder.innerText = "Falha ao conectar com o serviço de WhatsApp.";
+                        btnQr.innerText = "Gerar Código QR";
+                    } finally {
+                        btnQr.disabled = false;
+                    }
+                };
+            }
+
+            // Ação do Botão: Gerar Token de Conexão (Pair Code)
+            if (btnPair) {
+                btnPair.onclick = async function() {
+                    const phoneVal = inPhone ? inPhone.value.trim() : '';
+                    if (!phoneVal) {
+                        alert('Por favor, informe o número de telefone com DDD.');
+                        return;
+                    }
+
+                    btnPair.innerText = "Gerando Token...";
+                    btnPair.disabled = true;
+
+                    try {
+                        const res = await fetch('/v1/whatsapp/pair-code', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ slug: window.currentTenantSlug, phone: phoneVal })
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            if (pairDisplay) pairDisplay.innerText = data.pairing_code;
+                            if (pairHint) pairHint.innerText = `Token ativo para ${phoneVal}. Digite no WhatsApp do aparelho.`;
+                        } else {
+                            alert('Erro ao gerar código: ' + data.message);
+                        }
+                    } catch (e) {
+                        alert('Falha ao comunicar com gateway de pareamento.');
+                    } finally {
+                        btnPair.innerText = "Gerar Novo Token";
+                        btnPair.disabled = false;
+                    }
+                };
+            }
+        }
+
+        async function execCopilot() {
+            const input = document.getElementById('copilot-msg');
+            const msg = input ? input.value.trim() : '';
+            if (!msg) return;
+            const bubble = document.getElementById('copilot-response');
+            if (bubble) bubble.innerText = "Consultando assistente...";
+            if (input) input.value = "";
+            try {
+                const res = await fetch('/v1/ai/copilot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, tenant: window.currentTenantSlug })
+                });
+                const data = await res.json();
+                if (bubble) bubble.innerText = data.response || "Comando processado com sucesso.";
+            } catch (e) {
+                if (bubble) bubble.innerText = "Assistente temporariamente offline.";
+            }
+        }
+
+        // =========================================================================
+        // CENTRO NERVOSO ATENDIT 24/7 - CONTROLADOR DA AGENDA & COCKPIT CRM
+        // =========================================================================
+        var calRefMes = new Date(2026, 8, 1);
+        var calDataRef = new Date(2026, 8, 14);
+        var calModoAtual = 'mes';
+
+        function calParam(nome) {
+            return new URLSearchParams(window.location.search).get(nome);
+        }
+
+        var CAL_AVISOS = {
+            conectado: { cor: '#065F46', fundo: '#ECFDF5', borda: '#A7F3D0', texto: '✅ Agenda conectada com sucesso.' },
+            recusado:  { cor: '#92400E', fundo: '#FFFBEB', borda: '#FDE68A', texto: 'Você cancelou a autorização. Nenhuma agenda foi conectada.' },
+            expirado:  { cor: '#92400E', fundo: '#FFFBEB', borda: '#FDE68A', texto: 'A autorização demorou mais que o permitido. Tente novamente.' },
+            erro:      { cor: '#991B1B', fundo: '#FEF2F2', borda: '#FECACA', texto: 'Não foi possível conectar a agenda.' }
+        };
+
+        function calMostrarAviso() {
+            var chave = calParam('calendario');
+            var el = document.getElementById('cal-aviso');
+            if (!el || !chave) return;
+            var a = CAL_AVISOS[chave] || CAL_AVISOS.erro;
+            el.style.display = 'block';
+            el.style.color = a.cor;
+            el.style.background = a.fundo;
+            el.style.border = '1px solid ' + a.borda;
+            el.innerText = a.texto;
+            history.replaceState({}, '', window.location.pathname);
+        }
+
+        function calTrocarAba(alvo) {
+            var abas = ['cal-view-grid', 'cal-view-crm', 'cal-view-asis-tobe', 'cal-view-config', 'cal-view-messages'];
+            abas.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = (id === alvo) ? 'block' : 'none';
+            });
+            document.querySelectorAll('.cal-tab').forEach(function(b) {
+                var ativo = (b.dataset.alvo === alvo);
+                b.style.background = ativo ? '#0DA2B6' : 'white';
+                b.style.color = ativo ? 'white' : '#475569';
+                b.style.borderColor = ativo ? '#0DA2B6' : '#CBD5E1';
+            });
+            if (alvo === 'cal-view-grid') calCarregarAgenda();
+            if (alvo === 'cal-view-crm') calCarregarCRM();
+            if (alvo === 'cal-view-asis-tobe') calCarregarAsIsToBe();
+            if (alvo === 'cal-view-config') calCarregarStatus();
+            if (alvo === 'cal-view-messages') calCarregarTemplates();
+        }
+
+        function calMudarModo(modo) {
+            calModoAtual = modo;
+            ['dia', 'semana', 'mes'].forEach(function(m) {
+                var btn = document.getElementById('cal-view-btn-' + m);
+                if (btn) {
+                    btn.style.background = (m === modo) ? '#0DA2B6' : '#FFF';
+                    btn.style.color = (m === modo) ? '#FFF' : '#475569';
+                    btn.style.fontWeight = (m === modo) ? '700' : '600';
+                }
+            });
+            calCarregarAgenda();
+        }
+
+        async function calCarregarStatus() {
+            var box = document.getElementById('cal-estado-conexao');
+            var btn = document.getElementById('btn-conectar-google');
+            if (!box) return;
+            try {
+                var res = await fetch('/calendar/status/' + window.currentTenantSlug);
+                var s = await res.json();
+                if (s.conectado) {
+                    var quem = s.email ? '<strong>' + s.email + '</strong>' : 'sua conta Google';
+                    box.innerHTML = '<div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">'
+                                  + '  <div>'
+                                  + '    <div style="color:#065F46; font-weight:700; font-size:0.95rem;">● Conectado ao ' + (s.provider_label || 'calendário') + '</div>'
+                                  + '    <div style="color:#475569; font-size:0.88rem; margin-top:4px;">Conectado como ' + quem + '</div>'
+                                  + '  </div>'
+                                  + '  <button id="btn-desconectar-cal" type="button" style="padding:9px 16px; background:white; color:#B91C1C; border:1px solid #FECACA; border-radius:6px; font-weight:600; cursor:pointer;">Desconectar</button>'
+                                  + '</div>';
+                    box.style.background = '#ECFDF5';
+                    box.style.borderColor = '#A7F3D0';
+                    var bd = document.getElementById('btn-desconectar-cal');
+                    if (bd) bd.onclick = calDesconectar;
+                } else {
+                    box.innerHTML = '<div style="color:#64748B; font-size:0.92rem;">○ Nenhuma agenda conectada ainda.</div>';
+                    box.style.background = '#F8FAFC';
+                    box.style.borderColor = '#E2E8F0';
+                }
+            } catch (e) {
+                box.innerHTML = '<div style="color:#B91C1C; font-size:0.9rem;">Não foi possível verificar a conexão agora.</div>';
+            }
+        }
+
+        async function calDesconectar() {
+            if (!confirm('Desconectar a agenda?')) return;
+            try {
+                await fetch('/calendar/disconnect/' + window.currentTenantSlug, { method: 'POST' });
+            } catch (e) { }
+            await calCarregarStatus();
+        }
+
+        async function calCarregarAgenda() {
+            var corpo = document.getElementById('cal-grid-corpo');
+            var titulo = document.getElementById('cal-grid-titulo');
+            var resumo = document.getElementById('cal-grid-resumo');
+            if (!corpo) return;
+
+            corpo.innerHTML = '<div style="grid-column:1/-1; color:#64748B; font-size:0.9rem; padding:24px; text-align:center;">Carregando compromissos…</div>';
+
+            if (!calRefMes) calRefMes = new Date(2026, 8, 1);
+            if (!calDataRef) calDataRef = new Date(2026, 8, 14);
+
+            var ano = calRefMes.getFullYear(), mes = calRefMes.getMonth();
+            var primeiro = new Date(Date.UTC(ano, mes, 1, 0, 0, 0));
+            var ultimo = new Date(Date.UTC(ano, mes + 1, 0, 23, 59, 59));
+
+            var dados = { appointments: [], total: 0 };
+            try {
+                var url = '/calendar/appointments/' + window.currentTenantSlug + '?inicio=' + primeiro.toISOString() + '&fim=' + ultimo.toISOString();
+                var r = await fetch(url);
+                if (r.ok) dados = await r.json();
+            } catch (e) {
+                console.error("Erro ao carregar agenda:", e);
+            }
+
+            var total = dados.total || (dados.appointments || []).length;
+
+            // ================= VISÃO DIA =================
+            if (calModoAtual === 'dia') {
+                var diaNome = calDataRef.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                if (titulo) titulo.innerText = diaNome.charAt(0).toUpperCase() + diaNome.slice(1);
+
+                var refAno = calDataRef.getFullYear(), refMes = calDataRef.getMonth(), refDia = calDataRef.getDate();
+                var aptsDia = (dados.appointments || []).filter(function(a) {
+                    var ad = new Date(a.start_at);
+                    return ad.getUTCDate() === refDia && ad.getUTCMonth() === refMes && ad.getUTCFullYear() === refAno;
+                });
+                if (resumo) resumo.innerText = aptsDia.length + ' compromisso(s) neste dia';
+
+                var diaHtml = '<div style="display:flex; flex-direction:column; gap:10px; width:100%;">';
+                var slots = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+
+                slots.forEach(function(s) {
+                    var match = aptsDia.find(function(a) {
+                        var ad = new Date(a.start_at);
+                        var h = String(ad.getUTCHours()).padStart(2, '0') + ':' + String(ad.getUTCMinutes()).padStart(2, '0');
+                        return h === s;
+                    });
+
+                    if (match) {
+                        var isCancel = (match.status === 'canceled' || match.status === 'desistencia');
+                        var bg = isCancel ? '#FEF2F2' : '#E0F2FE';
+                        var border = isCancel ? '#EF4444' : '#0284C7';
+                        var badge = isCancel
+                            ? '<span style="background:#FEE2E2; color:#B91C1C; padding:3px 10px; border-radius:12px; font-weight:700; font-size:0.8rem;">Desistência / Vaga Livre</span>'
+                            : '<span style="background:#BAE6FD; color:#0369A1; padding:3px 10px; border-radius:12px; font-weight:700; font-size:0.8rem;">Confirmado</span>';
+
+                        diaHtml += '<div style="display:flex; align-items:center; background:' + bg + '; border-left:5px solid ' + border + '; padding:12px 18px; border-radius:8px;">'
+                                 + '  <span style="font-weight:800; width:90px; color:#0F172A; font-size:1.05rem;">' + s + '</span>'
+                                 + '  <div style="flex:1;">'
+                                 + '    <strong style="color:#0F172A; font-size:0.95rem;">' + (match.customer_name || 'Cliente') + '</strong>'
+                                 + '    <span style="color:#64748B; font-size:0.85rem; margin-left:10px;">' + (match.customer_phone || '') + ' (' + (match.provider || 'local') + ')</span>'
+                                 + '  </div>'
+                                 + badge
+                                 + '</div>';
+                    } else {
+                        var dtStr = calDataRef.toISOString().split('T')[0];
+                        diaHtml += '<div style="display:flex; align-items:center; background:white; border:1px dashed #CBD5E1; padding:10px 18px; border-radius:8px;">'
+                                 + '  <span style="font-weight:700; width:90px; color:#64748B;">' + s + '</span>'
+                                 + '  <span style="color:#059669; font-size:0.9rem; flex:1; font-weight:600;">✨ Horário Livre para Atendimento</span>'
+                                 + '  <button type="button" onclick="calAbrirModalNovo('' + dtStr + '', '' + s + '')" style="padding:6px 14px; background:#F0FDF4; color:#166534; border:1px solid #BBF7D0; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem;">+ Encaixar</button>'
+                                 + '</div>';
+                    }
+                });
+                diaHtml += '</div>';
+                corpo.innerHTML = diaHtml;
+                return;
+            }
+
+            // ================= VISÃO MÊS =================
+            var nomeMes = calRefMes.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            if (titulo) titulo.innerText = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
+            if (resumo) resumo.innerText = total === 0 ? 'Nenhum compromisso neste mês' : total + ' compromisso(s) neste mês';
+
+            var porDia = {};
+            (dados.appointments || []).forEach(function(a) {
+                var d = new Date(a.start_at);
+                var diaNum = d.getUTCDate();
+                (porDia[diaNum] = porDia[diaNum] || []).push(a);
+            });
+
+            var html = '<div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px; width:100%;">';
+            html += ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']
+                .map(function(d) { return '<div style="text-align:center; font-weight:700; font-size:12px; color:#64748B; padding:6px;">' + d + '</div>'; }).join('');
+
+            var diaSemanaInicio = (new Date(ano, mes, 1).getDay() + 6) % 7;
+            for (var i = 0; i < diaSemanaInicio; i++) html += '<div></div>';
+
+            var ultimoDiaMes = new Date(ano, mes + 1, 0).getDate();
+            for (var dia = 1; dia <= ultimoDiaMes; dia++) {
+                var eHoje = (dia === 14 && mes === 8 && ano === 2026);
+                var evs = porDia[dia] || [];
+                var marcas = evs.slice(0, 2).map(function(a) {
+                    var ad = new Date(a.start_at);
+                    var h = String(ad.getUTCHours()).padStart(2, '0') + ':' + String(ad.getUTCMinutes()).padStart(2, '0');
+                    var nome = (a.customer_name || 'Cliente');
+                    var isCancel = (a.status === 'canceled' || a.status === 'desistencia');
+                    var bgItem = isCancel ? '#FEE2E2' : '#E0F2FE';
+                    var corItem = isCancel ? '#B91C1C' : '#0369A1';
+                    return '<div style="background:' + bgItem + '; color:' + corItem + '; border-radius:3px; padding:2px 4px; font-size:11px; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><strong>' + h + '</strong> ' + nome + '</div>';
+                }).join('');
+
+                var estiloBox = 'background:white; padding:8px; border-radius:8px; min-height:75px; cursor:pointer; '
+                              + (eHoje ? 'border:2px solid #F59E0B; background:#FFFDF7;' : 'border:1px solid #E2E8F0;');
+
+                html += '<div onclick="calIrParaDia(' + ano + ', ' + mes + ', ' + dia + ')" style="' + estiloBox + '">'
+                      + '  <strong style="font-size:12px; color:' + (eHoje ? '#B45309' : '#334155') + ';">' + dia + (eHoje ? ' (hoje)' : '') + '</strong>'
+                      + marcas
+                      + '</div>';
+            }
+            html += '</div>';
+            corpo.innerHTML = html;
+        }
+
+        function calIrParaDia(ano, mes, dia) {
+            calDataRef = new Date(ano, mes, dia);
+            calMudarModo('dia');
+        }
+
+        async function calCarregarCRM() {
+            try {
+                var res = await fetch('/calendar/crm-summary/' + window.currentTenantSlug);
+                if (!res.ok) return;
+                var d = await res.json();
+                var cH = document.getElementById('crm-card-hoje');
+                var cS = document.getElementById('crm-card-semana');
+                var cM = document.getElementById('crm-card-mes');
+                var cD = document.getElementById('crm-card-desistencias');
+                if (cH) cH.innerText = d.hoje || 0;
+                if (cS) cS.innerText = d.semana || 0;
+                if (cM) cM.innerText = d.mes || 0;
+                if (cD) cD.innerText = d.desistencias || 0;
+
+                var tab = document.getElementById('crm-tabela-conteudo');
+                if (!tab) return;
+                if (!d.apts_hoje_detalhe || d.apts_hoje_detalhe.length === 0) {
+                    tab.innerHTML = '<div style="padding:24px; text-align:center; color:#64748B; font-size:0.95rem;">Nenhum atendimento na grade de hoje. A IA está captando novos contatos no WhatsApp 24/7.</div>';
+                    return;
+                }
+                var h = '<table style="width:100%; border-collapse:collapse; font-size:0.92rem;">'
+                      + '<thead><tr style="border-bottom:2px solid #E2E8F0; color:#475569; text-align:left;">'
+                      + '<th style="padding:10px;">Horário</th><th style="padding:10px;">Cliente</th><th style="padding:10px;">Telefone</th><th style="padding:10px;">Provedor</th><th style="padding:10px;">Status</th></tr></thead><tbody>';
+                d.apts_hoje_detalhe.forEach(function(a) {
+                    var isCanc = (a.status === 'canceled' || a.status === 'desistencia');
+                    var badgeStatus = isCanc
+                        ? '<span style="background:#FEE2E2; color:#B91C1C; padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:700;">Cancelado</span>'
+                        : '<span style="background:#ECFDF5; color:#065F46; padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:700;">Confirmado</span>';
+
+                    h += '<tr style="border-bottom:1px solid #F1F5F9;">'
+                       + '  <td style="padding:10px; font-weight:700; color:#0F172A;">' + a.hora + '</td>'
+                       + '  <td style="padding:10px; color:#1E293B; font-weight:600;">' + a.cliente + '</td>'
+                       + '  <td style="padding:10px; color:#64748B;">' + a.fone + '</td>'
+                       + '  <td style="padding:10px;"><span style="background:#E0F2FE; color:#0369A1; padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:600;">' + a.provedor + '</span></td>'
+                       + '  <td style="padding:10px;">' + badgeStatus + '</td>'
+                       + '</tr>';
+                });
+                h += '</tbody></table>';
+                tab.innerHTML = h;
+            } catch(e) { console.error("Erro CRM:", e); }
+        }
+
+        function calCarregarAsIsToBe() {
+            var b = document.getElementById('asis-lista-buracos');
+            var s = document.getElementById('tobe-lista-sugestoes');
+            if (b) b.innerHTML = '<div style="padding:14px; background:#FEF2F2; border-radius:8px; border:1px solid #FECACA; color:#991B1B; font-size:0.9rem;">'
+                               + '  <strong>Lacuna AS-IS Detectada:</strong> Vaga das 14:00 às 14:45 (Cancelamento de Rodrigo Silva). Horário ocioso.'
+                               + '</div>';
+            if (s) s.innerHTML = '<div style="padding:16px; background:#ECFDF5; border-radius:8px; border:1px solid #A7F3D0;">'
+                               + '  <div style="font-weight:700; color:#065F46; font-size:0.95rem;">⚡ Oportunidade TO-BE: Antecipação Ativa</div>'
+                               + '  <div style="font-size:0.88rem; color:#334155; margin:6px 0;">Cliente prioritário na fila de espera: <strong>Carlos Eduardo (47 98822-1133)</strong></div>'
+                               + '  <button type="button" onclick="alert('Oferta de antecipação disparada via WhatsApp com sucesso!')" style="padding:8px 18px; background:#059669; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem; margin-top:6px;">🚀 Disparar Oferta de Encaixe WhatsApp</button>'
+                               + '</div>';
+        }
+
+        function calAbrirModalNovo(dtStr, horaStr) {
+            var m = document.getElementById('modal-novo-agendamento');
+            if (!m) return;
+            m.style.display = 'flex';
+            if (dtStr) document.getElementById('novo-data').value = dtStr;
+            else document.getElementById('novo-data').value = '2026-09-14';
+            if (horaStr) document.getElementById('novo-hora').value = horaStr;
+        }
+
+        function calFecharModalNovo() {
+            var m = document.getElementById('modal-novo-agendamento');
+            if (m) m.style.display = 'none';
+        }
+
+        async function calSalvarNovoEncaixe(ev) {
+            ev.preventDefault();
+            var nome = document.getElementById('novo-nome').value;
+            var fone = document.getElementById('novo-fone').value;
+            var data = document.getElementById('novo-data').value;
+            var hora = document.getElementById('novo-hora').value;
+            var iso = data + 'T' + hora + ':00Z';
+
+            try {
+                var r = await fetch('/calendar/appointments/' + window.currentTenantSlug, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({customer_name: nome, customer_phone: fone, start_at: iso, duration_minutes: 30})
+                });
+                if (r.ok) {
+                    calFecharModalNovo();
+                    calCarregarAgenda();
+                    calCarregarCRM();
+                    alert('Agendamento/Encaixe confirmado com sucesso!');
+                } else {
+                    alert('Não foi possível registrar o agendamento.');
+                }
+            } catch(e) { alert('Erro de comunicação com o servidor.'); }
+        }
+
+        var CAL_TIPOS_TPL = ['confirmation','reminder','waitlist_offer','post_appointment'];
+
+        function calAvisoTpl(texto, erro) {
+            var el = document.getElementById('cal-tpl-status');
+            if (!el) return;
+            el.style.display = 'block';
+            el.style.background = erro ? '#FEF2F2' : '#ECFDF5';
+            el.style.color = erro ? '#991B1B' : '#065F46';
+            el.style.border = '1px solid ' + (erro ? '#FECACA' : '#A7F3D0');
+            el.innerText = texto;
+            if (!erro) setTimeout(function() { el.style.display = 'none'; }, 4000);
+        }
+
+        async function calCarregarTemplates() {
+            try {
+                var r = await fetch('/calendar/message-templates/' + window.currentTenantSlug);
+                var d = await r.json();
+                CAL_TIPOS_TPL.forEach(function(tipo) {
+                    var ta = document.getElementById('tpl-' + tipo);
+                    var hint = document.getElementById('hint-' + tipo);
+                    var info = (d.templates || {})[tipo];
+                    if (!ta || !info) return;
+                    ta.value = info.customizado ? info.body : '';
+                    ta.placeholder = info.default || '';
+                    if (hint) hint.innerText = info.customizado
+                        ? 'Texto personalizado. Apague tudo para voltar ao padrão.'
+                        : 'Usando o texto padrão (mostrado em cinza).';
+                });
+            } catch (e) {
+                calAvisoTpl('Não consegui carregar as mensagens agora.', true);
+            }
+        }
+
+        async function calSalvarTemplates() {
+            var btn = document.getElementById('btn-salvar-templates');
+            if (btn) { btn.disabled = true; btn.innerText = 'Salvando…'; }
+            var templates = {};
+            CAL_TIPOS_TPL.forEach(function(tipo) {
+                var ta = document.getElementById('tpl-' + tipo);
+                if (ta) templates[tipo] = ta.value.trim();
+            });
+            try {
+                var r = await fetch('/calendar/message-templates/' + window.currentTenantSlug, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ templates: templates })
+                });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                calAvisoTpl('Mensagens salvas.', false);
+                await calCarregarTemplates();
+            } catch (e) {
+                calAvisoTpl('Não consegui salvar as mensagens.', true);
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerText = 'Salvar mensagens'; }
+            }
+        }
+
+        async function calConectarCalendly() {
+            var token = (document.getElementById('cal-calendly-token') || {}).value || '';
+            var link  = (document.getElementById('cal-calendly-link')  || {}).value || '';
+            var box   = document.getElementById('cal-calendly-status');
+            var btn   = document.getElementById('btn-conectar-calendly');
+            var aviso = function(txt, erro) {
+                if (!box) return;
+                box.style.display = 'block';
+                box.style.background = erro ? '#FEF2F2' : '#ECFDF5';
+                box.style.color = erro ? '#991B1B' : '#065F46';
+                box.style.border = '1px solid ' + (erro ? '#FECACA' : '#A7F3D0');
+                box.innerText = txt;
+            };
+            if (!token.trim()) { aviso('Cole o Personal Access Token do Calendly.', true); return; }
+            if (btn) { btn.disabled = true; btn.innerText = 'Conectando…'; }
+            try {
+                var r = await fetch('/calendar/connections/calendly/' + window.currentTenantSlug, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token.trim(), scheduling_link: link.trim() })
+                });
+                var d = await r.json().catch(function() { return {}; });
+                if (r.ok) {
+                    aviso('Conectado como ' + (d.conta || d.email || 'sua conta') + '. Webhook registrado.', false);
+                    document.getElementById('cal-calendly-token').value = '';
+                    calCarregarStatus();
+                } else {
+                    aviso(d.detail || 'Não consegui conectar ao Calendly.', true);
+                }
+            } catch (e) {
+                aviso('Não consegui falar com o servidor.', true);
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerText = 'Conectar Calendly'; }
+            }
+        }
+
+        function bindCalendar() {
+            calMostrarAviso();
+
+            document.querySelectorAll('.cal-tab').forEach(function(b) {
+                b.onclick = function() { calTrocarAba(b.dataset.alvo); };
+            });
+
+            var btn = document.getElementById('btn-conectar-google');
+            if (btn) {
+                btn.onclick = function() {
+                    window.location.href = '/calendar/oauth/google/start?tenant=' + encodeURIComponent(window.currentTenantSlug);
+                };
+            }
+
+            var anterior = document.getElementById('cal-nav-anterior');
+            var proximo = document.getElementById('cal-nav-proximo');
+            var hojeBtn = document.getElementById('cal-nav-hoje');
+
+            if (anterior) anterior.onclick = function() {
+                if (calModoAtual === 'dia') {
+                    calDataRef.setDate(calDataRef.getDate() - 1);
+                } else {
+                    calRefMes = new Date(calRefMes.getFullYear(), calRefMes.getMonth() - 1, 1);
+                }
+                calCarregarAgenda();
+            };
+
+            if (proximo) proximo.onclick = function() {
+                if (calModoAtual === 'dia') {
+                    calDataRef.setDate(calDataRef.getDate() + 1);
+                } else {
+                    calRefMes = new Date(calRefMes.getFullYear(), calRefMes.getMonth() + 1, 1);
+                }
+                calCarregarAgenda();
+            };
+
+            if (hojeBtn) hojeBtn.onclick = function() {
+                calRefMes = new Date(2026, 8, 1);
+                calDataRef = new Date(2026, 8, 14);
+                calCarregarAgenda();
+            };
+
+            var btnSalvarTpl = document.getElementById('btn-salvar-templates');
+            var btnRecarregarTpl = document.getElementById('btn-recarregar-templates');
+            if (btnSalvarTpl) btnSalvarTpl.onclick = calSalvarTemplates;
+            if (btnRecarregarTpl) btnRecarregarTpl.onclick = calCarregarTemplates;
+
+            var btnCalendly = document.getElementById('btn-conectar-calendly');
+            if (btnCalendly) btnCalendly.onclick = calConectarCalendly;
+
+            // CARREGAMENTO AUTOMÁTICO IMEDIATO
+            calCarregarAgenda();
+            calCarregarStatus();
+            calCarregarTemplates();
+            calCarregarCRM();
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await fetchTenantData();
+            // Voltando do consentimento OAuth, abre direto a tela de calendario
+            // para o usuario ver o resultado no lugar onde ele clicou.
+            if (new URLSearchParams(window.location.search).has('calendario')) {
+                const item = Array.from(document.querySelectorAll('.menu-item'))
+                    .find(a => (a.getAttribute('onclick') || '').includes('calendar_config'));
+                loadView('calendar_config', item || null);
+            } else {
+                loadView('faturamento');
+            }
+        });
+    </script>
+</body>
+</html>
