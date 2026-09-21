@@ -28,7 +28,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request, status
+from fastapi import APIRouter, Request, HTTPException, Query, Request, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 
@@ -405,49 +405,24 @@ async def listar_compromissos(
 # Mesma política das demais rotas do painel: sem X-Internal-Token, porque o
 # navegador as chama. Passam a exigir sessão quando o login existir (PARTE 5).
 @router.get("/message-templates/{tenant}", include_in_schema=False)
-async def obter_templates(tenant: str):
-    tenant_id, slug = await resolver_tenant(tenant)
+async def obter_templates(tenant: str, request: Request):
+    tenant_id, slug = await _exigir_dono(request, tenant)
     return {"tenant_slug": slug, "templates": await template_service.listar(tenant_id)}
 
 
 @router.post("/message-templates/{tenant}", include_in_schema=False)
-async def salvar_templates(tenant: str, payload: Dict[str, Any]):
+async def salvar_templates(tenant: str, request: Request, payload: Dict[str, Any]):
     """
-    Aceita {"templates": {"reminder": "texto", ...}} ou
-    {"template_type": "reminder", "body": "texto"}.
-
-    Corpo vazio LIMPA a customização e volta ao default -- e por isso o
-    default nunca e gravado no banco: gravado, ele viraria "customizado"
-    e deixaria de acompanhar futuras melhorias do texto padrao.
+    Grava ou sobrescreve as réguas de comunicação do bot.
+    Trava de segurança: validação de dono na primeira linha de execução.
     """
-    tenant_id, slug = await resolver_tenant(tenant)
+    tenant_id, slug = await _exigir_dono(request, tenant)
+    templates = payload.get("templates")
+    if templates is None:
+        raise HTTPException(status_code=400, detail="Campo 'templates' é obrigatório.")
+    await template_service.salvar(tenant_id=tenant_id, templates=templates)
+    return {"status": "success", "tenant_slug": slug}
 
-    itens = payload.get("templates")
-    if itens is None:
-        tipo = payload.get("template_type")
-        if not tipo:
-            raise HTTPException(status_code=400, detail="Informe 'templates' ou 'template_type' e 'body'.")
-        itens = {tipo: payload.get("body", "")}
-
-    if not isinstance(itens, dict):
-        raise HTTPException(status_code=400, detail="'templates' deve ser um objeto {tipo: texto}.")
-
-    resultados = []
-    for tipo, corpo in itens.items():
-        if tipo not in template_service.TIPOS:
-            raise HTTPException(
-                status_code=400,
-                detail=f"template_type inválido: '{tipo}'. Válidos: {list(template_service.TIPOS)}",
-            )
-        resultados.append(await template_service.salvar(tenant_id, tipo, corpo or ""))
-
-    return {"tenant_slug": slug, "salvos": resultados,
-            "templates": await template_service.listar(tenant_id)}
-
-
-# --------------------------------------------------------------------------
-# Calendly — conexão por token (PARTE A/B) e recepção de webhook (PARTE C)
-# --------------------------------------------------------------------------
 @router.post("/connections/calendly/{tenant}", include_in_schema=False)
 async def conectar_calendly(tenant: str, payload: Dict[str, Any]):
     """Valida o token, registra o webhook no Calendly e grava tudo cifrado."""

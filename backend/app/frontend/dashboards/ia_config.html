@@ -1,0 +1,45 @@
+<div style="display: flex; flex-direction: column; gap: 25px;">
+    <div style="background: #ffffff; padding: 28px; border-radius: 14px; border: 1px solid #e2e8f0; border-top: 4px solid #0da2b6;">
+        <h4 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 22px; display: flex; align-items: center; gap: 8px;">
+            ⚙️ Parametrização da IA & Triagem
+        </h4>
+        
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div>
+                <label style="font-size: 0.88rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 6px;">
+                    Nome do Atendente Virtual
+                </label>
+                <input type="text" id="cfg-agent-name" placeholder="Ex: Assistente Virtual" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: #0f172a; outline: none;">
+            </div>
+
+            <div>
+                <label style="font-size: 0.88rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 6px;">
+                    Tom de Voz do Agente
+                </label>
+                <select id="cfg-agent-tone" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: #0f172a; outline: none; background: #fff;">
+                    <option value="Objetivo e Claro">Objetivo e Claro</option>
+                    <option value="Empático e Acolhedor">Empático e Acolhedor</option>
+                    <option value="Formal e Corporativo">Formal e Corporativo</option>
+                    <option value="Descontraído e Consultivo">Descontraído e Consultivo</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="font-size: 0.88rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 6px;">
+                    Editor de Perguntas Obrigatórias Iniciais (Array JSONB)
+                </label>
+                <textarea id="cfg-agent-questions" rows="4" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.92rem; font-family: monospace; color: #0f172a; outline: none; resize: vertical;">["Qual seu nome?", "Qual o assunto do contato?", "Você já é associado?"]</textarea>
+                <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">
+                    Insira um formato estruturado válido de array JSON para o pipeline de triagem.
+                </span>
+            </div>
+        </div>
+
+        <div style="text-align: left; margin-top: 25px;">
+            <button id="btn-save-agent" onclick="salvarConfigIA()" style="padding: 13px 26px; background: #074f57; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;">
+                💾 Salvar Parâmetros no Motor
+            </button>
+            <span id="msg-status-agent" style="margin-left: 15px; font-size: 0.88rem; font-weight: 600;"></span>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ATENDIT — Acesso</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: linear-gradient(135deg, #f2f9fa 0%, #e1f5fe 100%); min-height: 100vh;
+               display: flex; align-items: center; justify-content: center;
+               font-family: system-ui, -apple-system, sans-serif; padding: 20px; }
+        .card { background: #fff; width: 100%; max-width: 400px; padding: 40px;
+                border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,.08); }
+        h2 { color: #0f172a; margin-bottom: 6px; font-size: 1.35rem; }
+        .sub { color: #64748B; font-size: .88rem; margin-bottom: 26px; }
+        label { font-size: .78rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px; }
+        input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: .95rem; }
+        input:focus { outline: none; border-color: #0DA2B6; box-shadow: 0 0 0 3px rgba(13,162,182,.12); }
+        button { width: 100%; padding: 13px; background: #074f57; color: #fff; border: none;
+                 border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 18px; font-size: .95rem; }
+        button:disabled { background: #94A3B8; cursor: not-allowed; }
+        .erro { display: none; margin-top: 16px; padding: 11px 14px; background: #FEF2F2;
+                border: 1px solid #FECACA; color: #991B1B; border-radius: 8px; font-size: .85rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Acesso ao painel</h2>
+        <p class="sub">Informe seu usuário e senha para continuar.</p>
+
+        <form id="form-login" autocomplete="off">
+            <label for="usuario">Usuário</label>
+            <input type="text" id="usuario" name="usuario" required autofocus autocomplete="username" value="admin">
+
+            <label for="senha" style="margin-top:14px; display:block;">Senha</label>
+            <input type="password" id="senha" name="senha" required autocomplete="current-password">
+            <button type="submit" id="btn">Entrar</button>
+        </form>
+
+        <div class="erro" id="erro"></div>
+    </div>
+
+    <script>
+        // 'next' vem da querystring que o middleware acrescenta ao redirecionar.
+        // Só caminhos internos são aceitos: um 'next' começando com // ou http
+        // permitiria usar esta tela como trampolim para um site externo.
+        // Preenchido com o campo `destino` da resposta do POST /login. O
+        // `next` da querystring continua tendo prioridade: ele guarda a
+        // pagina que a pessoa TENTOU abrir antes de cair no login.
+        let padraoDoServidor = null;
+
+        function destinoSeguro() {
+            const bruto = new URLSearchParams(window.location.search).get('next') || padraoDoServidor || '/admin';
+            if (!bruto.startsWith('/') || bruto.startsWith('//')) return '/';
+            return bruto;
+        }
+
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn');
+            const erro = document.getElementById('erro');
+            erro.style.display = 'none';
+            btn.disabled = true;
+            btn.innerText = 'Entrando…';
+            try {
+                const r = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        usuario: document.getElementById('usuario').value,
+                        senha: document.getElementById('senha').value
+                    })
+                });
+                if (r.ok) {
+                    // O corpo TEM de ser lido aqui. Ate 2026-09-03 esta linha usava
+                    // uma variavel `dados` que NUNCA foi declarada neste escopo: o
+                    // corpo so era lido mais abaixo, como `d`, no caminho de erro.
+                    // Resultado: ReferenceError logo apos um 200 legitimo, capturado
+                    // pelo catch() generico e exibido como "Nao consegui falar com o
+                    // servidor" -- uma falha de REDE que nunca existiu.
+                    //
+                    // Passou despercebido porque a verificacao foi feita com curl,
+                    // que recebe o 200 e NAO executa JavaScript. O servidor sempre
+                    // esteve correto; quem quebrava era a tela, na linha seguinte.
+                    const dados = await r.json().catch(() => ({}));
+                    padraoDoServidor = dados.destino || null;
+                    window.location.href = destinoSeguro();
+                    return;
+                }
+                const d = await r.json().catch(() => ({}));
+                erro.innerText = d.detail || 'Usuário ou senha incorretos.';
+                erro.style.display = 'block';
+                document.getElementById('senha').value = '';
+                document.getElementById('senha').focus();
+            } catch (_) {
+                erro.innerText = 'Não consegui falar com o servidor. Tente de novo.';
+                erro.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Entrar';
+            }
+        });
+    </script>
+</body>
+</html>

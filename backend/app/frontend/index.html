@@ -36,6 +36,8 @@
             <div class="sidebar-brand">Painel do ATENDiT</div>
             <nav class="menu">
                 <a class="menu-item active" onclick="loadView('faturamento', this)">📊 Painel Principal</a>
+                    <a class="menu-item" onclick="loadView('empresa_cadastro', this)">🏢 Cadastro da Empresa</a>
+
                 <a class="menu-item" onclick="loadView('ia_config', this)">⚙️ Configurações do Atendente</a>
                 <a class="menu-item" onclick="loadView('link_whatsapp', this)">📲 Conexão WhatsApp</a>
                 <a class="menu-item" onclick="loadView('calendar_config', this)">📅 Configuração do Calendário</a>
@@ -72,11 +74,14 @@
     <script>
         const rawPath = window.location.pathname.replace(/^\/|\/$/g, '');
         window.currentTenantSlug = (rawPath && rawPath !== 'cliente' && rawPath !== 'clientes') ? rawPath : 'mani';
-        window.currentTenantData = {};
+        // Extrai o slug do tenant da URL (ex: /manitest -> manitest)
+         const partesUrl = window.location.pathname.split('/').filter(Boolean);
+         window.currentTenantSlug = window.currentTenantSlug || (partesUrl.length > 0 ? partesUrl[0] : 'manitest');
+         window.currentTenantData = {};
 
         async function fetchTenantData() {
             try {
-                const res = await fetch(`/v1/tenants/${window.currentTenantSlug}`);
+                const res = await /*timeout 30s*/ fetch(`/v1/tenants/${window.currentTenantSlug}`);
                 if (res.ok) {
                     window.currentTenantData = await res.json();
                 } else {
@@ -101,7 +106,7 @@
             }
 
             try {
-                const res = await fetch(`/dashboards/${viewName}`);
+                const res = await /*timeout 30s*/ fetch(`/dashboards/${viewName}`);
                 // 401 = sessao ausente/expirada. Sem este desvio, o painel
                 // mostraria "Erro ao carregar modulo" e o usuario nao saberia
                 // que so precisa entrar de novo.
@@ -113,6 +118,12 @@
                 const html = await res.json();
                 const container = document.getElementById('main-content-area');
                 container.innerHTML = html;
+                    // Executa scripts internos das telas carregadas dinamicamente
+                    container.querySelectorAll('script').forEach(s => {
+                        const novoScript = document.createElement('script');
+                        novoScript.text = s.innerHTML;
+                        document.body.appendChild(novoScript).parentNode.removeChild(novoScript);
+                    });
 
                 // Executa a injeção de dados e a vinculação direta dos eventos para cada módulo
                 if (viewName === 'faturamento') {
@@ -155,7 +166,7 @@
                         ai_number: inAiWhats.value
                     };
                     try {
-                        const res = await fetch('/v1/tenants/update', {
+                        const res = await /*timeout 30s*/ fetch('/v1/tenants/update', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
@@ -214,7 +225,7 @@
                     };
 
                     try {
-                        const res = await fetch('/v1/agent/config', {
+                        const res = await /*timeout 30s*/ fetch('/v1/agent/config', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
@@ -261,7 +272,7 @@
                     if (qrPlaceholder) qrPlaceholder.innerText = "Conectando à Evolution API da estância...";
 
                     try {
-                        const res = await fetch('/v1/whatsapp/qrcode', {
+                        const res = await /*timeout 30s*/ fetch('/v1/whatsapp/qrcode', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ slug: window.currentTenantSlug })
@@ -300,7 +311,7 @@
                     btnPair.disabled = true;
 
                     try {
-                        const res = await fetch('/v1/whatsapp/pair-code', {
+                        const res = await /*timeout 30s*/ fetch('/v1/whatsapp/pair-code', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ slug: window.currentTenantSlug, phone: phoneVal })
@@ -330,7 +341,7 @@
             if (bubble) bubble.innerText = "Consultando assistente...";
             if (input) input.value = "";
             try {
-                const res = await fetch('/v1/ai/copilot', {
+                const res = await /*timeout 30s*/ fetch('/v1/ai/copilot', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: msg, tenant: window.currentTenantSlug })
@@ -410,7 +421,7 @@
             var btn = document.getElementById('btn-conectar-google');
             if (!box) return;
             try {
-                var res = await fetch('/calendar/status/' + window.currentTenantSlug);
+                var res = await /*timeout 30s*/ fetch('/calendar/status/' + window.currentTenantSlug);
                 var s = await res.json();
                 if (s.conectado) {
                     var quem = s.email ? '<strong>' + s.email + '</strong>' : 'sua conta Google';
@@ -438,7 +449,7 @@
         async function calDesconectar() {
             if (!confirm('Desconectar a agenda?')) return;
             try {
-                await fetch('/calendar/disconnect/' + window.currentTenantSlug, { method: 'POST' });
+                await /*timeout 30s*/ fetch('/calendar/disconnect/' + window.currentTenantSlug, { method: 'POST' });
             } catch (e) { }
             await calCarregarStatus();
         }
@@ -461,7 +472,7 @@
             var dados = { appointments: [], total: 0 };
             try {
                 var url = '/calendar/appointments/' + window.currentTenantSlug + '?inicio=' + primeiro.toISOString() + '&fim=' + ultimo.toISOString();
-                var r = await fetch(url);
+                var r = await /*timeout 30s*/ fetch(url);
                 if (r.ok) dados = await r.json();
             } catch (e) {
                 console.error("Erro ao carregar agenda:", e);
@@ -512,7 +523,7 @@
                         diaHtml += '<div style="display:flex; align-items:center; background:white; border:1px dashed #CBD5E1; padding:10px 18px; border-radius:8px;">'
                                  + '  <span style="font-weight:700; width:90px; color:#64748B;">' + s + '</span>'
                                  + '  <span style="color:#059669; font-size:0.9rem; flex:1; font-weight:600;">✨ Horário Livre para Atendimento</span>'
-                                 + '  <button type="button" onclick="calAbrirModalNovo('' + dtStr + '', '' + s + '')" style="padding:6px 14px; background:#F0FDF4; color:#166534; border:1px solid #BBF7D0; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem;">+ Encaixar</button>'
+                                 + '  <button type="button" data-data="' + dtStr + '" data-hora="' + s + '" onclick="calAbrirModalNovo(this.dataset.data, this.dataset.hora)" style="padding:6px 14px; background:#F0FDF4; color:#166534; border:1px solid #BBF7D0; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem;">+ Encaixar</button>'
                                  + '</div>';
                     }
                 });
@@ -573,7 +584,7 @@
 
         async function calCarregarCRM() {
             try {
-                var res = await fetch('/calendar/crm-summary/' + window.currentTenantSlug);
+                var res = await /*timeout 30s*/ fetch('/calendar/crm-summary/' + window.currentTenantSlug);
                 if (!res.ok) return;
                 var d = await res.json();
                 var cH = document.getElementById('crm-card-hoje');
@@ -622,7 +633,7 @@
             if (s) s.innerHTML = '<div style="padding:16px; background:#ECFDF5; border-radius:8px; border:1px solid #A7F3D0;">'
                                + '  <div style="font-weight:700; color:#065F46; font-size:0.95rem;">⚡ Oportunidade TO-BE: Antecipação Ativa</div>'
                                + '  <div style="font-size:0.88rem; color:#334155; margin:6px 0;">Cliente prioritário na fila de espera: <strong>Carlos Eduardo (47 98822-1133)</strong></div>'
-                               + '  <button type="button" onclick="alert('Oferta de antecipação disparada via WhatsApp com sucesso!')" style="padding:8px 18px; background:#059669; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem; margin-top:6px;">🚀 Disparar Oferta de Encaixe WhatsApp</button>'
+                               + '  <button type="button" onclick="alert(\'Oferta de antecipação disparada via WhatsApp com sucesso!\')" style="padding:8px 18px; background:#059669; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem; margin-top:6px;">🚀 Disparar Oferta de Encaixe WhatsApp</button>'
                                + '</div>';
         }
 
@@ -649,7 +660,7 @@
             var iso = data + 'T' + hora + ':00Z';
 
             try {
-                var r = await fetch('/calendar/appointments/' + window.currentTenantSlug, {
+                var r = await /*timeout 30s*/ fetch('/calendar/appointments/' + window.currentTenantSlug, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({customer_name: nome, customer_phone: fone, start_at: iso, duration_minutes: 30})
@@ -680,7 +691,7 @@
 
         async function calCarregarTemplates() {
             try {
-                var r = await fetch('/calendar/message-templates/' + window.currentTenantSlug);
+                var r = await /*timeout 30s*/ fetch('/calendar/message-templates/' + window.currentTenantSlug);
                 var d = await r.json();
                 CAL_TIPOS_TPL.forEach(function(tipo) {
                     var ta = document.getElementById('tpl-' + tipo);
@@ -707,7 +718,7 @@
                 if (ta) templates[tipo] = ta.value.trim();
             });
             try {
-                var r = await fetch('/calendar/message-templates/' + window.currentTenantSlug, {
+                var r = await /*timeout 30s*/ fetch('/calendar/message-templates/' + window.currentTenantSlug, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ templates: templates })
@@ -738,7 +749,7 @@
             if (!token.trim()) { aviso('Cole o Personal Access Token do Calendly.', true); return; }
             if (btn) { btn.disabled = true; btn.innerText = 'Conectando…'; }
             try {
-                var r = await fetch('/calendar/connections/calendly/' + window.currentTenantSlug, {
+                var r = await /*timeout 30s*/ fetch('/calendar/connections/calendly/' + window.currentTenantSlug, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token: token.trim(), scheduling_link: link.trim() })

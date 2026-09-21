@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATENDIT - Cadastro Rápido</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: linear-gradient(135deg, #f2f9fa 0%, #e1f5fe 50%, #e0f7fa 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+        }
+        .card-cadastro {
+            background: #ffffff;
+            width: 100%;
+            max-width: 440px;
+            padding: 40px 35px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+            border: 1px solid rgba(13, 162, 182, 0.15);
+            border-top: 4px solid #0da2b6;
+            text-align: center;
+        }
+        .card-cadastro h2 { font-size: 26px; font-weight: 800; color: #101c24; margin-bottom: 8px; }
+        .card-cadastro p { font-size: 14px; color: #546e7a; margin-bottom: 28px; }
+        .form-group { margin-bottom: 18px; text-align: left; }
+        .form-group label { font-size: 13.5px; font-weight: 600; color: #101c24; display: block; margin-bottom: 6px; }
+        .form-group input {
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid #cfd8dc;
+            border-radius: 8px;
+            font-size: 14.5px;
+            color: #101c24;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .form-group input:focus { border-color: #0da2b6; box-shadow: 0 0 0 3px rgba(13, 162, 182, 0.15); }
+        .slug-hint { font-size: 12px; color: #0da2b6; margin-top: 4px; font-weight: 600; text-align: left; }
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: #074f57;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 12px;
+        }
+        .btn-submit:hover { background: #0da2b6; transform: translateY(-1px); }
+        .footer-text { margin-top: 22px; font-size: 13px; color: #546e7a; }
+        .footer-text a { color: #0da2b6; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="card-cadastro">
+        <h2>Criar sua Conta</h2>
+        <p>Acesse imediatamente o seu painel exclusivo</p>
+        <form id="quick-signup-form">
+            <div class="form-group">
+                <label for="reg-nome">Nome da Empresa / Negócio</label>
+                <input type="text" id="reg-nome" required placeholder="Ex: Barbearia Vip" oninput="updateSlugHint(this.value)">
+                <div class="slug-hint" id="slug-preview">Sua URL será: atendit.smartinovat.com/sua-empresa</div>
+            </div>
+            <div class="form-group">
+                <label for="reg-email">E-mail</label>
+                <input type="email" id="reg-email" required placeholder="seu@email.com">
+            </div>
+            <div class="form-group">
+                <label for="reg-senha">Senha</label>
+                <input type="password" id="reg-senha" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-submit" id="btn-cadastrar">Começar Agora ➔</button>
+        </form>
+        <div class="footer-text">
+            Já possui cadastro? <a href="/login">Fazer Login</a>
+        </div>
+    </div>
+
+    <script>
+        function generateSlug(text) {
+            return text.toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+        }
+
+        function updateSlugHint(val) {
+            const slug = generateSlug(val) || 'sua-empresa';
+            document.getElementById('slug-preview').innerText = 'Sua URL será: atendit.smartinovat.com/' + slug;
+        }
+
+        document.getElementById('quick-signup-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-cadastrar');
+            btn.innerText = "Criando estância...";
+            btn.disabled = true;
+
+            const nome = document.getElementById('reg-nome').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const senha = document.getElementById('reg-senha').value;
+            const slug = generateSlug(nome);
+
+            try {
+                const response = await fetch('/v1/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: nome, email: email, password: senha, slug: slug })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    localStorage.setItem('token', data.token);
+                    // O cadastro NAO loga mais ninguem: a conta nasce com email_verificado=false
+                    // e so abre depois do link de confirmacao. Mandar direto para o painel
+                    // aqui daria a impressao de acesso liberado, e a proxima tela recusaria.
+                    document.querySelector('#quick-signup-form').style.display = 'none';
+                    const aviso = document.createElement('div');
+                    aviso.style.cssText = 'padding:18px;border-radius:8px;background:#0f2f22;'
+                        + 'border:1px solid #1d6b4a;color:#7ee2b8;font-size:14.5px;line-height:1.6';
+                    aviso.innerHTML = '<strong>Cadastro criado.</strong><br>'
+                        + 'Enviamos um e-mail para <strong>' + email + '</strong>. '
+                        + 'Clique no link da mensagem para confirmar o endereço e liberar o acesso.'
+                        + '<br><br><a href="/tenant/login" style="color:#22b8cf">Já confirmei — ir para o login</a>';
+                    document.querySelector('#quick-signup-form').parentNode.appendChild(aviso);
+                    return;
+                } else {
+                    alert('Aviso: ' + (data.message || 'Não foi possível cadastrar.'));
+                    btn.innerText = "Começar Agora ➔";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erro de conexão ao cadastrar.');
+                btn.innerText = "Começar Agora ➔";
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

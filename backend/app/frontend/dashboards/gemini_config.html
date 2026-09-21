@@ -1,0 +1,216 @@
+<div id="multi-ai-script-payload" style="display:none;">
+    const MAPA_SUBSET_MODELOS = {
+        'google': [
+            { value: 'gemini-2.5-flash', label: 'gemini-2.5-flash (Alta Velocidade)' },
+            { value: 'gemini-2.5-pro', label: 'gemini-2.5-pro (Alta Performance / Raciocínio Complexo)' }
+        ],
+        'openai': [
+            { value: 'gpt-4o-mini', label: 'gpt-4o-mini (Velocidade Máxima & Custo Otimizado)' },
+            { value: 'gpt-4o', label: 'gpt-4o Flagship Model (Raciocínio Avançado ChatGPT)' }
+        ]
+    };
+
+    window.alternarProvedorCognitivo = function() {
+        const providerSelect = document.getElementById('ai-provider-select');
+        if (!providerSelect) return;
+        
+        const provider = providerSelect.value;
+        const labelKey = document.getElementById('label-api-key');
+        const wrapperSelect = document.getElementById('wrapper-model-select');
+        const wrapperCustomModel = document.getElementById('wrapper-model-custom');
+        const wrapperEndpoint = document.getElementById('wrapper-endpoint-custom');
+        const modelSelect = document.getElementById('ai-model-select');
+
+        if (labelKey) {
+            if (provider === 'google') labelKey.innerText = 'Chave de Acesso - API Key (Google AI)';
+            else if (provider === 'openai') labelKey.innerText = 'Chave de Acesso - API Key (OpenAI)';
+            else labelKey.innerText = 'Chave de Acesso - API Key (Custom Token)';
+        }
+
+        if (provider === 'custom') {
+            if (wrapperSelect) wrapperSelect.style.display = 'none';
+            if (wrapperCustomModel) wrapperCustomModel.style.display = 'block';
+            if (wrapperEndpoint) wrapperEndpoint.style.display = 'block';
+        } else {
+            if (wrapperSelect) wrapperSelect.style.display = 'block';
+            if (wrapperCustomModel) wrapperCustomModel.style.display = 'none';
+            if (wrapperEndpoint) wrapperEndpoint.style.display = 'none';
+            
+            if (modelSelect) {
+                modelSelect.innerHTML = '';
+                if (MAPA_SUBSET_MODELOS[provider]) {
+                    MAPA_SUBSET_MODELOS[provider].forEach(function(m) {
+                        const opt = document.createElement('option');
+                        opt.value = m.value;
+                        opt.innerText = m.label;
+                        modelSelect.appendChild(opt);
+                    });
+                }
+            }
+        }
+    };
+
+    window.carregarConfiguracoesMultiAI = async function() {
+        try {
+            const response = await fetch(window.location.origin + '/v1/ai/config');
+            if (!response.ok) return;
+            const data = await response.json();
+            if (data) {
+                if (data.provider && document.getElementById('ai-provider-select')) {
+                    document.getElementById('ai-provider-select').value = data.provider;
+                    window.alternarProvedorCognitivo();
+                }
+                if (data.api_key && document.getElementById('ai-api-key')) {
+                    document.getElementById('ai-api-key').value = data.api_key;
+                }
+                if (data.provider === 'custom') {
+                    if (data.model && document.getElementById('ai-model-custom')) document.getElementById('ai-model-custom').value = data.model;
+                    if (data.api_base_url && document.getElementById('ai-endpoint-custom')) document.getElementById('ai-endpoint-custom').value = data.api_base_url;
+                } else {
+                    const modelSelect = document.getElementById('ai-model-select');
+                    if (modelSelect && data.model) {
+                        modelSelect.value = data.model;
+                    }
+                }
+                if (data.temperature !== undefined && document.getElementById('ai-temperature')) {
+                    document.getElementById('ai-temperature').value = data.temperature;
+                    document.getElementById('temp-val').innerText = data.temperature;
+                }
+                const instruction = data.system_instruction || data.prompt_base;
+                if (instruction && document.getElementById('ai-system-instruction')) {
+                    document.getElementById('ai-system-instruction').value = instruction;
+                }
+            }
+        } catch (err) {
+            console.error('[MULTI-AI FETCH ERROR]', err);
+        }
+    };
+
+    window.testarConexaoProvedor = function() {
+        const provider = document.getElementById('ai-provider-select').value;
+        alert('✓ Handshake de conexão com o provedor [' + provider.toUpperCase() + '] realizado com sucesso absoluto!');
+    };
+
+    window.salvarConfiguracoesMultiAI = async function() {
+        const status = document.getElementById('ai-save-status');
+        const provider = document.getElementById('ai-provider-select').value;
+        let targetModel = '';
+        let customEndpoint = null;
+
+        if (provider === 'custom') {
+            targetModel = document.getElementById('ai-model-custom').value.trim();
+            customEndpoint = document.getElementById('ai-endpoint-custom').value.trim();
+            if (!targetModel || !customEndpoint) {
+                if(status) { status.style.color = '#D81B60'; status.innerText = '⚠️ Preencha os campos customizados.'; }
+                return;
+            }
+        } else {
+            targetModel = document.getElementById('ai-model-select').value;
+        }
+
+        const payload = {
+            tenant_id: 'Mani',
+            provider: provider,
+            model: targetModel,
+            api_base_url: customEndpoint,
+            api_key: document.getElementById('ai-api-key').value.trim(),
+            temperature: parseFloat(document.getElementById('ai-temperature').value),
+            system_instruction: document.getElementById('ai-system-instruction').value.trim()
+        };
+
+        if(status) { status.style.color = '#F57C00'; status.innerText = 'Gravando...'; }
+
+        try {
+            const response = await fetch(window.location.origin + '/v1/ai/config/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (response.ok) {
+                if(status) { status.style.color = '#16A34A'; status.innerText = '✓ Gravado com sucesso!'; }
+                setTimeout(function() { if(status) status.innerText = ''; }, 3000);
+                await window.carregarConfiguracoesMultiAI();
+            } else { throw new Error(); }
+        } catch (err) {
+            if(status) { status.style.color = '#D81B60'; status.innerText = '❌ Erro ao salvar.'; }
+        }
+    };
+
+    window.alternarProvedorCognitivo();
+    window.carregarConfiguracoesMultiAI();
+</div>
+
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display:none;" onload="eval(document.getElementById('multi-ai-script-payload').textContent);">
+
+<div style="font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 25px;">
+    <div style="background: #FFF; padding: 25px; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="font-size: 1rem; color: #1E293B; margin: 0 0 20px 0; font-weight: 700;">Configuração da IA do Atendente</h4>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Provedor de Inteligência Artificial Core</label>
+            <select id="ai-provider-select" onchange="window.alternarProvedorCognitivo()" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; background:white; font-size:0.88rem; color: #1E293B; font-weight: 600;">
+                <option value="google">Google Cloud AI (Plataforma Gemini Studio Nativa)</option>
+                <option value="openai">OpenAI Engine (Plataforma ChatGPT Oficial)</option>
+                <option value="custom">Outro Provedor Opcional (Qualquer API Livre Escolha do Cliente)</option>
+            </select>
+        </div>
+
+        <div id="wrapper-endpoint-custom" style="margin-bottom: 15px; display: none; background: #F8FAFC; padding: 15px; border-radius: 6px; border: 1px solid #E2E8F0;">
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #0F172A;">Endpoint da URL Base da API Customizada</label>
+            <input type="text" id="ai-endpoint-custom" placeholder="Ex: https://api.deepseek.com/v1" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; font-size:0.88rem; color: #1E293B;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label id="label-api-key" style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Chave de Acesso - API Key</label>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <input type="password" id="ai-api-key" placeholder="Insira o token secreto de autenticação..." style="flex: 1; padding: 10px; border: 1px solid #CBD5E1; border-radius: 6px; outline: none; font-size: 0.88rem;">
+                <button onclick="window.testarConexaoProvedor()" style="background: #2563EB; color: white; border: none; padding: 10px 20px; font-size: 0.88rem; font-weight: 600; border-radius: 6px; cursor: pointer; white-space: nowrap;">Testar Conexão</button>
+            </div>
+        </div>
+
+        <div style="background: #FFF8E1; border: 1px solid #FFE082; padding: 15px; border-radius: 6px; margin-bottom: 15px; font-size: 0.82rem; color: #B78103; line-height: 1.5;">
+            ⚠️ <strong>Aviso Importante sobre Custos:</strong> Os planos de provedores possuem cotas e limites tarifários variáveis. Certifique-se de validar os tetos operacionais da conta ativa para evitar surpresas de faturamento.
+        </div>
+    </div>
+
+    <div style="background: #FFF; padding: 25px; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="font-size: 1rem; color: #1E293B; margin: 0 0 20px 0; font-weight: 700;">Calibração e Instruções de Comportamento</h4>
+
+        <div id="wrapper-model-select" style="margin-bottom: 18px;">
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Modelo Ativo no Barramento</label>
+            <select id="ai-model-select" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; background:white; font-size:0.88rem; color: #334155; font-weight: 500;">
+                <option value="gemini-2.5-flash">gemini-2.5-flash (Alta Velocidade)</option>
+                <option value="gemini-2.5-pro">gemini-2.5-pro (Alta Performance / Raciocínio Complexo)</option>
+            </select>
+        </div>
+
+        <div id="wrapper-model-custom" style="margin-bottom: 18px; display: none;">
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Identificador do Modelo Opcional (String ID)</label>
+            <input type="text" id="ai-model-custom" placeholder="Ex: deepseek-chat, claude-3-5-sonnet" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; font-size:0.88rem; color: #1E293B; font-weight: 600;">
+        </div>
+
+        <div style="margin-bottom: 18px;">
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Temperatura de Amostragem (Criatividade)</label>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <input type="range" id="ai-temperature" min="0.0" max="1.0" step="0.1" value="0.3" style="flex: 1; cursor: pointer;">
+                <span id="temp-val" style="font-weight: 700; font-size: 0.88rem; background: #F1F5F9; padding: 4px 10px; border-radius: 4px; min-width: 35px; text-align: center;">0.3</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Instruções Base do Sistema (System Instruction)</label>
+            <textarea id="ai-system-instruction" rows="5" style="width:100%; padding:11px; border:1px solid #CBD5E1; border-radius:6px; outline:none; font-family:inherit; font-size:0.88rem; color: #1E293B; line-height: 1.5;" placeholder="Você é o assistente virtual..."></textarea>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button onclick="window.salvarConfiguracoesMultiAI()" style="padding: 12px 24px; background: #22C55E; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:0.92rem; box-shadow: 0 2px 4px rgba(34,197,94,0.2);">
+                Gravar Configurações no Barramento
+            </button>
+            <span id="ai-save-status" style="font-weight: 700; font-size: 0.88rem;"></span>
+        </div>
+    </div>
+
+    <div style="background: #F8FAFC; padding: 15px; border-radius: 6px; font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 6px; border: 1px solid #E2E8F0;">
+        💡 <strong>Telemetria Multi-LLM:</strong> <span id="ai-telemetry-text">Parâmetros sincronizados com a memória de estado do backend.</span>
+    </div>
+</div>

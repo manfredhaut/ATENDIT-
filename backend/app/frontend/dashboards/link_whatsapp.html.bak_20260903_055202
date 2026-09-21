@@ -1,0 +1,167 @@
+<div style="display: flex; flex-direction: column; gap: 25px;">
+    <!-- SELETOR DE BARRAMENTO -->
+    <div style="background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
+        <h4 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+            🔌 Seletor de Barramento de Transmissão
+        </h4>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 18px;">
+            Escolha a esteira tecnológica ideal para a sua estância industrial com base no tráfego e custo planejado.
+        </p>
+        <div style="display: flex; gap: 12px;">
+            <button type="button" style="padding: 10px 18px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; font-size: 0.88rem; font-weight: 600; color: #64748b; cursor: pointer;">
+                🏢 API Nuvem Oficial Meta
+            </button>
+            <button type="button" style="padding: 10px 18px; border: 1px solid #074f57; background: #074f57; color: #ffffff; border-radius: 6px; font-size: 0.88rem; font-weight: 700; cursor: pointer;">
+                🟢 Gateway Evolution (QR Code)
+            </button>
+        </div>
+    </div>
+
+    <!-- MÉTODOS DE CONEXÃO -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+        <!-- MÉTODO 1: QR CODE -->
+        <div style="background: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h5 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 15px; display: flex; align-items: center; gap: 6px;">
+                    📷 Método 1: Escanear QR Code
+                </h5>
+                <div id="wa-qr-box" style="width: 100%; height: 240px; border: 2px dashed #cbd5e1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; padding: 15px; text-align: center;">
+                    <p id="wa-qr-placeholder" style="font-size: 0.85rem; color: #64748b;">
+                        Clique abaixo para iniciar o barramento da Evolution API e gerar o QR Code de autenticação.
+                    </p>
+                    <img id="wa-qr-img" src="" alt="QR Code WhatsApp" style="display: none; width: 190px; height: 190px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; padding: 6px;">
+                </div>
+            </div>
+            <div style="margin-top: 18px;">
+                <button type="button" id="btn-gen-qr" style="width: 100%; padding: 12px; background: #10b981; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.92rem; transition: background 0.2s;">
+                    Gerar Código QR
+                </button>
+            </div>
+        </div>
+
+        <!-- MÉTODO 2: PAREAMENTO POR CÓDIGO -->
+        <div style="background: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h5 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 15px; display: flex; align-items: center; gap: 6px;">
+                    🔢 Método 2: Código por Telefone
+                </h5>
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="wa-phone-input" placeholder="Ex: +55 85 98902 0465" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: #0f172a; outline: none; font-weight: 600;">
+                </div>
+                <div style="width: 100%; height: 160px; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc;">
+                    <div id="wa-pair-code" style="font-size: 1.8rem; font-weight: 800; letter-spacing: 4px; color: #10b981; font-family: monospace;">
+                        -- -- -- --
+                    </div>
+                    <span id="wa-pair-hint" style="font-size: 0.78rem; color: #64748b; margin-top: 8px;">
+                        Insira o código de 8 dígitos no WhatsApp do aparelho
+                    </span>
+                </div>
+            </div>
+            <div style="margin-top: 18px;">
+                <button type="button" id="btn-gen-pair" style="width: 100%; padding: 12px; background: #10b981; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.92rem; transition: background 0.2s;">
+                    Gerar Token de Conexão
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    console.log("[WA_CONNECT] Inicializando módulo de pareamento WhatsApp para o tenant:", window.currentTenantSlug);
+
+    const btnQr = document.getElementById("btn-gen-qr");
+    const qrPlaceholder = document.getElementById("wa-qr-placeholder");
+    const qrImg = document.getElementById("wa-qr-img");
+
+    const btnPair = document.getElementById("btn-gen-pair");
+    const inPhone = document.getElementById("wa-phone-input");
+    const pairDisplay = document.getElementById("wa-pair-code");
+    const pairHint = document.getElementById("wa-pair-hint");
+
+    // 1. DISPARO DO QR CODE
+    if (btnQr) {
+        btnQr.onclick = async function() {
+            console.log("[WA_CONNECT] Solicitando QR Code para slug:", window.currentTenantSlug);
+            btnQr.innerText = "Gerando Barramento...";
+            btnQr.disabled = true;
+            if (qrPlaceholder) {
+                qrPlaceholder.style.display = 'block';
+                qrPlaceholder.innerText = "Conectando à Evolution API da estância...";
+            }
+            if (qrImg) qrImg.style.display = 'none';
+
+            try {
+                const res = await fetch('/v1/whatsapp/qrcode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slug: window.currentTenantSlug })
+                });
+                const data = await res.json();
+                console.log("[WA_CONNECT] Resposta QR Code recebida:", data);
+
+                if (res.ok && data.status === 'success' && data.qrcode_url) {
+                    if (qrPlaceholder) qrPlaceholder.style.display = 'none';
+                    if (qrImg) {
+                        qrImg.src = data.qrcode_url;
+                        qrImg.style.display = 'block';
+                    }
+                    btnQr.innerText = "Atualizar Código QR";
+                } else {
+                    const msgErro = data.message || "A Evolution API está preparando a sessão. Tente novamente.";
+                    if (qrPlaceholder) qrPlaceholder.innerText = msgErro;
+                    btnQr.innerText = "Tentar Novamente";
+                }
+            } catch (e) {
+                console.error("[WA_CONNECT] Falha de comunicação no QR Code:", e);
+                if (qrPlaceholder) qrPlaceholder.innerText = "Falha ao conectar com o serviço de WhatsApp.";
+                btnQr.innerText = "Gerar Código QR";
+            } finally {
+                btnQr.disabled = false;
+            }
+        };
+    }
+
+    // 2. DISPARO DO PAIR CODE (TOKEN)
+    if (btnPair) {
+        btnPair.onclick = async function() {
+            const phoneVal = inPhone ? inPhone.value.trim() : '';
+            if (!phoneVal) {
+                alert('Por favor, informe o número de telefone com DDD (Ex: 5585989020465).');
+                if (inPhone) inPhone.focus();
+                return;
+            }
+
+            console.log("[WA_CONNECT] Solicitando Token de Pareamento para:", phoneVal);
+            btnPair.innerText = "Gerando Token...";
+            btnPair.disabled = true;
+
+            try {
+                const res = await fetch('/v1/whatsapp/pair-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slug: window.currentTenantSlug, phone: phoneVal })
+                });
+                const data = await res.json();
+                console.log("[WA_CONNECT] Resposta Pair Code recebida:", data);
+
+                if (res.ok && (data.status === 'success' || data.success) && data.pairing_code) {
+                    if (pairDisplay) pairDisplay.innerText = data.pairing_code;
+                    if (pairHint) pairHint.innerText = `Token ativo para ${phoneVal}. Digite no WhatsApp do aparelho.`;
+                    btnPair.innerText = "Gerar Novo Token";
+                } else {
+                    const msgErro = data.error || data.message || "Erro desconhecido";
+                    alert('Erro ao gerar código: ' + msgErro);
+                    btnPair.innerText = "Tentar Novamente";
+                }
+            } catch (e) {
+                console.error("[WA_CONNECT] Falha de comunicação no Pair Code:", e);
+                alert('Falha ao comunicar com gateway de pareamento.');
+                btnPair.innerText = "Gerar Token de Conexão";
+            } finally {
+                btnPair.disabled = false;
+            }
+        };
+    }
+})();
+</script>

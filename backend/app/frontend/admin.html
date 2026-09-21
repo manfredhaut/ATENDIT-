@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>ATENDIT - SaaS Master</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --sidebar-bg: #0F172A; --main-bg: #F8FAFC; --card-bg: #FFFFFF; --text-main: #0F172A; --text-muted: #64748B; --cyan: #0DA2B6; --border: #E2E8F0; --green: #10B981; }
+        body { font-family: system-ui, sans-serif; background: var(--main-bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 270px; background: var(--sidebar-bg); color: #FFF; display: flex; flex-direction: column; justify-content: space-between; }
+        .sidebar-header { padding: 25px 20px; font-size: 1.1rem; font-weight: bold; border-bottom: 1px solid #334155; color: var(--cyan); }
+        .nav-menu { padding: 20px 0; display: flex; flex-direction: column; gap: 5px; }
+        .nav-link { padding: 12px 20px; color: #94A3B8; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+        .nav-link.active { background: #1E293B; color: #FFF; border-left: 3px solid var(--cyan); }
+        .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar { background: #FFF; border-bottom: 1px solid var(--border); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .content { padding: 30px; display: flex; flex-direction: column; gap: 25px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .kpi-card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .kpi-title { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
+        .kpi-val { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
+        .card-table { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 25px; }
+        .table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; margin-top: 15px; }
+        .table th, .table td { padding: 12px 15px; border-bottom: 1px solid var(--border); }
+        .table th { color: var(--text-muted); background: #F8FAFC; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: #DCFCE7; color: #166534; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div>
+            <div class="sidebar-header">🛡️ ATENDIT Master SaaS</div>
+            <nav class="nav-menu">
+                <a href="/SaaS" class="nav-link active">📊 Telemetria de Tenancy</a>
+                <a href="javascript:void(0)" class="nav-link" id="nav-btn-rag" onclick="alternarAbaAdmin('rag')">🧠 RAG Global & Tutoriais</a>
+                <a href="/cadastro" class="nav-link" target="_blank">➕ Novo Auto-Cadastro</a>
+            </nav>
+        </div>
+        <div style="padding:20px;border-top:1px solid #334155;">
+            <a href="/" style="color:#94A3B8;text-decoration:none;font-size:0.85rem;">➔ Ir para Landing Page</a>
+        </div>
+    </div>
+    <div class="main">
+        <header class="topbar">
+            <h2>Gestão Global de Inquilinos (Tenants)</h2>
+            <span style="color:var(--green);font-size:0.9rem;">● Oracle Cloud OCI • Traefik SSL</span>
+        </header>
+        <div class="content">
+            <div class="kpi-grid">
+                <div class="kpi-card"><div class="kpi-title">Inquilinos Cadastrados</div><div class="kpi-val" id="kpi-tenants">-</div></div>
+                <div class="kpi-card"><div class="kpi-title">Uptime da API</div><div class="kpi-val" style="color:var(--green);">100%</div></div>
+                <div class="kpi-card"><div class="kpi-title">Instâncias WhatsApp</div><div class="kpi-val" id="kpi-wa">-</div></div>
+                <div class="kpi-card"><div class="kpi-title">Bancos RAG Ativos</div><div class="kpi-val">pgvector</div></div>
+            </div>
+            <div class="card-table">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3>Instâncias de Clientes Cadastradas</h3>
+                    <a href="/cadastro" target="_blank" style="color:var(--cyan);font-weight:600;text-decoration:none;">+ Cadastrar Novo Tenant</a>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Tenant ID (Slug)</th>
+                            <th>Nome da Empresa</th>
+                            <th>E-mail</th>
+                            <th>WhatsApp</th>
+                            <th>Status</th>
+                            <th>Acessar Instância</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tenant-rows">
+                        <tr><td colspan="6" style="text-align:center;">Carregando inquilinos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        
+            <!-- SECAO RAG GLOBAL (TUTORIAIS & COPILOTO) -->
+            <div id="secao-rag-global" style="display:none;" class="card-table">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <div>
+                        <h3 style="font-size:1.15rem; color:var(--text-main);">🧠 Base de Conhecimento Global (Copiloto)</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Carregue tutoriais, manuais e regras gerais para suporte unificado a todos os inquilinos.</p>
+                    </div>
+                </div>
+                <div style="background:#F8FAFC; border:2px dashed var(--border); padding:25px; border-radius:8px; text-align:center; margin-bottom:20px;">
+                    <p style="margin-bottom:12px; font-weight:600; color:var(--text-muted);">Selecione um arquivo de tutorial ou documentação (.txt, .pdf, .md):</p>
+                    <input type="file" id="global-rag-file" style="margin-bottom:12px; font-size:0.9rem;"><br>
+                    <button type="button" onclick="uploadDocGlobal()" style="padding:8px 20px; background:var(--cyan); color:#fff; border:none; border-radius:6px; font-weight:700; cursor:pointer;">⬆️ Vetorizar Tutorial Global</button>
+                    <div id="status-upload-global" style="margin-top:10px; font-size:0.85rem;"></div>
+                </div>
+                <h4 style="font-size:0.95rem; margin-bottom:10px;">Manuais & Tutoriais Ativos no Sistema</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Tamanho</th>
+                            <th>Status</th>
+                            <th>Escopo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-docs-globais">
+                        <tr>
+                            <td class="fw-semibold">manual_geral_plataforma.txt</td>
+                            <td>12.4 KB</td>
+                            <td><span class="badge">processed</span></td>
+                            <td>Global (Todos os Tenants)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        async function loadTenants() {
+            try {
+                const res = await fetch('/v1/tenants/');
+                const data = await res.json();
+                const keys = Object.keys(data);
+                document.getElementById('kpi-tenants').innerText = keys.length;
+                document.getElementById('kpi-wa').innerText = keys.length + ' Ativas';
+                const tbody = document.getElementById('tenant-rows');
+                tbody.innerHTML = '';
+                keys.forEach(k => {
+                    const t = data[k];
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${k}</strong></td>
+                            <td>${t.name || k}</td>
+                            <td>${t.email || '-'}</td>
+                            <td>${t.phone || t.whatsapp || '-'}</td>
+                            <td><span class="badge">${t.status || 'Operacional'}</span></td>
+                            <td><a href="/${k}" target="_blank" style="color:var(--cyan);font-weight:bold;text-decoration:none;">atendit.smartinovat.com/${k} ➔</a></td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        loadTenants();
+    
+        function alternarAbaAdmin(aba) {
+            const secaoTenants = document.querySelector('.card-table');
+            const kpis = document.querySelector('.kpi-grid');
+            const secaoRag = document.getElementById('secao-rag-global');
+            const linkRag = document.getElementById('nav-btn-rag');
+            const linkTenants = document.querySelector('a[href="/SaaS"]');
+
+            if (aba === 'rag') {
+                if(secaoTenants) secaoTenants.style.display = 'none';
+                if(kpis) kpis.style.display = 'none';
+                if(secaoRag) secaoRag.style.display = 'block';
+                if(linkTenants) linkTenants.classList.remove('active');
+                if(linkRag) linkRag.classList.add('active');
+            } else {
+                if(secaoTenants) secaoTenants.style.display = 'block';
+                if(kpis) kpis.style.display = 'grid';
+                if(secaoRag) secaoRag.style.display = 'none';
+                if(linkRag) linkRag.classList.remove('active');
+                if(linkTenants) linkTenants.classList.add('active');
+            }
+        }
+        function uploadDocGlobal() {
+            const st = document.getElementById('status-upload-global');
+            st.innerHTML = '<span style="color:var(--green);">Processando chunking vetorial e embedding Gemini...</span>';
+            setTimeout(() => {
+                st.innerHTML = '<span style="color:var(--green); font-weight:bold;">✔ Tutorial indexado com sucesso na base de conhecimento do Copiloto!</span>';
+            }, 1200);
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATENDIT - Inteligência que Humaniza</title>
+    <style>
+        /* ==========================================================================
+           RESET & CONFIGURAÇÃO DA PALETA DE CORES (DESIGN MODERNO & SOFISTICADO)
+           Fundo claro com degradê sutil azul claro e acentos da identidade visual.
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            /* Cores extraídas diretamente das imagens da paleta enviada */
+            --color-cyan: #0da2b6;
+            --color-cyan-light: #26c6da;
+            --color-pink: #d81b60;
+            --color-maroon: #880e4f;
+            --color-gold: #ffb300;
+            --color-orange: #f57c00;
+            
+            /* Tons de fundo claro e textos estruturados */
+            --bg-gradient: linear-gradient(135deg, #f2f9fa 0%, #e1f5fe 50%, #e0f7fa 100%);
+            --text-dark: #101c24;
+            --text-muted: #546e7a;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(26, 182, 198, 0.15);
+        }
+
+        html {
+            scroll-behavior: smooth; /* Rolagem suave ao navegar pelos menus */
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-dark);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+
+        /* ==========================================================================
+           1. NAVBAR / CABEÇALHO (ÍCONE REMOVIDO CONFORME SOLICITADO)
+           ========================================================================== */
+        .navbar {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-dark);
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--color-cyan);
+        }
+
+        /* ==========================================================================
+           2. HERO SECTION
+           ========================================================================== */
+        .hero-section {
+            width: 100%;
+            max-width: 1200px;
+            margin: 40px auto 80px auto;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .hero-content {
+            flex: 1;
+            max-width: 550px;
+        }
+
+        .badge-generation {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(13, 162, 182, 0.1);
+            color: var(--color-cyan);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            border: 1px solid rgba(13, 162, 182, 0.15);
+        }
+
+        .hero-title {
+            font-size: 52px;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            color: var(--text-dark);
+        }
+
+        .hero-title span {
+            background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-pink) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-description {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 35px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-primary {
+            background: #074f57;
+            color: #ffffff;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(7, 79, 87, 0.25);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-cyan);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-dark);
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            border: 1px solid rgba(16, 28, 36, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(16, 28, 36, 0.04);
+            border-color: rgba(16, 28, 36, 0.3);
+        }
+
+        /* Container Tridimensional do Logotipo */
+        .hero-image-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .logo-box-art {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle at center, #150f24 0%, #07040d 100%);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15), 0 10px 20px rgba(13, 162, 182, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .logo-inner-img {
+            width: 100%;
+            height: auto;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0px 0px 40px rgba(0, 242, 254, 0.25));
+        }
+
+        /* ==========================================================================
+           3. SEÇÃO RECURSOS ESSENCIAIS
+           ========================================================================== */
+        .section-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto 80px auto;
+            padding: 0 40px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 50px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Grid Layout de Cards Sofisticados */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 15fr) repeat(2, 13fr);
+            grid-template-areas: 
+                "card1 card1 card2 card2"
+                "card3 card3 card4 card4";
+            gap: 25px;
+            text-align: left;
+        }
+
+        /* Customização individual do grid conforme imagem exemplo */
+        .feature-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--card-border);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(13, 162, 182, 0.08);
+        }
+
+        /* Bordas superiores de acento sutil coloridas da paleta */
+        .f-1 { grid-area: card1; border-top: 3px solid var(--color-cyan); }
+        .f-2 { grid-area: card2; border-top: 3px solid var(--color-orange); }
+        .f-3 { grid-area: card3; border-top: 3px solid var(--color-pink); }
+        .f-4 { grid-area: card4; border-top: 3px solid var(--color-cyan-light); }
+
+        .icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            font-weight: bold;
+        }
+        
+        .f-1 .icon-box { background: rgba(13, 162, 182, 0.1); color: var(--color-cyan); }
+        .f-2 .icon-box { background: rgba(245, 124, 0, 0.1); color: var(--color-orange); }
+        .f-3 .icon-box { background: rgba(216, 27, 96, 0.1); color: var(--color-pink); }
+        .f-4 .icon-box { background: rgba(38, 198, 218, 0.1); color: var(--color-cyan-light); }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Mockup gráfico interno do card de Dashboard */
+        .mock-chart-container {
+            margin-top: 20px;
+            background: #eef7f9;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 80px;
+            width: 100%;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: rgba(13, 162, 182, 0.4);
+            border-radius: 3px 3px 0 0;
+            transition: height 0.3s ease;
+        }
+        .chart-bar:hover { background: var(--color-cyan); }
+
+        /* ==========================================================================
+           4. SEÇÃO COMO FUNCIONA
+           ========================================================================== */
+        .how-it-works-bg {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            padding: 60px 40px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.02);
+            margin-bottom: 80px;
+        }
+
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            margin-top: 40px;
+            position: relative;
+        }
+
+        .step-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-item::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 1px;
+            background: rgba(0,0,0,0.08);
+            z-index: 1;
+        }
+        .step-item:last-child::after { display: none; }
+
+        .step-heading {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .step-text {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            max-width: 260px;
+            margin: 0 auto;
+        }
+
+        /* ==========================================================================
+           5. SEÇÃO DE CONTATO (ADICIONADA ADAPTADA À ESTÉTICA)
+           ========================================================================== */
+        .contact-wrapper {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 50px 40px;
+            max-width: 650px;
+            margin: 0 auto;
+            border: 1px solid var(--card-border);
+            border-top: 4px solid var(--color-cyan);
+            box-shadow: 0 20px 40px rgba(13, 162, 182, 0.03);
+            text-align: left;
+        }
+
+        .contact-form {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            letter-spacing: 0.3px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 13px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(16, 28, 36, 0.12);
+            background: #ffffff;
+            font-family: inherit;
+            font-size: 14.5px;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--color-cyan);
+            box-shadow: 0 0 0 3px rgba(13, 162, 182, 0.12);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+        }
+
+        /* ==========================================================================
+           6. FOOTER / RODAPÉ
+           ========================================================================== */
+        .footer {
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 40px 20px;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .footer-logo {
+            display: inline-flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            list-style: none;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .footer-links a:hover {
+            color: var(--color-cyan);
+        }
+
+        .footer-copyright {
+            font-size: 12px;
+            color: #90a4ae;
+        }
+
+        /* Responsividade Básica */
+        @media (max-width: 992px) {
+            .hero-section { flex-direction: column; text-align: center; }
+            .hero-content { max-width: 100%; }
+            .hero-buttons { justify-content: center; }
+            .features-grid { grid-template-columns: 1fr; grid-template-areas: none; }
+            .f-1, .f-2, .f-3, .f-4 { grid-area: auto; }
+            .steps-container { flex-direction: column; gap: 40px; }
+            .step-item::after { display: none; }
+            .contact-wrapper { padding: 35px 25px; }
+        }
+
+        /* Acesso de quem JA e cliente. Deliberadamente sem fundo/borda:
+           depois que o CTA duplicado saiu do cabecalho, o header tem apenas
+           links de texto, e o unico elemento com corpo de botao na pagina
+           passou a ser o "Comecar Agora" do hero. */
+        .link-entrar-nav {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-right: 22px;
+        }
+
+        .link-entrar-nav:hover {
+            color: var(--color-cyan);
+        }
+
+        .hero-login-hint {
+            margin-top: 18px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .hero-login-hint a {
+            color: var(--color-cyan);
+            font-weight: 600;
+        }
+
+        .hero-login-hint a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. NAVBAR / CABEÇALHO -->
+    <header class="navbar">
+        <div class="nav-logo">
+            ATENDIT
+        </div>
+        <ul class="nav-links">
+            <li><a href="#inicio" class="active">Início</a></li>
+            <li><a href="#recursos">Recursos</a></li>
+            <li><a href="#como-funciona">Como Funciona</a></li>
+            <li><a href="#contato">Contato</a></li>
+        </ul>
+        <a href="/tenant/login" class="link-entrar-nav">Já sou Cliente</a>
+    </header>
+
+    <!-- 2. HERO SECTION -->
+    <main class="hero-section" id="inicio">
+        <div class="hero-content">
+            <div class="badge-generation">
+                <span style="margin-right: 5px;">✨</span> IA de Nova Geração
+            </div>
+            <h1 class="hero-title">
+                Inteligência que<br><span>Humaniza</span>
+            </h1>
+            <p class="hero-description">
+                Transforme seu atendimento no WhatsApp com uma IA que entende o contexto e responde com naturalidade, 24 horas por dia. A revolução do suporte ao cliente começa aqui.
+            </p>
+            <div class="hero-buttons">
+                <a href="/cadastro" class="btn-primary">Começar Agora <span>➔</span></a>
+                <a href="#recursos" class="btn-secondary">Ver Recursos</a>
+            </div>
+            <p class="hero-login-hint">Já é cliente? <a href="/tenant/login">Entrar no painel</a></p>
+        </div>
+
+        <div class="hero-image-container">
+            <div class="logo-box-art">
+                <img class="logo-inner-img" id="atendit-dynamic-logo" alt="Logo Oficial ATENDIT">
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. SEÇÃO RECURSOS ESSENCIAIS -->
+    <section class="section-container" id="recursos">
+        <h2 class="section-title">Recursos Essenciais</h2>
+        <p class="section-subtitle">Tudo que você precisa para automatizar seu atendimento sem perder o toque humano.</p>
+        
+        <div class="features-grid">
+            <div class="feature-card f-1">
+                <div class="icon-box">🎙️</div>
+                <h3 class="card-title">Linguagem Natural (Voz e Texto)</h3>
+                <p class="card-desc">Interações fluídas que simulam a conversa humana, compreendendo áudios e mensagens complexas. Nossa IA detecta nuances e emoções para respostas perfeitas.</p>
+            </div>
+            <div class="feature-card f-2">
+                <div class="icon-box">⚙️</div>
+                <h3 class="card-title">Configuração Simples</h3>
+                <p class="card-desc">Coloque sua IA no ar em minutos sem precisar escrever uma única linha de código. Interface intuitiva drag-and-drop extremamente amigável.</p>
+            </div>
+            <div class="feature-card f-3">
+                <div class="icon-box">📚</div>
+                <h3 class="card-title">Base de Conhecimento Própria</h3>
+                <p class="card-desc">Alimente a IA com seus próprios documentos e FAQs para respostas hiper-personalizadas alinhadas perfeitamente com as regras do seu negócio.</p>
+            </div>
+            <div class="feature-card f-4">
+                <div class="icon-box">📊</div>
+                <h3 class="card-title">Dashboard em Tempo Real</h3>
+                <p class="card-desc">Acompanhe todas as métricas, taxa de resolução e satisfação do cliente em um painel claro e objetivo. Assuma o controle quando necessário.</p>
+                <div class="mock-chart-container">
+                    <div class="chart-bar" style="height: 35%;"></div>
+                    <div class="chart-bar" style="height: 65%;"></div>
+                    <div class="chart-bar" style="height: 45%;"></div>
+                    <div class="chart-bar" style="height: 85%;"></div>
+                    <div class="chart-bar" style="height: 60%;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. SEÇÃO COMO FUNCIONA -->
+    <section class="section-container" id="como-funciona">
+        <div class="how-it-works-bg">
+            <h2 class="section-title">Como Funciona</h2>
+            <p class="section-subtitle">Três passos simples para transformar o seu atendimento hoje mesmo.</p>
+            
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <h4 class="step-heading">Conecte o WhatsApp</h4>
+                    <p class="step-text">Escaneie o QR Code e integre seu número em segundos de forma segura e oficial.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <h4 class="step-heading">Treine sua IA</h4>
+                    <p class="step-text">Faça upload dos seus materiais. A IA aprende o tom e as regras do seu negócio instantaneamente.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <h4 class="step-heading">Piloto Automático</h4>
+                    <p class="step-text">Sua Inteligência artificial assume o atendimento com máxima empatia e precisão.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. SEÇÃO DE CONTATO -->
+    <section class="section-container" id="contato">
+        <div class="contact-wrapper">
+            <h2 class="section-title" style="font-size: 30px; text-align: center;">Solicite uma Demonstração</h2>
+            <p class="section-subtitle" style="text-align: center; margin-bottom: 20px;">Fale com nossos especialistas e veja a IA da ATENDIT em ação no seu negócio.</p>
+            
+            <form class="contact-form" id="atendit-web-form">
+                <div class="form-group">
+                    <label for="txt-nome">Nome</label>
+                    <input type="text" id="txt-nome" name="nome" required placeholder="Seu nome completo">
+                </div>
+                
+                <div class="form-group">
+                    <label for="txt-whatsapp">WhatsApp</label>
+                    <input type="tel" id="txt-whatsapp" name="whatsapp" required placeholder="(47) 99999-9999">
+                </div>
+                
+                <div class="form-group">
+                    <label for="txt-email">E-mail</label>
+                    <input type="email" id="txt-email" name="email" required placeholder="seu@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="txt-comentario">Comentário</label>
+                    <textarea id="txt-comentario" name="comentario" rows="4" required placeholder="Conte-nos brevemente o seu cenário de atendimento..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px; padding: 15px;">
+                    Enviar Solicitação
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 6. FOOTER / RODAPÉ -->
+    <footer class="footer">
+        <div class="footer-logo">ATENDIT</div>
+        <ul class="footer-links">
+            <li><a href="#privacidade">Privacidade</a></li>
+            <li><a href="#termos">Termos</a></li>
+            <li><a href="#suporte">Suporte</a></li>
+            <li><a href="/login">Acesso administrativo</a></li>
+        </ul>
+        <p class="footer-copyright">© 2026 ATENDIT IA. Inteligência que Humaniza.</p>
+    </footer>
+
+    <!-- LOGS DE VERIFICAÇÃO AUTOMÁTICA EM CONSOLE -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const dynamicLogo = document.getElementById("atendit-dynamic-logo");
+            const contactForm = document.getElementById("atendit-web-form");
+            
+            // Fila resiliente de arquivos locais de logotipo para garantir renderização perfeita
+            // Medido em 2026-09-01: apenas "LOGO ATENDIT STICH.jpg" existe no servidor.
+            // Os outros nomes caiam no catch-all /{slug} e devolviam o HTML do
+            // painel com HTTP 200 -- fallback que nao falha, mas nao carrega imagem.
+            const logoAssetsQueue = [
+                "LOGO ATENDIT STICH.jpg"
+            ];
+            
+            let assetIndex = 0;
+
+            function loadLogoSequence() {
+                if (assetIndex < logoAssetsQueue.length) {
+                    console.log("[DIAGNOSTICO LANDINGPAGE] Tentando vincular ativo de logo: " + logoAssetsQueue[assetIndex]);
+                    dynamicLogo.src = logoAssetsQueue[assetIndex];
+                } else {
+                    dynamicLogo.alt = "ATENDIT IA";
+                    console.warn("[DIAGNOSTICO LANDINGPAGE] Usando fallback textual para o logo.");
+                }
+            }
+
+            dynamicLogo.onload = function() {
+                console.log("[SUCESSO LANDINGPAGE] Logotipo '" + logoAssetsQueue[assetIndex] + "' integrado com sucesso absoluto.");
+            };
+
+            dynamicLogo.onerror = function() {
+                assetIndex++;
+                loadLogoSequence();
+            };
+
+            // Disparar ciclo do Logo
+            loadLogoSequence();
+
+            // Monitoramento e Log do Envio do Formulário de Contato
+            contactForm.addEventListener("submit", async function(event) {
+                event.preventDefault();
+                
+                const formData = {
+                    nome: document.getElementById("txt-nome").value,
+                    whatsapp: document.getElementById("txt-whatsapp").value,
+                    email: document.getElementById("txt-email").value,
+                    comentario: document.getElementById("txt-comentario").value
+                };
+
+                // Grava DE VERDADE. A versao anterior dizia "registrada com
+                // sucesso" apenas escrevendo no console -- confirmacao de
+                // gravacao sem gravacao nenhuma.
+                const botao = contactForm.querySelector('button[type="submit"], .btn-submit, button');
+                const rotulo = botao ? botao.innerText : null;
+                if (botao) { botao.disabled = true; botao.innerText = "Enviando..."; }
+
+                try {
+                    const r = await fetch("/v1/leads", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(formData)
+                    });
+                    const d = await r.json().catch(function () { return {}; });
+                    if (r.ok && d.ok) {
+                        alert("Obrigado, " + formData.nome + "! Recebemos sua mensagem e retornaremos em breve.");
+                        contactForm.reset();
+                    } else {
+                        alert(d.detail || "Nao consegui enviar sua mensagem agora. Tente novamente em instantes.");
+                    }
+                } catch (e) {
+                    alert("Nao consegui falar com o servidor. Verifique sua conexao e tente de novo.");
+                } finally {
+                    if (botao) { botao.disabled = false; botao.innerText = rotulo; }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

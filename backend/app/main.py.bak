@@ -1,0 +1,347 @@
+import os
+import json
+import re
+import urllib.request
+import urllib.parse
+import urllib.error
+import logging
+import time
+from pathlib import Path
+from fastapi import FastAPI, Request, HTTPException, Response
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger("atendit-api")
+
+app = FastAPI(title="ATENDIT SaaS Engine", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.middleware("http")
+async def add_no_cache_headers(request: Request, call_next):
+    response: Response = await call_next(request)
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR / "frontend"
+DASHBOARDS_DIR = FRONTEND_DIR / "dashboards"
+TENANTS_FILE = BASE_DIR / "tenants.json"
+
+EVOLUTION_BASE_URL = os.getenv("EVOLUTION_URL", "http://evolution-api:8080")
+EVOLUTION_API_KEY = os.getenv("AUTHENTICATION_API_KEY", "TokenDeSegurancaGeradoParaAEvolutionAPI")
+
+def get_tenants_store():
+    if not TENANTS_FILE.is_file():
+        initial = {
+            "mani": {
+                "name": "Clube Pomerode",
+                "slug": "mani",
+                "email": "diretoria@clubepomerode.com.br",
+                "phone": "+55 47 99999 1234",
+                "ai_number": "+55 47 98888 5678",
+                "status": "Operacional",
+                "agent_config": {
+                    "name": "Assistente Clube Pomerode",
+                    "tone": "Objetivo e Claro",
+                    "questions": ["Qual seu nome?", "Qual o assunto do contato?", "Você já é associado?"]
+                }
+            }
+        }
+        TENANTS_FILE.write_text(json.dumps(initial, indent=2, ensure_ascii=False), encoding="utf-8")
+        return initial
+    try:
+        return json.loads(TENANTS_FILE.read_text(encoding="utf-8"))
+    except Exception as e:
+        logger.error(f"Erro ao ler tenants.json: {e}")
+        return {}
+
+def save_tenants_store(data):
+    TENANTS_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+RESERVED_ROUTES = {
+    "saas", "admin", "login", "cadastro", "register", "cliente", "clientes",
+    "health", "v1", "dashboards", "static", "docs", "redoc", "openapi.json", "favicon.ico"
+}
+
+def call_evolution_api(endpoint: str, method: str = "GET", data: dict = None):
+    url = f"{EVOLUTION_BASE_URL}{endpoint}"
+    headers = {
+        "apikey": EVOLUTION_API_KEY,
+        "Content-Type": "application/json",
+        "User-Agent": "ATENDIT-Core/1.0"
+    }
+    body_bytes = json.dumps(data).encode("utf-8") if data else None
+    req = urllib.request.Request(url, data=body_bytes, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=15) as res:
+            resp_body = res.read().decode("utf-8")
+            return json.loads(resp_body) if resp_body else {}
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode("utf-8")
+        try:
+            return json.loads(err_body)
+        except Exception:
+            return {"error": True, "status_code": e.code, "message": err_body}
+    except Exception as e:
+        return {"error": True, "message": str(e)}
+
+def ensure_evolution_instance(slug: str):
+    instance_name = f"atendit_{slug.replace('-', '_')}"
+    payload = {
+        "instanceName": instance_name,
+        "token": slug,
+        "qrcode": True,
+        "integration": "WHATSAPP-BAILEYS"
+    }
+    call_evolution_api("/instance/create", method="POST", data=payload)
+    return instance_name
+
+@app.get("/health")
+def health():
+    return {"status": "healthy", "service": "atendit-saas-engine", "version": "1.0.0", "environment": "production"}
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def serve_root():
+    f = FRONTEND_DIR / "landing.html"
+    return HTMLResponse(f.read_text(encoding="utf-8")) if f.is_file() else HTMLResponse("<h1>ATENDIT</h1>")
+
+@app.get("/cadastro", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/register", response_class=HTMLResponse, include_in_schema=False)
+def serve_cadastro():
+    f = FRONTEND_DIR / "cadastro.html"
+    return HTMLResponse(f.read_text(encoding="utf-8")) if f.is_file() else HTMLResponse("<h1>Cadastro</h1>")
+
+@app.get("/login", response_class=HTMLResponse, include_in_schema=False)
+def serve_login():
+    f = FRONTEND_DIR / "login.html"
+    return HTMLResponse(f.read_text(encoding="utf-8")) if f.is_file() else HTMLResponse("<h1>Login</h1>")
+
+@app.get("/SaaS", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/admin", response_class=HTMLResponse, include_in_schema=False)
+def serve_admin():
+    f = FRONTEND_DIR / "admin.html"
+    return HTMLResponse(f.read_text(encoding="utf-8")) if f.is_file() else HTMLResponse("<h1>Admin SaaS</h1>")
+
+@app.get("/cliente", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/clientes", response_class=HTMLResponse, include_in_schema=False)
+def serve_cliente():
+    return RedirectResponse(url="/mani")
+
+@app.get("/LOGO ATENDIT STICH.jpg", include_in_schema=False)
+@app.get("/LOGO%20ATENDIT%20STICH.jpg", include_in_schema=False)
+def serve_logo():
+    for name in ["LOGO ATENDIT STICH.jpg", "image_772e18.jpg"]:
+        logo_path = FRONTEND_DIR / name
+        if logo_path.is_file():
+            return FileResponse(str(logo_path), media_type="image/jpeg")
+    return JSONResponse(status_code=404, content={"error": "Logo not found"})
+
+@app.post("/v1/auth/register")
+async def auth_register(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "JSON inválido"})
+    name = body.get("name", "").strip()
+    email = body.get("email", "").strip()
+    slug = body.get("slug", "").strip().lower()
+    if not slug:
+        slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+    if not slug:
+        slug = "empresa"
+    if slug in RESERVED_ROUTES:
+        slug = f"{slug}-app"
+
+    store = get_tenants_store()
+    if slug not in store:
+        store[slug] = {
+            "slug": slug,
+            "name": name,
+            "email": email,
+            "phone": "",
+            "ai_number": "",
+            "status": "Operacional",
+            "agent_config": {
+                "name": name,
+                "tone": "Objetivo e Claro",
+                "questions": ["Qual seu nome?", "Qual o assunto do contato?", "Você já é associado?"]
+            }
+        }
+    else:
+        store[slug]["email"] = email
+        if name:
+            store[slug]["name"] = name
+    save_tenants_store(store)
+    return {"status": "success", "tenant_slug": slug, "token": f"atendit-token-{slug}-2026", "tenant": store[slug]}
+
+@app.get("/v1/tenants/")
+def list_tenants():
+    return get_tenants_store()
+
+@app.get("/v1/tenants/{tenant_slug}")
+def get_tenant(tenant_slug: str):
+    slug_clean = tenant_slug.strip().lower()
+    store = get_tenants_store()
+    if slug_clean in store:
+        return store[slug_clean]
+    return {
+        "slug": slug_clean,
+        "name": slug_clean.capitalize(),
+        "email": "",
+        "phone": "",
+        "ai_number": "",
+        "status": "Operacional",
+        "agent_config": {
+            "name": slug_clean.capitalize(),
+            "tone": "Objetivo e Claro",
+            "questions": ["Qual seu nome?", "Qual o assunto do contato?", "Você já é associado?"]
+        }
+    }
+
+@app.post("/v1/tenants/update")
+async def update_tenant(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "JSON inválido"})
+    slug = body.get("slug", "").strip().lower()
+    if not slug:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "Slug é obrigatório"})
+    store = get_tenants_store()
+    if slug not in store:
+        store[slug] = {"slug": slug, "status": "Operacional", "agent_config": {}}
+    store[slug]["name"] = body.get("name", store[slug].get("name", ""))
+    store[slug]["email"] = body.get("email", store[slug].get("email", ""))
+    store[slug]["phone"] = body.get("phone", store[slug].get("phone", ""))
+    store[slug]["ai_number"] = body.get("ai_number", store[slug].get("ai_number", ""))
+    save_tenants_store(store)
+    return {"status": "success", "message": "Dados cadastrais atualizados com sucesso!", "tenant": store[slug]}
+
+@app.post("/v1/agent/config")
+async def save_agent_config(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "JSON inválido"})
+    slug = body.get("slug", "").strip().lower()
+    if not slug:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "Slug é obrigatório"})
+
+    questions = body.get("questions", "[]")
+    if isinstance(questions, str):
+        try:
+            questions = json.loads(questions)
+        except Exception:
+            questions = [questions]
+
+    store = get_tenants_store()
+    if slug not in store:
+        store[slug] = {"slug": slug, "name": slug, "email": "", "phone": "", "status": "Operacional"}
+
+    store[slug]["agent_config"] = {
+        "name": body.get("agent_name", store[slug].get("name", "Atendente Virtual")),
+        "tone": body.get("tone", "Objetivo e Claro"),
+        "questions": questions
+    }
+    save_tenants_store(store)
+    return {"status": "success", "message": "Parâmetros da IA gravados!", "tenant": store[slug]}
+
+@app.post("/v1/whatsapp/qrcode")
+async def generate_wa_qrcode(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    slug = body.get("slug", "default").strip().lower()
+    instance_name = ensure_evolution_instance(slug)
+
+    connect_res = {}
+    for attempt in range(4):
+        time.sleep(1.5)
+        connect_res = call_evolution_api(f"/instance/connect/{instance_name}", method="GET")
+        if isinstance(connect_res, dict) and (connect_res.get("base64") or (isinstance(connect_res.get("qrcode"), dict) and connect_res["qrcode"].get("base64"))):
+            break
+
+    base64_qr = None
+    if isinstance(connect_res, dict):
+        base64_qr = connect_res.get("base64")
+        if not base64_qr and isinstance(connect_res.get("qrcode"), dict):
+            base64_qr = connect_res["qrcode"].get("base64")
+
+    if not base64_qr:
+        return JSONResponse(status_code=400, content={
+            "status": "error",
+            "message": "A Evolution API está iniciando a sessão. Clique novamente em 'Gerar Código QR' em 3 segundos."
+        })
+
+    return {"status": "success", "slug": slug, "instance_name": instance_name, "qrcode_url": base64_qr}
+
+@app.post("/v1/whatsapp/pair-code")
+async def generate_wa_pair_code(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    slug = body.get("slug", "default").strip().lower()
+    raw_phone = body.get("phone", "").strip()
+    clean_phone = re.sub(r'[^0-9]', '', raw_phone)
+
+    if not clean_phone:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "Número de telefone inválido"})
+
+    instance_name = ensure_evolution_instance(slug)
+
+    pair_res = {}
+    for attempt in range(4):
+        time.sleep(1.5)
+        pair_res = call_evolution_api(f"/instance/connect/{instance_name}?number={clean_phone}", method="GET")
+        if isinstance(pair_res, dict) and (pair_res.get("pairingCode") or pair_res.get("code")):
+            break
+
+    pair_code = None
+    if isinstance(pair_res, dict):
+        pair_code = pair_res.get("pairingCode") or pair_res.get("code")
+
+    if not pair_code or (isinstance(pair_res, dict) and pair_res.get("count") == 0):
+        return JSONResponse(status_code=400, content={
+            "status": "error",
+            "message": "A Evolution API está registrando o número. Clique novamente em 'Gerar Token' em 3 segundos."
+        })
+
+    store = get_tenants_store()
+    if slug in store:
+        store[slug]["ai_number"] = raw_phone
+        save_tenants_store(store)
+
+    return {"status": "success", "slug": slug, "phone": clean_phone, "pairing_code": pair_code}
+
+@app.get("/dashboards/{view_name}", include_in_schema=False)
+async def get_dashboard_view(view_name: str):
+    safe_name = os.path.basename(view_name.strip()).replace(".html", "")
+    target_file = (DASHBOARDS_DIR / f"{safe_name}.html").resolve()
+    if not str(target_file).startswith(str(DASHBOARDS_DIR.resolve())) or not target_file.is_file():
+        return JSONResponse(status_code=404, content={"error": f"Dashboard '{view_name}' not found"})
+    with open(target_file, "r", encoding="utf-8") as f:
+        return JSONResponse(content=f.read())
+
+@app.post("/v1/ai/copilot")
+async def copilot_chat(request: Request):
+    return {"status": "success", "response": "Comando processado com sucesso pelo Copiloto ATENDIT."}
+
+@app.get("/{tenant_slug}", response_class=HTMLResponse, include_in_schema=False)
+def serve_tenant_instance(tenant_slug: str):
+    slug_clean = tenant_slug.strip().lower()
+    if slug_clean in RESERVED_ROUTES:
+        raise HTTPException(status_code=404, detail="Not found")
+    f = FRONTEND_DIR / "index.html"
+    return HTMLResponse(f.read_text(encoding="utf-8")) if f.is_file() else HTMLResponse(f"<h1>Instância: {slug_clean}</h1>")

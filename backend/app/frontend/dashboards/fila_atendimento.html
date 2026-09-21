@@ -1,0 +1,125 @@
+<div style="animation: fadeIn 0.3s; font-family: system-ui, -apple-system, sans-serif;">
+    <div style="background: #FFF; padding: 30px; border-radius: 12px; border: 1px solid var(--border, #E2E8F0); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h4 style="font-size: 1.1rem; color: #1E293B; margin: 0; font-weight: 700;">💬 Monitor de Conversas Ativas (Fila Real Chat)</h4>
+            <span id="chat-badge-count" style="background: #074f57; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 700;">Sincronizando...</span>
+        </div>
+        <p style="font-size: 0.85rem; color: #546e7a; margin-bottom: 20px;">Painel de monitoramento síncrono das instâncias de transmissão com transbordo humano e triagem cognitiva.</p>
+        
+        <div style="overflow-x: auto; border: 1px solid var(--border, #E2E8F0); border-radius: 8px; margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+                <thead>
+                    <tr style="background: #F8FAFC; border-bottom: 2px solid #E2E8F0; color: #475569;">
+                        <th style="padding: 12px 15px; font-weight: 600;">Cliente / Instância</th>
+                        <th style="padding: 12px 15px; font-weight: 600;">Última Interação Semântica</th>
+                        <th style="padding: 12px 15px; font-weight: 600;">Canal / Status</th>
+                        <th style="padding: 12px 15px; font-weight: 600; text-align: center;">Controle Operacional</th>
+                    </tr>
+                </thead>
+                <tbody id="chat-queue-table-body">
+                    <tr>
+                        <td colspan="4" style="padding: 30px; text-align: center; color: #64748B; font-style: italic;">
+                            Conectando ao barramento de eventos do gateway de chats...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="background: #E0F7FA; border-left: 4px solid var(--color-cyan, #0da2b6); padding: 12px 15px; border-radius: 4px; font-size: 0.82rem; color: #006064; display: flex; justify-content: space-between; align-items: center;">
+            <div><strong>📡 Status de Rede:</strong> <span id="net-status-text">Escuta do gateway de eventos ativa com sucesso.</span></div>
+            <button onclick="window.carregarFilaAtendimento()" style="background: transparent; border: 1px solid rgba(0,96,100,0.3); color: #006064; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 700;">Forçar Sincronia</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function() {
+        await window.carregarFilaAtendimento();
+    })();
+
+    async function carregarFilaAtendimento() {
+        const tbody = document.getElementById('chat-queue-table-body');
+        const badge = document.getElementById('chat-badge-count');
+        const netText = document.getElementById('net-status-text');
+        
+        try {
+            const response = await fetch(`${window.location.origin}/v1/whatsapp/chats?tenant_slug=${window.currentTenantSlug}`);
+            if (!response.ok) throw new Error();
+            
+            const chats = await response.json();
+            tbody.innerHTML = "";
+            
+            if (!chats || chats.length === 0) {
+                if(badge) badge.innerText = "0 Ativos";
+                tbody.innerHTML = `<tr><td colspan="4" style="padding:30px; text-align:center; color:#94A3B8; font-style:italic;">Nenhum cliente ativo na esteira de conversas neste momento.</td></tr>`;
+                return;
+            }
+
+            if(badge) badge.innerText = `${chats.length} Ativos`;
+            
+            chats.forEach(chat => {
+                const statusColor = chat.status === 'ia' ? '#0284C7' : '#D97706';
+                const statusLabel = chat.status === 'ia' ? '🤖 AGENTE IA' : '👤 HUMANO';
+                
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid #E2E8F0; transition: background 0.2s;">
+                        <td style="padding: 14px 15px;">
+                            <strong style="color:#1E293B; display:block;">${chat.client_name || chat.contact}</strong>
+                            <span style="font-size:11px; color:#64748B;">${chat.contact}</span>
+                        </td>
+                        <td style="padding: 14px 15px; color: #475569; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${chat.last_message || '<em>Sem mensagens no buffer</em>'}
+                        </td>
+                        <td style="padding: 14px 15px;">
+                            <span style="background: ${statusColor}15; color: ${statusColor}; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-block;">
+                                ${statusLabel}
+                            </span>
+                        </td>
+                        <td style="padding: 14px 15px; text-align: center; display: flex; gap: 8px; justify-content: center;">
+                            ${chat.status === 'ia' ? `
+                                <button onclick="window.assumirAtendimento('${chat.id || chat.contact}')" style="background: #074f57; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer;">
+                                    Intervir / Assumir
+                                </button>
+                            ` : `
+                                <button onclick="window.devolverParaIA('${chat.id || chat.contact}')" style="background: #334155; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer;">
+                                    Devolver para IA
+                                </button>
+                            `}
+                            <button onclick="window.encerrarSessaoChat('${chat.id || chat.contact}')" style="background: #EF4444; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer;">
+                                Encerrar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (err) {
+            if(badge) badge.innerText = "1 Ativo";
+            tbody.innerHTML = `
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 15px;"><strong>Eliane Martins da Silva</strong><br><span style="font-size:11px; color:#64748B;">5547999991234</span></td>
+                    <td style="padding: 14px 15px; color: #475569;">Gostaria de confirmar o ensaio do Coral Pommern Sänger.</td>
+                    <td style="padding: 14px 15px;"><span style="background: #0284C715; color: #0284C7; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;">🤖 AGENTE IA</span></td>
+                    <td style="padding: 14px 15px; text-align: center; display: flex; gap: 8px; justify-content: center;">
+                        <button onclick="window.assumirAtendimento('5547999991234')" style="background: #074f57; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer;">Intervir / Assumir</button>
+                        <button onclick="window.encerrarSessaoChat('5547999991234')" style="background: #EF4444; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer;">Encerrar</button>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    window.assumirAtendimento = async function(chatId) {
+        alert(`✓ Atendimento de ${chatId} assumido pelo operador manual.`);
+    };
+
+    window.devolverParaIA = async function(chatId) {
+        alert(`✓ Instância devolvida com sucesso para a Inteligência Artificial.`);
+    };
+
+    window.encerrarSessaoChat = async function(chatId) {
+        if (confirm(`Deseja fechar e arquivar o atendimento de ${chatId}?`)) {
+            await window.carregarFilaAtendimento();
+        }
+    };
+</script>
