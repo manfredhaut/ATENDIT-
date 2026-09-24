@@ -1,0 +1,137 @@
+<div style="display: flex; flex-direction: column; gap: 24px;" class="fade-in">
+    <!-- CABEÇALHO -->
+    <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 8px;">🎯 Modelos Especializados por Segmento (F1.4)</h2>
+        <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5;">
+            Aplique em <strong>1 clique</strong> o funil de vendas, as perguntas automáticas de triagem, os roteiros de atendimento e o tom de voz da IA calibrados para o seu segmento de atuação.
+        </p>
+    </div>
+
+    <!-- GRID DE SEGMENTOS -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+        
+        <!-- 1. ESTÉTICA -->
+        <div style="background: #ffffff; padding: 24px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--p-magenta, #D0006F);">
+            <div>
+                <div style="font-size: 2rem; margin-bottom: 12px;">✂️</div>
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 8px;">Salão, Barbearia & Estética</h3>
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px;">Controle de profissionais, duração de serviços, confirmação de agenda e recompras de retorno.</p>
+                
+                <div style="background: var(--p-marfim, #FBF8F4); border: 1px solid var(--p-borda, #eae3dc); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Perguntas de Triagem:</div>
+                    <ul style="font-size: 0.82rem; color: #334155; margin-left: 18px; margin-top: 6px;">
+                        <li>Serviço desejado (cabelo, barba, unhas, estética);</li>
+                        <li>Profissional de preferência;</li>
+                        <li>Turno de preferência (manhã ou tarde).</li>
+                    </ul>
+                </div>
+            </div>
+            <button onclick="aplicarModelo('estetica', this)" style="width: 100%; padding: 12px; background: var(--p-magenta, #D0006F); color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                ⚡ Aplicar Modelo Estética
+            </button>
+        </div>
+
+        <!-- 2. CLÍNICA -->
+        <div style="background: #ffffff; padding: 24px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--p-turquesa-texto, #0B7570);">
+            <div>
+                <div style="font-size: 2rem; margin-bottom: 12px;">🩺</div>
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 8px;">Clínica, Consultório & Saúde</h3>
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px;">Triagem respeitosa, separação entre particular e convênios, sem emissão de diagnósticos.</p>
+                
+                <div style="background: var(--p-marfim, #FBF8F4); border: 1px solid var(--p-borda, #eae3dc); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Perguntas de Triagem:</div>
+                    <ul style="font-size: 0.82rem; color: #334155; margin-left: 18px; margin-top: 6px;">
+                        <li>Especialidade ou procedimento procurado;</li>
+                        <li>Convênio médico ou particular;</li>
+                        <li>Primeira consulta ou retorno.</li>
+                    </ul>
+                </div>
+            </div>
+            <button onclick="aplicarModelo('clinica', this)" style="width: 100%; padding: 12px; background: var(--p-turquesa-texto, #0B7570); color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                ⚡ Aplicar Modelo Clínica
+            </button>
+        </div>
+
+        <!-- 3. SERVIÇOS TÉCNICOS -->
+        <div style="background: #ffffff; padding: 24px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid #F0B74E;">
+            <div>
+                <div style="font-size: 2rem; margin-bottom: 12px;">🔧</div>
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 8px;">Serviços Técnicos & Manutenção</h3>
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px;">Coleta precisa do equipamento, modelo, sintomas de avaria e endereço para visita técnica.</p>
+                
+                <div style="background: var(--p-marfim, #FBF8F4); border: 1px solid var(--p-borda, #eae3dc); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Perguntas de Triagem:</div>
+                    <ul style="font-size: 0.82rem; color: #334155; margin-left: 18px; margin-top: 6px;">
+                        <li>Equipamento com defeito;</li>
+                        <li>Marca, modelo e sintoma apresentado;</li>
+                        <li>Endereço para atendimento no local.</li>
+                    </ul>
+                </div>
+            </div>
+            <button onclick="aplicarModelo('tecnico', this)" style="width: 100%; padding: 12px; background: #E3A028; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                ⚡ Aplicar Modelo Técnico
+            </button>
+        </div>
+
+        <!-- 4. B2B & CONSULTORIA -->
+        <div style="background: #ffffff; padding: 24px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--p-berinjela, #231726);">
+            <div>
+                <div style="font-size: 2rem; margin-bottom: 12px;">💼</div>
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 8px;">B2B, Consultoria & Projetos</h3>
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px;">Qualificação executiva de tomadores de decisão, gargalos operacionais e orçamento de projeto.</p>
+                
+                <div style="background: var(--p-marfim, #FBF8F4); border: 1px solid var(--p-borda, #eae3dc); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Perguntas de Triagem:</div>
+                    <ul style="font-size: 0.82rem; color: #334155; margin-left: 18px; margin-top: 6px;">
+                        <li>Nome da empresa e cargo do contato;</li>
+                        <li>Desafio prioritário ou dor operacional;</li>
+                        <li>Volume de colaboradores ou unidades.</li>
+                    </ul>
+                </div>
+            </div>
+            <button onclick="aplicarModelo('b2b', this)" style="width: 100%; padding: 12px; background: var(--p-berinjela, #231726); color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                ⚡ Aplicar Modelo B2B
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    async function aplicarModelo(templateId, btn) {
+        const textoOriginal = btn.innerText;
+        btn.innerText = 'Aplicando modelo...';
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+
+        try {
+            const resp = await fetch('/api/templates/aplicar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    template_id: templateId,
+                    slug: window.currentTenantSlug || 'conta'
+                })
+            });
+            const data = await resp.json();
+            if (data.ok) {
+                btn.innerText = '✓ Modelo Aplicado!';
+                btn.style.background = '#10B981';
+                alert(data.mensagem + '\n\nFunil e perguntas configurados com sucesso para este tenant.');
+                setTimeout(() => {
+                    btn.innerText = textoOriginal;
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }, 3000);
+            } else {
+                throw new Error(data.mensagem || 'Erro ao aplicar');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Falha ao aplicar o modelo: ' + err.message);
+            btn.innerText = textoOriginal;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }
+    }
+</script>

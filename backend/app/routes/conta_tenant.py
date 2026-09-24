@@ -712,3 +712,52 @@ async def gravar_senha_nova(request: Request):
 
     logger.info(f"[RESET] Senha redefinida para '{endereco}'. Token invalidado.")
     return JSONResponse(content={"ok": True})
+
+
+# ---------------------------------------------------------------------------
+# F1.4 - Modelos por Segmento
+# ---------------------------------------------------------------------------
+@router.get("/api/templates/segmentos")
+async def api_listar_templates_segmentos():
+    from app.services.segment_templates import listar_templates
+    return JSONResponse(content={"ok": True, "templates": listar_templates()})
+
+@router.post("/api/templates/aplicar")
+async def api_aplicar_template_segmento(request: Request):
+    from app.services.segment_templates import obter_template
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import text
+    import json
+    
+    corpo = await request.json()
+    template_id = corpo.get("template_id")
+    slug = corpo.get("slug", "conta")
+    
+    template = obter_template(template_id)
+    if not template:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Template inválido."})
+        
+    async with AsyncSessionLocal() as session:
+        # Atualiza a persona e o prompt na tabela tenants (meta_data ou ai_config)
+        await session.execute(text("""
+            UPDATE tenants 
+            SET meta_data = COALESCE(meta_data, '{}'::jsonb) || :dados
+            WHERE slug = :slug
+        """), {
+            "slug": slug,
+            "dados": json.dumps({
+                "segmento": template_id,
+                "prompt_ia": template["prompt_ia"],
+                "perguntas_qualificacao": template["perguntas_qualificacao"],
+                "mensagem_boas_vindas": template["mensagem_boas_vindas"],
+                "etapas_funil": template["etapas_funil"]
+            })
+        })
+        await session.commit()
+        
+    return JSONResponse(content={
+        "ok": True, 
+        "mensagem": f"Modelo '{template['nome']}' aplicado com sucesso!",
+        "template": template
+    })
+
