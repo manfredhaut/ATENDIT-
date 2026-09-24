@@ -30,10 +30,18 @@ def _numero_destino(remote_jid: str, remote_jid_alt: Optional[str] = None) -> st
     O WhatsApp passou a usar LID (Linked Device Identity) para contas com
     privacidade de numero: o remoteJid vem como '227027877662961@lid' — as vezes
     com sufixo de dispositivo (':53') — e o numero real chega em 'remoteJidAlt'.
+    
+    Robustez (2026): Se vier LID puro sem alt, emite alerta visível nos logs
+    para impedir falha silenciosa de envio.
     """
     origem = remote_jid or ""
     if remote_jid_alt and "@lid" not in remote_jid_alt:
         origem = remote_jid_alt  # o alternativo ja traz o numero real
+    elif "@lid" in origem:
+        logger.warning(
+            f"[WEBHOOK LID ALERTA] Recebido identificador LID puro '{remote_jid}' sem remoteJidAlt. "
+            f"O envio de resposta para LID direto pode falhar na Evolution API se o WhatsApp não mapear o número."
+        )
 
     numero = origem.split("@", 1)[0]
     numero = numero.split(":", 1)[0]  # descarta sufixo de dispositivo (':53')
@@ -171,7 +179,7 @@ async def _async_process_incoming_message(
                 await session.execute(
                     text('''
                         INSERT INTO "Chat" (id, "remoteJid", "instanceId", name, labels, "createdAt", "updatedAt", "unreadMessages")
-                        VALUES (:id, :remote_jid, :inst_id, :name, '{"status": "ia"}'::jsonb, NOW(), NOW(), 1)
+                        VALUES (:id, :remote_jid, :inst_id, :name, CAST('{"status": "ia"}' AS jsonb), NOW(), NOW(), 1)
                     '''),
                     {"id": chat_db_id, "remote_jid": remote_jid, "inst_id": inst_db_id, "name": nome_contato}
                 )
@@ -197,7 +205,7 @@ async def _async_process_incoming_message(
             await session.execute(
                 text('''
                     INSERT INTO "Message" (id, key, "pushName", "messageType", message, source, "messageTimestamp", "instanceId", status)
-                    VALUES (:id, :key::jsonb, :push_name, 'conversation', :msg::jsonb, 'unknown'::"DeviceMessage", :ts, :inst_id, 'RECEIVED')
+                    VALUES (:id, CAST(:key AS jsonb), :push_name, 'conversation', CAST(:msg AS jsonb), CAST('unknown' AS "DeviceMessage"), :ts, :inst_id, 'RECEIVED')
                     ON CONFLICT (id) DO NOTHING
                 '''),
                 {
@@ -410,7 +418,7 @@ async def _async_process_incoming_message(
                     await session.execute(
                         text('''
                             INSERT INTO "Message" (id, key, "pushName", "messageType", message, source, "messageTimestamp", "instanceId", status)
-                            VALUES (:id, :key::jsonb, :push_name, 'conversation', :msg::jsonb, 'web'::"DeviceMessage", :ts, :inst_id, 'DELIVERED')
+                            VALUES (:id, CAST(:key AS jsonb), :push_name, 'conversation', CAST(:msg AS jsonb), CAST('web' AS "DeviceMessage"), :ts, :inst_id, 'DELIVERED')
                             ON CONFLICT (id) DO NOTHING
                         '''),
                         {
