@@ -1,123 +1,93 @@
-<div style="display: flex; flex-direction: column; gap: 24px; animation: fadeIn 0.25s ease-in-out;">
-    <!-- 1. SELETOR DE BARRAMENTO DE TRANSMISSÃO -->
-    <div style="background: #ffffff; padding: 22px 26px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-        <h4 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0 0 6px 0; display: flex; align-items: center; gap: 8px;">
-            🔌 Seletor de Barramento de Transmissão
-        </h4>
-        <p style="font-size: 0.85rem; color: #64748b; margin: 0 0 16px 0;">
-            Escolha a esteira tecnológica ideal para a sua estância industrial com base no tráfego e custo planejado.
-        </p>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <button type="button" id="btn-tab-meta" onclick="alternarBarramento('meta')" style="padding: 10px 18px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; font-size: 0.88rem; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                🏢 API Nuvem Oficial Meta
-            </button>
-            <button type="button" id="btn-tab-evolution" onclick="alternarBarramento('evolution')" style="padding: 10px 18px; border: 1px solid #074f57; background: #074f57; color: #ffffff; border-radius: 6px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                🟢 Gateway Evolution (QR Code)
+<div style="display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-in-out; font-family: system-ui, -apple-system, sans-serif;">
+
+    <!-- 1. STATUS GERAL DA CONEXÃO EVOLUTION -->
+    <div style="background: #ffffff; padding: 22px 26px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+        <div>
+            <h5 style="font-size: 1.05rem; font-weight: 800; color: var(--p-texto, #231726); margin: 0; display: flex; align-items: center; gap: 8px;">
+                🟢 Conexão WhatsApp via QR Code / Web
+            </h5>
+            <p id="wa-status-desc" style="font-size: 0.85rem; color: var(--p-texto-suave, #5e5563); margin: 4px 0 0 0;">
+                Monitoramento contínuo da conexão WebSocket com o gateway de mensageria.
+            </p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="wa-status-badge" style="background: #f1f5f9; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid #cbd5e1;">
+                ● Verificando...
+            </span>
+            <button type="button" id="btn-wa-reset" onclick="resetarSessaoWhatsApp()" style="padding: 7px 16px; background: #fff; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 999px; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease;">
+                🔄 Limpar Sessão
             </button>
         </div>
     </div>
 
-    <!-- 2. PAINEL DA API NUVEM OFICIAL META (QUANDO ACIONADO) -->
-    <div id="painel-barramento-meta" style="display: none; background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
-        <h5 style="font-size: 0.98rem; font-weight: 800; color: #0f172a; margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px;">
-            🏢 Conexão Direta: Meta Cloud API (WhatsApp Business Platform)
+    <!-- 2. CARD PREVENTIVO: LIMITAÇÕES E DIRETRIZES DA META -->
+    <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-left: 5px solid #D97706; padding: 18px 22px; border-radius: 10px;">
+        <h5 style="color: #92400E; font-size: 0.95rem; font-weight: 800; margin: 0 0 6px 0; display: flex; align-items: center; gap: 8px;">
+            ⚠️ Atenção Operacional: Diretrizes da Meta e Riscos de Uso
         </h5>
-        <p style="font-size: 0.85rem; color: #64748b; margin: 0 0 16px 0;">
-            Barramento de alta disponibilidade homologado pela Meta. Sem necessidade de manter aparelho celular ativo.
-        </p>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
-            <div>
-                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 5px;">Phone Number ID</label>
-                <input type="text" id="meta-phone-id" placeholder="Ex: 10458291029384" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
-            </div>
-            <div>
-                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 5px;">WhatsApp Business Account ID (WABA)</label>
-                <input type="text" id="meta-waba-id" placeholder="Ex: 92837461029384" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
-            </div>
-        </div>
-        <div style="margin-bottom: 16px;">
-            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 5px;">Permanent Access Token (Meta Graph API)</label>
-            <input type="password" id="meta-access-token" placeholder="EAABw..." style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem;">
-        </div>
-        <div style="text-align: right;">
-            <button type="button" onclick="salvarCredenciaisMeta()" style="padding: 10px 20px; background: #074f57; color: #fff; border: none; border-radius: 6px; font-weight: 700; font-size: 0.88rem; cursor: pointer;">
-                Salvar Credenciais Meta
-            </button>
+        <div style="font-size: 0.84rem; color: #78350F; line-height: 1.55;">
+            <p style="margin: 0 0 8px 0;">
+                A conexão via <strong>QR Code / Token</strong> opera através do protocolo Baileys emulando uma sessão do WhatsApp Web no aparelho. Esta modalidade <strong>não substitui a API Oficial da Meta</strong> e possui regras estritas de utilização:
+            </p>
+            <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px;">
+                <li><strong>Proibição de Disparos em Massa:</strong> O envio massivo ou sequencial de mensagens não solicitadas resulta no banimento sumário do número pelos filtros anti-spam da Meta.</li>
+                <li><strong>Necessidade de Aparelho Ativo:</strong> O smartphone precisa manter conexão constante com a internet para sustentação do canal WebSocket.</li>
+                <li><strong>Cadência e Aquecimento de Chip:</strong> Números recém-ativados devem passar por maturação gradual. Respeite sempre intervalos naturais entre mensagens.</li>
+                <li><strong>Garantia de Estabilidade:</strong> Para operações industriais de alto volume sem risco de bloqueio de chip, utilize a aba lateral <strong>🌐 WhatsApp Meta Oficial</strong>.</li>
+            </ul>
         </div>
     </div>
 
-    <!-- 3. PAINEL EVOLUTION: STATUS E GESTÃO -->
-    <div id="painel-barramento-evolution" style="display: flex; flex-direction: column; gap: 24px;">
-        <div style="background: #ffffff; padding: 20px 26px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+    <!-- 3. MÉTODOS DE CONEXÃO: QR CODE E CÓDIGO POR TELEFONE -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- MÉTODO 1: QR CODE -->
+        <div style="background: #ffffff; padding: 24px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-                <h5 style="font-size: 0.98rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
-                    🟢 Gateway Evolution API (v2.3.7)
+                <h5 style="font-size: 0.95rem; font-weight: 700; color: var(--p-texto, #231726); margin: 0 0 14px 0; display: flex; align-items: center; gap: 6px;">
+                    📷 Método 1: Escanear QR Code
                 </h5>
-                <p id="wa-status-desc" style="font-size: 0.84rem; color: #64748b; margin: 4px 0 0 0;">
-                    Monitoramento contínuo da conexão WebSocket com o ATENDIT.
-                </p>
+                <div id="wa-qr-box" style="width: 100%; min-height: 240px; border: 2px dashed #cbd5e1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; padding: 15px; text-align: center;">
+                    <p id="wa-qr-placeholder" style="font-size: 0.85rem; color: var(--p-texto-suave, #5e5563); margin: 0;">
+                        Clique abaixo para gerar o QR Code de autenticação.
+                    </p>
+                    <img id="wa-qr-img" src="" alt="QR Code WhatsApp" style="display: none; width: 190px; height: 190px; border-radius: 8px; border: 1px solid var(--p-borda, #eae3dc); background: #fff; padding: 6px;">
+                </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span id="wa-status-badge" style="background: #f1f5f9; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid #cbd5e1;">
-                    ● Verificando...
-                </span>
-                <button type="button" id="btn-wa-reset" onclick="resetarSessaoWhatsApp()" style="padding: 7px 14px; background: #fff; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
-                    🔄 Limpar Sessão
+            <div style="margin-top: 18px;">
+                <button type="button" id="btn-gen-qr" onclick="gerarQRCodeWhatsApp()" style="width: 100%; padding: 12px; background: var(--p-turquesa-texto, #0b7570); color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.92rem; transition: background 0.2s;">
+                    Gerar Código QR
                 </button>
             </div>
         </div>
 
-        <!-- MÉTODOS DE CONEXÃO EVOLUTION -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-            <!-- MÉTODO 1: QR CODE -->
-            <div style="background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                    <h5 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0 0 14px 0; display: flex; align-items: center; gap: 6px;">
-                        📷 Método 1: Escanear QR Code
-                    </h5>
-                    <div id="wa-qr-box" style="width: 100%; min-height: 240px; border: 2px dashed #cbd5e1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; padding: 15px; text-align: center;">
-                        <p id="wa-qr-placeholder" style="font-size: 0.85rem; color: #64748b; margin: 0;">
-                            Clique abaixo para gerar o QR Code de autenticação.
-                        </p>
-                        <img id="wa-qr-img" src="" alt="QR Code WhatsApp" style="display: none; width: 190px; height: 190px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; padding: 6px;">
-                    </div>
+        <!-- MÉTODO 2: PAREAMENTO POR CÓDIGO (TOKEN) -->
+        <div style="background: #ffffff; padding: 24px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h5 style="font-size: 0.95rem; font-weight: 700; color: var(--p-texto, #231726); margin: 0 0 14px 0; display: flex; align-items: center; gap: 6px;">
+                    🔢 Método 2: Código por Telefone
+                </h5>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 5px;">
+                        Telefone do Atendente (com DDD)
+                    </label>
+                    <input type="text" id="wa-phone-input" placeholder="Ex: 558589020465" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: var(--p-texto, #231726); outline: none; font-weight: 600; background: #fff;">
+                    <small style="color: var(--p-texto-suave, #5e5563); font-size: 0.74rem; display: block; margin-top: 4px;">
+                        Preenchido automaticamente a partir da ficha cadastral.
+                    </small>
                 </div>
-                <div style="margin-top: 18px;">
-                    <button type="button" id="btn-gen-qr" onclick="gerarQRCodeWhatsApp()" style="width: 100%; padding: 12px; background: #074f57; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.92rem; transition: background 0.2s;">
-                        Gerar Código QR
-                    </button>
+                <div style="width: 100%; height: 140px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc;">
+                    <div id="wa-pair-code" style="font-size: 1.8rem; font-weight: 800; letter-spacing: 4px; color: #10b981; font-family: monospace;">
+                        -- -- -- --
+                    </div>
+                    <span id="wa-pair-hint" style="font-size: 0.78rem; color: var(--p-texto-suave, #5e5563); margin-top: 6px; text-align: center; padding: 0 8px;">
+                        Insira o código de 8 dígitos no WhatsApp do aparelho
+                    </span>
                 </div>
             </div>
-
-            <!-- MÉTODO 2: PAREAMENTO POR CÓDIGO (TOKEN) -->
-            <div style="background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                    <h5 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0 0 14px 0; display: flex; align-items: center; gap: 6px;">
-                        🔢 Método 2: Código por Telefone
-                    </h5>
-                    <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 5px;">
-                            Telefone do Atendente (com DDD)
-                        </label>
-                        <input type="text" id="wa-phone-input" placeholder="Ex: 558589020465" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: #0f172a; outline: none; font-weight: 600; background: #fff;">
-                        <small style="color: #64748b; font-size: 0.74rem; display: block; margin-top: 4px;">
-                            Preenchido automaticamente a partir da ficha cadastral.
-                        </small>
-                    </div>
-                    <div style="width: 100%; height: 140px; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc;">
-                        <div id="wa-pair-code" style="font-size: 1.8rem; font-weight: 800; letter-spacing: 4px; color: #10b981; font-family: monospace;">
-                            -- -- -- --
-                        </div>
-                        <span id="wa-pair-hint" style="font-size: 0.78rem; color: #64748b; margin-top: 6px; text-align: center; padding: 0 8px;">
-                            Insira o código de 8 dígitos no WhatsApp do aparelho
-                        </span>
-                    </div>
-                </div>
-                <div style="margin-top: 18px;">
-                    <button type="button" id="btn-gen-pair" onclick="gerarPairCodeWhatsApp()" style="width: 100%; padding: 12px; background: #10b981; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.92rem; transition: background 0.2s;">
-                        Gerar Token de Conexão
-                    </button>
-                </div>
+            <div style="margin-top: 18px;">
+                <button type="button" id="btn-gen-pair" onclick="gerarPairCodeWhatsApp()" style="width: 100%; padding: 12px; background: #10b981; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.92rem; transition: background 0.2s;">
+                    Gerar Token de Conexão
+                </button>
             </div>
         </div>
     </div>
@@ -126,51 +96,12 @@
 <script>
 window.waPollingInterval = window.waPollingInterval || null;
 
-function alternarBarramento(tipo) {
-    const btnMeta = document.getElementById('btn-tab-meta');
-    const btnEvo = document.getElementById('btn-tab-evolution');
-    const pnlMeta = document.getElementById('painel-barramento-meta');
-    const pnlEvo = document.getElementById('painel-barramento-evolution');
-
-    if (tipo === 'meta') {
-        btnMeta.style.background = '#074f57';
-        btnMeta.style.color = '#ffffff';
-        btnMeta.style.borderColor = '#074f57';
-        btnMeta.style.fontWeight = '700';
-
-        btnEvo.style.background = '#f8fafc';
-        btnEvo.style.color = '#64748b';
-        btnEvo.style.borderColor = '#cbd5e1';
-        btnEvo.style.fontWeight = '600';
-
-        pnlMeta.style.display = 'block';
-        pnlEvo.style.display = 'none';
-    } else {
-        btnEvo.style.background = '#074f57';
-        btnEvo.style.color = '#ffffff';
-        btnEvo.style.borderColor = '#074f57';
-        btnEvo.style.fontWeight = '700';
-
-        btnMeta.style.background = '#f8fafc';
-        btnMeta.style.color = '#64748b';
-        btnMeta.style.borderColor = '#cbd5e1';
-        btnMeta.style.fontWeight = '600';
-
-        pnlMeta.style.display = 'none';
-        pnlEvo.style.display = 'flex';
-    }
-}
-
-function salvarCredenciaisMeta() {
-    alert('Configurações da Meta Cloud salvas para homologação.');
-}
-
 (async function inicializarModuloWhatsApp() {
     const inPhone = document.getElementById('wa-phone-input');
     const slug = window.currentTenantSlug;
 
     try {
-        const res = await /*timeout 30s*/ fetch('/v1/tenants/' + slug);
+        const res = await fetch('/v1/tenants/' + slug);
         if (res.ok) {
             const data = await res.json();
             const tel = data.ai_number || data.phone || (data.meta_data && (data.meta_data.ai_number || data.meta_data.phone)) || '';
@@ -180,10 +111,7 @@ function salvarCredenciaisMeta() {
         console.warn('[WA] Falha ao recuperar telefone:', e);
     }
 
-    // Consulta inicial e ativação do polling contínuo (a cada 3s)
-    checarStatusConexao(); if(!window.waPollingInterval) window.waPollingInterval = setInterval(checarStatusConexao, 3000);
-    if (waPollingInterval) clearInterval(waPollingInterval);
-    // Polling continuo desativado para evitar flicker
+    checarStatusConexao();
 })();
 
 async function checarStatusConexao() {
@@ -195,22 +123,22 @@ async function checarStatusConexao() {
     const btnPair = document.getElementById('btn-gen-pair');
 
     try {
-        const res = await /*timeout 30s*/ fetch('/v1/whatsapp/status?slug=' + encodeURIComponent(window.currentTenantSlug));
+        const res = await fetch('/v1/whatsapp/status?slug=' + encodeURIComponent(window.currentTenantSlug));
         if (!res.ok) return;
         const data = await res.json();
 
-                if (data.state === 'open') {
+        if (data.state === 'open') {
             badge.textContent = '● Conectado (Ativo)';
             badge.style.color = '#166534'; badge.style.background = '#dcfce7'; badge.style.borderColor = '#bbf7d0';
             if (desc) desc.textContent = 'A esteira do WhatsApp está conectada e operando ativamente.';
             if (ph) {
                 ph.innerHTML = '<div style="color: #166534; font-weight: 700; font-size: 1.05rem;">✅ WhatsApp Conectado com Sucesso!</div>'
-                    + '<div style="color: #64748b; font-size: 0.82rem; margin-top: 6px;">Instância ativa no barramento da Evolution API.</div>';
+                    + '<div style="color: var(--p-texto-suave, #5e5563); font-size: 0.82rem; margin-top: 6px;">Instância ativa no barramento da Evolution API.</div>';
                 ph.style.display = 'block';
             }
             if (img) img.style.display = 'none';
             if (btnQr) { btnQr.textContent = 'WhatsApp Já Conectado'; btnQr.disabled = true; btnQr.style.background = '#94a3b8'; }
-            
+
             const pairDisplay = document.getElementById('wa-pair-code');
             const pairHint = document.getElementById('wa-pair-hint');
             if (pairDisplay) {
@@ -219,7 +147,7 @@ async function checarStatusConexao() {
                 pairDisplay.style.fontSize = '1.4rem';
             }
             if (pairHint) {
-                pairHint.textContent = 'Dispositivo autenticado e sincronizado na esteira ATENDIT.';
+                pairHint.textContent = 'Dispositivo autenticado e sincronizado na esteira PRESENTHIA.';
                 pairHint.style.color = '#166534';
             }
             if (btnPair) { btnPair.textContent = 'Aparelho Pareado'; btnPair.disabled = true; btnPair.style.background = '#94a3b8'; }
@@ -236,7 +164,7 @@ async function checarStatusConexao() {
             if (btnQr && btnQr.disabled && btnQr.textContent.includes('Conectado')) {
                 btnQr.disabled = false;
                 btnQr.textContent = 'Gerar Código QR';
-                btnQr.style.background = '#074f57';
+                btnQr.style.background = '#0b7570';
             }
             if (btnPair && btnPair.disabled && btnPair.textContent.includes('Pareado')) {
                 btnPair.disabled = false;
@@ -261,7 +189,7 @@ async function gerarQRCodeWhatsApp() {
     img.style.display = 'none';
 
     try {
-        const res = await /*timeout 30s*/ fetch('/v1/whatsapp/qrcode', {
+        const res = await fetch('/v1/whatsapp/qrcode', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ slug: window.currentTenantSlug })
@@ -275,7 +203,7 @@ async function gerarQRCodeWhatsApp() {
                 qrSrc = 'data:image/png;base64,' + qrSrc;
             }
             img.src = qrSrc;
-            img.style.display = 'block'; if (window.qrTimer) clearInterval(window.qrTimer); window.qrTimer = setInterval(() => { const b = document.getElementById('wa-status-badge'); if (b && b.textContent.includes('Conectado')) { clearInterval(window.qrTimer); } else { gerarQRCodeWhatsApp(); } }, 18000);
+            img.style.display = 'block';
             btn.textContent = 'Atualizar Código QR';
         } else {
             ph.textContent = '⚠️ ' + (data.message || 'Instância iniciando. Clique novamente em 3 segundos.');
@@ -308,7 +236,7 @@ async function gerarPairCodeWhatsApp() {
     hint.textContent = 'Solicitando token de pareamento à Meta...';
 
     try {
-        const res = await /*timeout 30s*/ fetch('/v1/whatsapp/pair-code', {
+        const res = await fetch('/v1/whatsapp/pair-code', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ slug: window.currentTenantSlug, phone: tel })
@@ -339,7 +267,7 @@ async function resetarSessaoWhatsApp() {
     btn.textContent = 'Limpando...';
 
     try {
-        await /*timeout 30s*/ fetch('/v1/whatsapp/reset', {
+        await fetch('/v1/whatsapp/reset', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ slug: window.currentTenantSlug })
