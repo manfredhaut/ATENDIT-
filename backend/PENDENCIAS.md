@@ -37,8 +37,13 @@
 - [x] **Não existe tela de troca de senha no painel.** — resolvido em 2026-09-24 com modal de recuperação em `login.html` (`/v1/auth/esqueci-senha`) e endpoint autenticado `/v1/auth/alterar-senha` com hash bcrypt. Enquanto não existir,
   trocar senha exige SSH — e é por isso que `ADMIN_PASSWORD` continua no
   `.env` como único caminho de recuperação.
-- [ ] **Calendly**: adapter pronto, teste ponta a ponta bloqueado no Personal
-  Access Token, que só o usuário gera.
+- [x] **Calendly** — suíte E2E executada e aprovada em **2026-09-24**.
+  Validado via `app.tests.test_calendly_e2e`: validação de token na API v2,
+  rejeição de token inválido (`TokenInvalido`), armazenamento seguro com AES
+  (`calendar_connections.credentials_encrypted`), validação criptográfica de
+  assinatura HMAC-SHA256 de webhook com rejeição de replay (> 300s), ingestão
+  idempotente de eventos (`invitee.created` e `invitee.canceled`) e persistência
+  espelhada na tabela `appointments`.
 
 ---
 
