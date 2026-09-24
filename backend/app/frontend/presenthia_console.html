@@ -374,7 +374,7 @@
         <section class="content-area">
             
             <!-- GRADE DE KPIS (p-card) -->
-            <div class="kpi-grid">
+            <div class="kpi-grid" id="visao-geral">
                 <div class="kpi-card p-card">
                     <div class="kpi-header">Inquilinos Cadastrados</div>
                     <div class="kpi-val" id="kpi-total-tenants">--</div>
@@ -435,7 +435,80 @@
                 </div>
             </div>
 
-            <!-- PAINEL 2: FEATURE FLAGS -->
+            
+            <!-- PAINEL 3: PLANOS & ASSINATURAS -->
+            <div class="panel p-card" id="planos">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title p-titulo">Planos & Assinaturas</h2>
+                        <p style="font-size: 13px; color: var(--p-texto-suave); margin-top: 4px;">
+                            Vigência de contratos, ciclos de faturamento e períodos de teste dos inquilinos
+                        </p>
+                    </div>
+                    <span id="counter-subs" class="chip p-chip-ok" style="font-size: 11px;">0 registros</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Inquilino</th>
+                                <th>E-mail do Administrador</th>
+                                <th>Plano</th>
+                                <th>Vigência / Trial</th>
+                                <th>WhatsApp Gateway</th>
+                                <th style="text-align: right;">Status Financeiro</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-subs">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--p-texto-suave); padding: 24px;">
+                                    Carregando dados de assinaturas...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- PAINEL 8: COPILOTOS DE IA & RAG -->
+            <div class="panel p-card" id="copilotos">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title p-titulo">Copilotos de IA & Bases RAG</h2>
+                        <p style="font-size: 13px; color: var(--p-texto-suave); margin-top: 4px;">
+                            Monitoramento dos agentes inteligentes, modelos LLM em produção e documentos indexados
+                        </p>
+                    </div>
+                    <span id="counter-copilots" class="chip p-chip-ok" style="font-size: 11px;">0 agentes</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Inquilino</th>
+                                <th>Agente Ativo</th>
+                                <th>Modelo LLM</th>
+                                <th>Docs RAG</th>
+                                <th>Chave API</th>
+                                <th>Estado</th>
+                                <th style="text-align: right;">Governança de IA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-copilots">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--p-texto-suave); padding: 24px;">
+                                    Carregando copilotos de IA...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+<!-- PAINEL 2: FEATURE FLAGS -->
             <div class="panel p-card" id="flags">
                 <div class="panel-header">
                     <div>
@@ -559,6 +632,81 @@
                         tbody.appendChild(tr);
                     });
                 }
+            
+                // 4. Assinaturas e Planos
+                const resSubs = await fetch('/api/v1/presenthia/subscriptions');
+                if (resSubs.ok) {
+                    const subs = await resSubs.json();
+                    const tbody = document.getElementById('tbody-subs');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                        document.getElementById('counter-subs').innerText = `${subs.length} registros`;
+                        if (subs.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--p-texto-suave); padding: 20px;">Nenhuma assinatura registrada.</td></tr>';
+                        } else {
+                            subs.forEach(s => {
+                                const tr = document.createElement('tr');
+                                const isVigente = s.days_remaining >= 0;
+                                const chipClass = isVigente ? 'p-chip-ok' : 'p-chip-atencao';
+                                const whatsappBadge = s.whatsapp_status === 'Conectado'
+                                    ? '<span class="chip p-chip-ok" style="font-size: 11px;">Conectado</span>'
+                                    : '<span class="chip p-chip-atencao" style="font-size: 11px;">Desconectado</span>';
+
+                                tr.innerHTML = `
+                                    <td style="font-weight: 700; color: var(--p-texto);">${s.tenant_name}</td>
+                                    <td style="color: var(--p-texto-suave);">${s.admin_email}</td>
+                                    <td><span class="code-pill">${s.plan_name}</span></td>
+                                    <td>${s.trial_days} dias (${new Date(s.trial_ends_at).toLocaleDateString('pt-BR')})</td>
+                                    <td>${whatsappBadge}</td>
+                                    <td style="text-align: right;"><span class="chip ${chipClass}">${s.status_billing}</span></td>
+                                `;
+                                tbody.appendChild(tr);
+                            });
+                        }
+                    }
+                }
+
+                // 5. Copilotos de IA & RAG
+                const resCopilots = await fetch('/api/v1/presenthia/copilots');
+                if (resCopilots.ok) {
+                    const copilots = await resCopilots.json();
+                    const tbody = document.getElementById('tbody-copilots');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                        document.getElementById('counter-copilots').innerText = `${copilots.length} agentes`;
+                        if (copilots.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--p-texto-suave); padding: 20px;">Nenhum copiloto configurado.</td></tr>';
+                        } else {
+                            copilots.forEach(c => {
+                                const tr = document.createElement('tr');
+                                const statusChip = c.is_active
+                                    ? '<span class="chip p-chip-ok">Ativo</span>'
+                                    : '<span class="chip p-chip-atencao">Pausado</span>';
+                                const keyChip = c.has_custom_api_key
+                                    ? '<span class="chip p-chip-ok" style="font-size: 11px;">Dedicada</span>'
+                                    : '<span class="chip" style="font-size: 11px; background: rgba(0,0,0,0.06); color: var(--p-texto-suave);">Global</span>';
+                                const btnClass = c.is_active ? 'btn-action-on' : 'btn-action-off';
+                                const btnText = c.is_active ? 'Pausar' : 'Ativar';
+
+                                tr.innerHTML = `
+                                    <td style="font-weight: 700; color: var(--p-texto);">${c.tenant_name}</td>
+                                    <td><strong>${c.agent_name}</strong><br><small style="color: var(--p-texto-suave); font-size: 11px;">${c.system_instruction_preview || ''}</small></td>
+                                    <td><span class="code-pill">${c.model}</span></td>
+                                    <td><span class="code-pill">${c.rag_docs_count} doc(s)</span></td>
+                                    <td>${keyChip}</td>
+                                    <td>${statusChip}</td>
+                                    <td style="text-align: right;">
+                                        <button class="btn-table-action ${btnClass}" onclick="toggleCopilot('${c.tenant_id}')">
+                                            ${btnText}
+                                        </button>
+                                    </td>
+                                `;
+                                tbody.appendChild(tr);
+                            });
+                        }
+                    }
+                }
+
             } catch (err) {
                 console.error("[TELEMETRIA] Falha ao comunicar com os endpoints:", err);
             }
@@ -595,6 +743,41 @@
                 alert("Falha de comunicação: " + err);
             }
         }
+
+        
+        async function toggleCopilot(tenantId) {
+            console.log(`[AÇÃO] Solicitando alternância de estado para Copiloto Tenant: ${tenantId}`);
+            try {
+                const res = await fetch(`/api/v1/presenthia/copilots/${tenantId}/toggle-active`, { method: 'POST' });
+                if (res.ok) {
+                    console.log(`[AÇÃO] Copiloto ${tenantId} atualizado.`);
+                    carregarDados();
+                } else {
+                    alert("Não foi possível alterar o estado do copiloto de IA.");
+                }
+            } catch (err) {
+                console.error("[AÇÃO] Erro ao alternar copiloto:", err);
+                alert("Falha de comunicação: " + err);
+            }
+        }
+
+        // Navegação Reativa da Sidebar (Tokens CSS aria-current e scroll suave)
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        const target = document.querySelector(href);
+                        if (target) {
+                            e.preventDefault();
+                            document.querySelectorAll('.sidebar-nav a').forEach(a => a.removeAttribute('aria-current'));
+                            this.setAttribute('aria-current', 'page');
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                });
+            });
+        });
 
         document.addEventListener('DOMContentLoaded', carregarDados);
     </script>
