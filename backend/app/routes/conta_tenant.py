@@ -761,3 +761,62 @@ async def api_aplicar_template_segmento(request: Request):
         "template": template
     })
 
+
+
+# ---------------------------------------------------------------------------
+# F1.6 - Busca Global e Atalhos (Ctrl+K)
+# ---------------------------------------------------------------------------
+@router.get("/api/busca-global")
+async def api_busca_global(q: str = "", slug: str = "conta"):
+    from fastapi.responses import JSONResponse
+    termo = q.strip().lower()
+    if not termo:
+        return JSONResponse(content={"ok": True, "resultados": []})
+
+    resultados = []
+
+    # 1. Rotas e Módulos do Sistema
+    modulos = [
+        {"tipo": "Navegação", "titulo": "Painel Principal (Atenção Agora)", "acao": "faturamento", "icone": "📊"},
+        {"tipo": "Navegação", "titulo": "Configuração Guiada (Onboarding)", "acao": "configuracao_guiada", "icone": "🧭"},
+        {"tipo": "Navegação", "titulo": "Modelos por Segmento", "acao": "modelos_segmento", "icone": "🎯"},
+        {"tipo": "Navegação", "titulo": "Cadastro da Empresa & Conta", "acao": "empresa_cadastro", "icone": "🏢"},
+        {"tipo": "Navegação", "titulo": "Canais WhatsApp (Oficial Cloud API & QR Code)", "acao": "canais", "icone": "📡"},
+        {"tipo": "Navegação", "titulo": "Configurações do Atendente IA", "acao": "ia_config", "icone": "⚙️"},
+        {"tipo": "Navegação", "titulo": "Configuração da IA & Modelos", "acao": "gemini_config", "icone": "🧠"},
+        {"tipo": "Navegação", "titulo": "Agenda & Calendário", "acao": "calendar_config", "icone": "📅"},
+        {"tipo": "Navegação", "titulo": "Gestão de Documentos & RAG", "acao": "rag_management", "icone": "📁"},
+        {"tipo": "Navegação", "titulo": "Fila de Atendimento & Chat", "acao": "fila_atendimento", "icone": "💬"},
+        {"tipo": "Navegação", "titulo": "Loja, Vitrine & E-Commerce", "acao": "ecommerce_config", "icone": "🛒"},
+        {"tipo": "Navegação", "titulo": "Inteligência Operacional", "acao": "intel_operacional", "icone": "📈"}
+    ]
+
+    for m in modulos:
+        if termo in m["titulo"].lower() or termo in m["acao"].lower():
+            resultados.append(m)
+
+    # 2. Busca de Contatos / Clientes no PostgreSQL
+    try:
+        from app.core.database import AsyncSessionLocal
+        from sqlalchemy import text
+        async with AsyncSessionLocal() as session:
+            query = await session.execute(text("""
+                SELECT id, name, whatsapp_number_e164, profile_name 
+                FROM tenants 
+                WHERE (name ILIKE :t OR whatsapp_number_e164 ILIKE :t OR profile_name ILIKE :t)
+                LIMIT 5
+            """), {"t": f"%{termo}%"})
+            linhas = query.fetchall()
+            for row in linhas:
+                nome = row[1] or row[3] or "Contato"
+                num = row[2] or "Sem número"
+                resultados.append({
+                    "tipo": "Contato",
+                    "titulo": f"{nome} ({num})",
+                    "acao": "fila_atendimento",
+                    "icone": "👤"
+                })
+    except Exception as e:
+        pass
+
+    return JSONResponse(content={"ok": True, "resultados": resultados[:10]})
