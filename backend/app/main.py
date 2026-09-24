@@ -256,9 +256,12 @@ from app.core.security import exigir_token_interno
 from app.routes import webhook as _webhook_routes
 from app.routes import tenants as _tenants_routes
 from app.routes import ai_config as _ai_config_routes
-from app.routes import rag as _rag_routes
+from app.routes import rag
+from app.routes import meta as _rag_routes
 from app.routes import hardware as _hardware_routes
 from app.services.calendar import routes as _calendar_routes
+from app.routes import logistics as _logistics_routes
+from app.routes import intel_operacional as _intel_operacional_routes
 
 from app.routes import conta_tenant as _conta_tenant
 # Rotas de conta do cliente. ANTES do catch-all /{tenant_slug}, senao
@@ -270,6 +273,12 @@ app.include_router(_ai_config_routes.router)
 app.include_router(_rag_routes.router)
 app.include_router(_hardware_routes.router)
 app.include_router(_calendar_routes.router)
+app.include_router(_logistics_routes.router)
+app.include_router(_intel_operacional_routes.router)
+from app.routes import video as _video_routes
+app.include_router(_video_routes.router)
+from app.routes import presenthia as _presenthia_routes
+app.include_router(_presenthia_routes.router)
 
 
 
@@ -472,34 +481,61 @@ async def painel_login(request: Request, response: Response):
         corpo = await request.json()
     except Exception:
         corpo = {}
-    usuario = corpo.get("usuario") or corpo.get("username") or ""
+    usuario = (corpo.get("usuario") or corpo.get("username") or corpo.get("email") or "").strip()
     senha = corpo.get("senha") or corpo.get("password") or ""
 
-    conta = await _painel.autenticar(usuario, senha)
-    if conta is None:
-        # Mensagem UNICA para usuario inexistente e senha errada: distinguir
-        # os dois casos diria a um atacante quais contas existem.
+    if not usuario or not senha:
+        return JSONResponse(status_code=401, content={"detail": "Informe o usuário e a senha."})
+
+    # 1. Tenta autenticar como Administrador da Plataforma (admin_users)
+    conta_admin = await _painel.autenticar(usuario, senha)
+    if conta_admin is not None:
+        resposta = JSONResponse(content={"ok": True, "destino": "/admin"})
+        resposta.set_cookie(
+            key=_painel.NOME_COOKIE,
+            value=_painel.emitir_cookie(),
+            max_age=_painel.DURACAO_SESSAO_SEGUNDOS,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            path="/",
+        )
+        logger.info(f"[PANEL AUTH] Login administrativo efetuado por '{usuario}'.")
+        return resposta
+
+    # 2. Tenta autenticar como Inquilino / Cliente (tenant_users)
+    from app.core import tenant_auth
+    conta_tenant, motivo = await tenant_auth.autenticar(usuario, senha)
+    if conta_tenant is not None:
+        resposta = JSONResponse(content={"ok": True, "destino": "/tenant/painel"})
+        resposta.set_cookie(
+            key=tenant_auth.NOME_COOKIE,
+            value=tenant_auth.emitir_cookie(conta_tenant.tenant_id, conta_tenant.id),
+            max_age=tenant_auth.DURACAO_SESSAO_SEGUNDOS,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            path="/",
+        )
+        logger.info(f"[TENANT AUTH] Login de inquilino efetuado com sucesso por '{usuario}'.")
+        return resposta
+
+    # 3. Tratamento de mensagens específicas caso seja conta de tenant pendente
+    if motivo == "nao_verificado":
         return JSONResponse(
-            status_code=401, content={"detail": "Usuário ou senha incorretos."}
+            status_code=403,
+            content={"detail": "Confirme seu e-mail antes de entrar. Procure o link que enviamos no seu cadastro."}
+        )
+    if motivo == "inativo":
+        return JSONResponse(
+            status_code=403,
+            content={"detail": "Esta conta está desativada. Fale com o suporte."}
         )
 
-    # O destino vem do SERVIDOR, como ja acontece no /tenant/login. Antes
-    # esta resposta era so {"ok": true} e o JavaScript da tela decidia
-    # sozinho, caindo em "/" quando nao havia `next` -- ou seja, quem
-    # entrava direto em /login era devolvido para a LANDING depois de
-    # autenticar com sucesso. Parecia login que nao funcionou.
-    resposta = JSONResponse(content={"ok": True, "destino": "/admin"})
-    resposta.set_cookie(
-        key=_painel.NOME_COOKIE,
-        value=_painel.emitir_cookie(),
-        max_age=_painel.DURACAO_SESSAO_SEGUNDOS,
-        httponly=True,   # invisivel ao JavaScript: XSS nao rouba a sessao
-        secure=True,     # so por HTTPS
-        samesite="lax",  # sobrevive a volta do OAuth do Google (redirect GET)
-        path="/",
+    # Mensagem padronizada de segurança
+    return JSONResponse(
+        status_code=401, content={"detail": "Usuário ou senha incorretos."}
     )
-    logger.info("[PANEL AUTH] Login efetuado.")
-    return resposta
 
 
 @app.get("/logout", include_in_schema=False)
@@ -600,6 +636,7 @@ def _tenant_para_dicionario(inquilino, cfg=None) -> dict:
             "name": cfg.agent_name,
             "tone": cmd.get("tone", "Objetivo e Claro"),
             "questions": cmd.get("questions", []),
+            "departments": cmd.get("departments", []),
         }
     return {
         "slug": inquilino.slug,
@@ -792,6 +829,8 @@ async def save_agent_config(request: Request):
         cmd = dict(cfg.meta_data or {})
         cmd["tone"] = corpo.get("tone", cmd.get("tone", "Objetivo e Claro"))
         cmd["questions"] = perguntas
+        if "departments" in corpo:
+            cmd["departments"] = corpo.get("departments") if isinstance(corpo.get("departments"), list) else []
         cfg.meta_data = cmd
 
         await sessao.commit()
@@ -1025,5 +1064,233 @@ async def generate_wa_pair_code(instance_name: str, phone: str):
         "message": "Tempo limite esgotado aguardando resposta da Meta. Verifique se o número possui WhatsApp ativo ou tente novamente em instantes."
     }
 
-from app.routes import rag as rag_module
+from app.routes import rag
+from app.routes import meta as rag_module
 app.include_router(rag_module.router, prefix="/v1/rag")
+
+
+# ---------------------------------------------------------------------------
+# ROTAS DE RESGATE, ANÁLISE E GESTÃO DE CONVERSAS (WHATSAPP REAL)
+# ---------------------------------------------------------------------------
+
+@app.get("/v1/whatsapp/chats")
+async def listar_chats_whatsapp(request: Request):
+    """Resgata as conversas ativas do inquilino com contadores e última mensagem."""
+    from sqlalchemy import text as _sql_text
+    from app.core import autorizacao as _autz
+    from app.core.database import AsyncSessionLocal as _S
+
+    slug = (request.query_params.get("tenant_slug") or request.query_params.get("slug") or "").strip().lower()
+    if not slug:
+        slug = await _autz.slug_da_sessao(request)
+    if slug:
+        await _autz.exigir_acesso_ao_tenant(request, slug=slug)
+
+    async with _S() as sessao:
+        t_res = await sessao.execute(
+            _sql_text("SELECT id, evolution_instance, slug, name FROM tenants WHERE slug = :slug"),
+            {"slug": slug}
+        )
+        t_row = t_res.first()
+        if not t_row:
+            return []
+
+        inst_nome = t_row[1] or f"atendit_{slug.replace('-', '_')}"
+        i_res = await sessao.execute(
+            _sql_text('SELECT id FROM "Instance" WHERE name = :name LIMIT 1'),
+            {"name": inst_nome}
+        )
+        i_row = i_res.first()
+        if not i_row:
+            return []
+        inst_id = i_row[0]
+
+        chats_res = await sessao.execute(_sql_text('''
+            SELECT c.id, c."remoteJid", c.name, c.labels, c."updatedAt", c."unreadMessages",
+                   (SELECT m.message->>'conversation'
+                    FROM "Message" m
+                    WHERE m."instanceId" = c."instanceId"
+                      AND m.key->>'remoteJid' = c."remoteJid"
+                    ORDER BY m."messageTimestamp" DESC
+                    LIMIT 1) AS last_msg,
+                   (SELECT m."messageTimestamp"
+                    FROM "Message" m
+                    WHERE m."instanceId" = c."instanceId"
+                      AND m.key->>'remoteJid' = c."remoteJid"
+                    ORDER BY m."messageTimestamp" DESC
+                    LIMIT 1) AS last_ts
+            FROM "Chat" c
+            WHERE c."instanceId" = :inst_id
+            ORDER BY c."updatedAt" DESC
+            LIMIT 100
+        '''), {"inst_id": inst_id})
+
+        lista = []
+        for r in chats_res.fetchall():
+            labels = r[3] or {}
+            st = labels.get("status", "ia")
+            contato_num = (r[1] or "").split("@")[0].split(":")[0]
+            lista.append({
+                "id": r[0],
+                "remoteJid": r[1],
+                "contact": contato_num,
+                "client_name": r[2] or contato_num,
+                "last_message": r[6] or "Nenhuma mensagem registrada",
+                "last_timestamp": r[7],
+                "status": st,
+                "unread": r[5] or 0,
+                "updated_at": r[4].strftime("%d/%m/%Y %H:%M") if r[4] else ""
+            })
+        return lista
+
+
+@app.get("/v1/whatsapp/chats/{target}/messages")
+async def obter_transcricao_chat(target: str, request: Request):
+    """Resgata a transcrição completa de mensagens de uma conversa para auditoria e análise."""
+    from datetime import datetime as _dt
+    from sqlalchemy import text as _sql_text
+    from app.core import autorizacao as _autz
+    from app.core.database import AsyncSessionLocal as _S
+
+    slug = (request.query_params.get("tenant_slug") or request.query_params.get("slug") or "").strip().lower()
+    if not slug:
+        slug = await _autz.slug_da_sessao(request)
+    if slug:
+        await _autz.exigir_acesso_ao_tenant(request, slug=slug)
+
+    async with _S() as sessao:
+        t_res = await sessao.execute(
+            _sql_text("SELECT id, evolution_instance, slug FROM tenants WHERE slug = :slug"),
+            {"slug": slug}
+        )
+        t_row = t_res.first()
+        if not t_row:
+            return []
+        inst_nome = t_row[1] or f"atendit_{slug.replace('-', '_')}"
+        i_res = await sessao.execute(
+            _sql_text('SELECT id FROM "Instance" WHERE name = :name LIMIT 1'),
+            {"name": inst_nome}
+        )
+        i_row = i_res.first()
+        if not i_row:
+            return []
+        inst_id = i_row[0]
+
+        remote_jid = target
+        if "@" not in target:
+            c_res = await sessao.execute(
+                _sql_text('SELECT "remoteJid" FROM "Chat" WHERE id = :cid AND "instanceId" = :iid LIMIT 1'),
+                {"cid": target, "iid": inst_id}
+            )
+            c_row = c_res.first()
+            if c_row:
+                remote_jid = c_row[0]
+            else:
+                remote_jid = f"{target}@s.whatsapp.net"
+
+        msgs_res = await sessao.execute(_sql_text('''
+            SELECT id, key, "pushName", message, "messageTimestamp", source, status
+            FROM "Message"
+            WHERE "instanceId" = :inst_id
+              AND key->>'remoteJid' = :remote_jid
+            ORDER BY "messageTimestamp" ASC
+            LIMIT 300
+        '''), {"inst_id": inst_id, "remote_jid": remote_jid})
+
+        resultado = []
+        for m in msgs_res.fetchall():
+            m_key = m[1] or {}
+            m_msg = m[3] or {}
+            from_me = bool(m_key.get("fromMe", False))
+
+            texto = ""
+            if "conversation" in m_msg:
+                texto = m_msg["conversation"]
+            elif "extendedTextMessage" in m_msg:
+                texto = m_msg["extendedTextMessage"].get("text", "")
+            elif "imageMessage" in m_msg:
+                texto = f"[Imagem] {m_msg['imageMessage'].get('caption', '')}"
+            else:
+                texto = str(m_msg) if m_msg else ""
+
+            hora = _dt.fromtimestamp(m[4]).strftime("%d/%m %H:%M") if m[4] else ""
+            resultado.append({
+                "id": m[0],
+                "from_me": from_me,
+                "sender": m[2] or ("Atendente / IA" if from_me else "Cliente"),
+                "text": texto,
+                "time": hora,
+                "status": m[6] or "DELIVERED"
+            })
+        return resultado
+
+
+@app.post("/v1/whatsapp/chats/{target}/status")
+async def alterar_status_chat(target: str, request: Request):
+    """Altera o estado da conversa: transbordo humano, retomada de IA ou encerramento."""
+    from sqlalchemy import text as _sql_text
+    from app.core import autorizacao as _autz
+    from app.core.database import AsyncSessionLocal as _S
+
+    corpo = await request.json()
+    slug = (corpo.get("slug") or request.query_params.get("tenant_slug") or "").strip().lower()
+    if not slug:
+        slug = await _autz.slug_da_sessao(request)
+    if slug:
+        await _autz.exigir_acesso_ao_tenant(request, slug=slug)
+
+    novo_status = (corpo.get("status") or "ia").strip().lower()
+
+    async with _S() as sessao:
+        t_res = await sessao.execute(
+            _sql_text("SELECT id, evolution_instance, slug FROM tenants WHERE slug = :slug"),
+            {"slug": slug}
+        )
+        t_row = t_res.first()
+        if not t_row:
+            return JSONResponse(status_code=404, content={"status": "error", "message": "Tenant não encontrado"})
+
+        inst_nome = t_row[1] or f"atendit_{slug.replace('-', '_')}"
+        i_res = await sessao.execute(
+            _sql_text('SELECT id FROM "Instance" WHERE name = :name LIMIT 1'),
+            {"name": inst_nome}
+        )
+        i_row = i_res.first()
+        if not i_row:
+            return JSONResponse(status_code=404, content={"status": "error", "message": "Instância não encontrada"})
+        inst_id = i_row[0]
+
+        await sessao.execute(_sql_text('''
+            UPDATE "Chat"
+            SET labels = jsonb_set(COALESCE(labels, '{}'::jsonb), '{status}', to_jsonb(:st::text)),
+                "updatedAt" = NOW()
+            WHERE "instanceId" = :inst_id AND (id = :target OR "remoteJid" = :target)
+        '''), {"st": novo_status, "inst_id": inst_id, "target": target})
+        await sessao.commit()
+
+    return {"status": "success", "new_status": novo_status}
+
+# ============================================================================
+# CANARY ROUTE: Presenthia Feature Flag Validation (F0.11)
+# ============================================================================
+from app.core.feature_flags import flag_on
+
+@app.get("/api/v1/presenthia/canary", dependencies=[Depends(flag_on("presenthia_core"))], include_in_schema=False)
+async def presenthia_canary_status():
+    return {"status": "success", "feature": "presenthia_core", "message": "Presenthia Flag Ativa"}
+
+# ============================================================================
+# PRESENTHIA STATIC ASSETS & CONSOLE (F0.6 / F0.9 / F0.10)
+# ============================================================================
+from fastapi.staticfiles import StaticFiles
+
+_presenthia_assets_path = FRONTEND_DIR / "presenthia_assets"
+if _presenthia_assets_path.is_dir():
+    app.mount("/presenthia/assets", StaticFiles(directory=str(_presenthia_assets_path)), name="presenthia_static_assets")
+
+@app.get("/presenthia/console", response_class=HTMLResponse, dependencies=[Depends(flag_on("presenthia_core"))], include_in_schema=False)
+async def serve_presenthia_console_dashboard():
+    target = FRONTEND_DIR / "presenthia_console.html"
+    if target.is_file():
+        return HTMLResponse(target.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Presenthia Console - Carregando</h1>", status_code=200)
