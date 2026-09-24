@@ -534,17 +534,78 @@ window.currentTenantSlug = window.currentTenantSlug || window.location.pathname.
             } catch(e) { console.error("Erro CRM:", e); }
         }
 
-        function calCarregarAsIsToBe() {
+        async function calCarregarAsIsToBe() {
             var b = document.getElementById('asis-lista-buracos');
             var s = document.getElementById('tobe-lista-sugestoes');
-            if (b) b.innerHTML = '<div style="padding:14px; background:#FEF2F2; border-radius:8px; border:1px solid #FECACA; color:#991B1B; font-size:0.9rem;">'
-                               + '  <strong>Lacuna AS-IS Detectada:</strong> Vaga das 14:00 às 14:45 (Cancelamento de Rodrigo Silva). Horário ocioso.'
-                               + '</div>';
-            if (s) s.innerHTML = '<div style="padding:16px; background:#ECFDF5; border-radius:8px; border:1px solid #A7F3D0;">'
-                               + '  <div style="font-weight:700; color:#065F46; font-size:0.95rem;">⚡ Oportunidade TO-BE: Antecipação Ativa</div>'
-                               + '  <div style="font-size:0.88rem; color:#334155; margin:6px 0;">Cliente prioritário na fila de espera: <strong>Carlos Eduardo (47 98822-1133)</strong></div>'
-                               + '  <button type="button" onclick="alert(\'Oferta de antecipação disparada via WhatsApp com sucesso!\')" style="padding:8px 18px; background:#059669; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem; margin-top:6px;">🚀 Disparar Oferta de Encaixe WhatsApp</button>'
-                               + '</div>';
+            if (!b || !s) return;
+
+            b.innerHTML = '<div style="padding:14px; color:#64748B; font-size:0.88rem;">Analisando horários e desistências…</div>';
+            s.innerHTML = '<div style="padding:14px; color:#64748B; font-size:0.88rem;">Carregando lista de espera…</div>';
+
+            try {
+                // 1. Carrega Resumo AS-IS (Cancelamentos e Ociosidade)
+                var rCrm = await fetch('/calendar/crm-summary/' + window.currentTenantSlug);
+                if (rCrm.ok) {
+                    var dCrm = await rCrm.json();
+                    if (dCrm.desistencias > 0) {
+                        b.innerHTML = '<div style="padding:14px; background:#FEF2F2; border-radius:8px; border:1px solid #FECACA; color:#991B1B; font-size:0.9rem;">'
+                                    + '  <strong>' + dCrm.desistencias + ' Desistência(s) / Horário(s) Liberado(s) neste ciclo.</strong>'
+                                    + '  <div style="font-size:0.82rem; margin-top:4px; color:#7F1D1D;">Vagas disponibilizadas automaticamente para o motor de encaixe da Waitlist.</div>'
+                                    + '</div>';
+                    } else {
+                        b.innerHTML = '<div style="padding:14px; background:#F8FAFC; border-radius:8px; border:1px solid #E2E8F0; color:#475569; font-size:0.88rem;">'
+                                    + '  ✓ Nenhuma desistência recente registrada. Grade de horários com alta taxa de comparecimento.'
+                                    + '</div>';
+                    }
+                }
+
+                // 2. Carrega Fila TO-BE (Waitlist Real)
+                var rWait = await fetch('/calendar/waitlist/' + window.currentTenantSlug);
+                if (!rWait.ok) throw new Error('HTTP ' + rWait.status);
+                var dWait = await rWait.json();
+                var itens = dWait.waitlist || [];
+
+                if (itens.length === 0) {
+                    s.innerHTML = '<div style="padding:14px; background:#ECFDF5; border-radius:8px; border:1px solid #A7F3D0; color:#065F46; font-size:0.88rem;">'
+                                + '  Nenhum cliente aguardando na lista de espera no momento.'
+                                + '</div>';
+                    return;
+                }
+
+                var html = '<div style="display:grid; gap:12px;">';
+                itens.forEach(function(item) {
+                    var badgeStatus = '<span style="background:#FEF3C7; color:#92400E; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">Aguardando</span>';
+                    if (item.status === 'notified') badgeStatus = '<span style="background:#DBEAFE; color:#1E40AF; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">Ofertado (Em Resposta)</span>';
+                    if (item.status === 'booked') badgeStatus = '<span style="background:#D1FAE5; color:#065F46; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">Encaixado / Confirmado</span>';
+                    if (item.status === 'expired') badgeStatus = '<span style="background:#FEE2E2; color:#991B1B; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">Expirado</span>';
+
+                    html += '<div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; padding:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">'
+                          + '  <div>'
+                          + '    <div style="font-weight:700; color:#1E293B; font-size:0.92rem;">' + item.cliente + ' <span style="font-weight:400; color:#64748B; font-size:0.82rem;">(' + item.telefone + ')</span></div>'
+                          + '    <div style="font-size:0.82rem; color:#475569; margin-top:2px;">Serviço: <strong>' + item.servico + '</strong> | Janela: ' + item.janela_inicio + ' até ' + item.janela_fim + '</div>'
+                          + '    <div style="font-size:0.78rem; color:#64748B; margin-top:2px;">Prioridade: #' + item.prioridade + ' | Status: ' + badgeStatus + '</div>'
+                          + '  </div>'
+                          + '  <div>'
+                          + '    <button type="button" onclick="calRemoverWaitlist(\'' + item.id + '\')" style="padding:6px 12px; background:#FEE2E2; color:#991B1B; border:1px solid #FECACA; border-radius:6px; font-size:0.8rem; font-weight:600; cursor:pointer;">Remover</button>'
+                          + '  </div>'
+                          + '</div>';
+                });
+                html += '</div>';
+                s.innerHTML = html;
+            } catch(e) {
+                s.innerHTML = '<div style="color:#DC2626; font-size:0.88rem; padding:10px;">Não foi possível carregar a fila de espera.</div>';
+            }
+        }
+
+        async function calRemoverWaitlist(waitlistId) {
+            if (!confirm('Deseja realmente remover este cliente da fila de espera?')) return;
+            try {
+                var r = await fetch('/calendar/waitlist/' + window.currentTenantSlug + '/' + waitlistId, { method: 'DELETE' });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                calCarregarAsIsToBe();
+            } catch(e) {
+                alert('Erro ao remover cliente da lista de espera.');
+            }
         }
 
         function calAbrirModalNovo(dtStr, horaStr) {

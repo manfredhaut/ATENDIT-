@@ -35,9 +35,9 @@ from sqlalchemy import select
 from app.core.crypto import decifrar_dict
 from app.services import template_service
 from app.core.database import AsyncSessionLocal
-from app.models.scheduling import Appointment, CalendarConnection
+from app.models.scheduling import Appointment, CalendarConnection, Waitlist, ServiceType
 from app.models.tenant import Tenant
-from app.services.calendar import calendly_adapter, google_adapter, microsoft_adapter
+from app.services.calendar import calcom_adapter, calendly_adapter, google_adapter, microsoft_adapter
 
 logger = logging.getLogger("atendit.calendar_routes")
 
@@ -49,6 +49,7 @@ ADAPTADORES: Dict[str, Any] = {
     "microsoft": microsoft_adapter,
     "caldav": None,
     "calendly": calendly_adapter,
+    "calcom": calcom_adapter,
 }
 
 ROTULOS = {
@@ -592,3 +593,107 @@ async def obter_resumo_crm(tenant: str, request: Request):
             for a in apts_hoje
         ]
     }
+
+
+# ============================================================================
+# ENDPOINTS DA LISTA DE ESPERA (WAITLIST) & ENCAIXE PRIORITÁRIO (F3.3)
+# ============================================================================
+class NovaEsperaRequest(BaseModel):
+    customer_name: str
+    customer_phone: str
+    service_type_id: Optional[str] = None
+    desired_start: str
+    desired_end: str
+    priority: int = 1
+
+
+@router.get("/waitlist/{tenant}", include_in_schema=False)
+async def listar_waitlist(tenant: str, request: Request):
+    """Retorna os clientes na lista de espera com prioridade e status."""
+    tenant_id, slug = await _exigir_dono(request, tenant)
+    
+    async with AsyncSessionLocal() as sessao:
+        stmt = (
+            select(Waitlist, ServiceType)
+            .join(ServiceType, ServiceType.id == Waitlist.service_type_id)
+            .where(Waitlist.tenant_id == tenant_id)
+            .order_by(Waitlist.priority.asc(), Waitlist.created_at.asc())
+        )
+        linhas = (await sessao.execute(stmt)).all()
+
+        fuso = __import__("zoneinfo").ZoneInfo("America/Sao_Paulo")
+        resultado = []
+        for w, st in linhas:
+            resultado.append({
+                "id": str(w.id),
+                "cliente": w.customer_name or "Cliente",
+                "telefone": w.customer_phone,
+                "servico": st.name,
+                "prioridade": w.priority,
+                "status": w.status,
+                "janela_inicio": w.desired_start.astimezone(fuso).strftime("%d/%m %H:%M"),
+                "janela_fim": w.desired_end.astimezone(fuso).strftime("%d/%m %H:%M"),
+                "ofertado_em": w.notified_at.astimezone(fuso).strftime("%d/%m às %H:%M") if w.notified_at else None,
+                "horario_ofertado": w.offered_start.astimezone(fuso).strftime("%d/%m às %H:%M") if w.offered_start else None,
+            })
+    return {"waitlist": resultado, "total": len(resultado)}
+
+
+@router.post("/waitlist/{tenant}", include_in_schema=False)
+async def adicionar_waitlist(tenant: str, request: Request, payload: NovaEsperaRequest):
+    """Adiciona manualmente um cliente à lista de espera."""
+    tenant_id, slug = await _exigir_dono(request, tenant)
+    from app.services import scheduling_service
+    
+    try:
+        dt_ini = datetime.fromisoformat(payload.desired_start)
+        dt_fim = datetime.fromisoformat(payload.desired_end)
+        svc_id = uuid.UUID(payload.service_type_id) if payload.service_type_id else None
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Parâmetros inválidos: {e}")
+
+    res = await scheduling_service.join_waitlist(
+        tenant_id=tenant_id,
+        service_type_id=svc_id,
+        customer_phone=payload.customer_phone.strip(),
+        customer_name=payload.customer_name.strip(),
+        desired_start=dt_ini,
+        desired_end=dt_fim,
+        priority=payload.priority,
+    )
+    logger.info(f"[WAITLIST API] {payload.customer_name} ({payload.customer_phone}) adicionado à fila do tenant {slug}.")
+    return {"success": True, "data": res}
+
+
+@router.delete("/waitlist/{tenant}/{waitlist_id}", include_in_schema=False)
+async def remover_waitlist(tenant: str, waitlist_id: uuid.UUID, request: Request):
+    """Remove ou cancela uma entrada na lista de espera."""
+    tenant_id, slug = await _exigir_dono(request, tenant)
+    async with AsyncSessionLocal() as sessao:
+        item = await sessao.get(Waitlist, waitlist_id)
+        if not item or item.tenant_id != tenant_id:
+            raise HTTPException(status_code=404, detail="Entrada na lista de espera não encontrada.")
+        await sessao.delete(item)
+        await sessao.commit()
+    logger.info(f"[WAITLIST API] Entrada {waitlist_id} removida da lista de espera.")
+    return {"success": True, "removed_id": str(waitlist_id)}
+
+
+class DispararOfertaRequest(BaseModel):
+    service_type_id: str
+    inicio_iso: str
+    fim_iso: str
+
+
+@router.post("/waitlist/{tenant}/disparar-oferta", include_in_schema=False)
+async def disparar_oferta_manual(tenant: str, request: Request, payload: DispararOfertaRequest):
+    """Dispara a oferta de um horário vago para o próximo candidato da fila via Celery."""
+    tenant_id, slug = await _exigir_dono(request, tenant)
+    from app.core.celery_app import celery_app
+    
+    tarefa = celery_app.send_task(
+        "app.core.tasks.ofertar_vaga",
+        args=[str(tenant_id), payload.service_type_id, payload.inicio_iso, payload.fim_iso],
+    )
+    logger.info(f"[WAITLIST API] Disparo assíncrono de oferta enviado ao Celery: tarefa={tarefa.id}")
+    return {"success": True, "task_id": tarefa.id}
