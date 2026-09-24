@@ -39,14 +39,14 @@ from app.core.database import Base
 
 # --- Vocabulários ---------------------------------------------------------
 PROVEDORES_CALENDARIO = ("local", "google", "microsoft", "caldav", "calendly")
-STATUS_AGENDAMENTO = ("confirmed", "cancelled", "completed", "no_show")
+STATUS_AGENDAMENTO = ("confirmed", "cancelled", "canceled", "desistencia", "completed", "no_show")
 STATUS_ESPERA = ("waiting", "notified", "booked", "expired")
 TIPOS_LEMBRETE = ("confirm", "reminder", "followup")
 TIPOS_TEMPLATE = ("confirmation", "reminder", "waitlist_offer", "post_appointment")
 # "calendly" entrou quando o adaptador passou a espelhar agendamentos feitos
 # do lado de la. Enum e VARCHAR+CHECK (native_enum=False), entao acrescentar
 # valor exige ALTER da CHECK no banco alem desta linha.
-ORIGENS_AGENDAMENTO = ("whatsapp", "manual", "calendly")
+ORIGENS_AGENDAMENTO = ("whatsapp", "manual", "painel", "calendly")
 
 # Padrões de negócio. Ficam como coluna (não constante) para serem ajustáveis
 # por serviço sem deploy — ver PARTE 5.

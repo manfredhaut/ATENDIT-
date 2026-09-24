@@ -139,6 +139,18 @@
                 container.classList.remove('fade-in');
                 void container.offsetWidth; // Trigger reflow
                 container.classList.add('fade-in');
+
+                // Executa scripts internos das telas carregadas dinamicamente
+                container.querySelectorAll('script').forEach(s => {
+                    const novoScript = document.createElement('script');
+                    novoScript.text = s.innerHTML;
+                    document.body.appendChild(novoScript).parentNode.removeChild(novoScript);
+                });
+
+                // Inicialização contextual
+                if (viewName === 'calendar_config' && typeof window.bindCalendar === 'function') {
+                    window.bindCalendar();
+                }
             } catch (err) {
                 console.error(err);
                 container.innerHTML = '<div style="padding: 24px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 12px; color: #991B1B; font-weight: 600;">Erro ao carregar o conteúdo da aba. Tente novamente.</div>';

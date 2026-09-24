@@ -261,11 +261,12 @@
 <!-- PRESENTHIA CALENDAR ENGINE -->
 <script>
 (function() {
-window.currentTenantSlug = window.currentTenantSlug || (function() { var p = window.location.pathname.replace(/^\/|\/$/g, '').split('/').filter(Boolean); return (p.length > 0 && p[0] !== 'tenant') ? p[0] : 'mani'; })();
+window.currentTenantSlug = window.currentTenantSlug || window.location.pathname.split('/').filter(Boolean).pop() || 'manitest';
 // CENTRO NERVOSO PRESENTHIA 24/7 - CONTROLADOR DA AGENDA & COCKPIT CRM
         // =========================================================================
-        var calRefMes = new Date(2026, 8, 1);
-        var calDataRef = new Date(2026, 8, 14);
+        var _agoraIni = new Date();
+        var calRefMes = new Date(_agoraIni.getFullYear(), _agoraIni.getMonth(), 1);
+        var calDataRef = new Date(_agoraIni.getFullYear(), _agoraIni.getMonth(), _agoraIni.getDate());
         var calModoAtual = 'mes';
 
         function calParam(nome) {
@@ -370,8 +371,8 @@ window.currentTenantSlug = window.currentTenantSlug || (function() { var p = win
 
             corpo.innerHTML = '<div style="grid-column:1/-1; color:var(--p-texto-suave, #5e5563); font-size:0.9rem; padding:24px; text-align:center;">Carregando compromissos…</div>';
 
-            if (!calRefMes) calRefMes = new Date(2026, 8, 1);
-            if (!calDataRef) calDataRef = new Date(2026, 8, 14);
+            if (!calRefMes) { var _ag = new Date(); calRefMes = new Date(_ag.getFullYear(), _ag.getMonth(), 1); }
+            if (!calDataRef) { var _ag = new Date(); calDataRef = new Date(_ag.getFullYear(), _ag.getMonth(), _ag.getDate()); }
 
             var ano = calRefMes.getFullYear(), mes = calRefMes.getMonth();
             var primeiro = new Date(Date.UTC(ano, mes, 1, 0, 0, 0));
@@ -461,7 +462,8 @@ window.currentTenantSlug = window.currentTenantSlug || (function() { var p = win
 
             var ultimoDiaMes = new Date(ano, mes + 1, 0).getDate();
             for (var dia = 1; dia <= ultimoDiaMes; dia++) {
-                var eHoje = (dia === 14 && mes === 8 && ano === 2026);
+                var _hojeReal = new Date();
+                var eHoje = (dia === _hojeReal.getDate() && mes === _hojeReal.getMonth() && ano === _hojeReal.getFullYear());
                 var evs = porDia[dia] || [];
                 var marcas = evs.slice(0, 2).map(function(a) {
                     var ad = new Date(a.start_at);
@@ -714,8 +716,9 @@ window.currentTenantSlug = window.currentTenantSlug || (function() { var p = win
             };
 
             if (hojeBtn) hojeBtn.onclick = function() {
-                calRefMes = new Date(2026, 8, 1);
-                calDataRef = new Date(2026, 8, 14);
+                var _ag = new Date();
+                calRefMes = new Date(_ag.getFullYear(), _ag.getMonth(), 1);
+                calDataRef = new Date(_ag.getFullYear(), _ag.getMonth(), _ag.getDate());
                 calCarregarAgenda();
             };
 
