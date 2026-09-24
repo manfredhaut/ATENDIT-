@@ -1,0 +1,750 @@
+<style>
+.it-wrap { display:flex; flex-direction:column; gap:16px; font-family:system-ui,-apple-system,sans-serif; }
+.it-tabs { display:flex; gap:8px; border-bottom:2px solid var(--p-borda, #eae3dc); padding-bottom:12px; flex-wrap:wrap; }
+.it-tab { padding:9px 16px; border-radius:8px; border:1px solid #CBD5E1; background:#fff; color:#475569; font-weight:600; cursor:pointer; font-size:0.88rem; }
+.it-tab.active { background:var(--p-turquesa-texto, #0b7570); color:#fff; border-color:var(--p-turquesa-texto, #0b7570); font-weight:700; }
+.it-card { background:#fff; padding:20px; border-radius:var(--p-raio, 16px); border:1px solid var(--p-borda, #eae3dc); box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+.it-inp { width:100%; padding:9px; border:1px solid #CBD5E1; border-radius:6px; font-size:0.88rem; box-sizing:border-box; }
+.it-lbl { display:block; font-size:0.8rem; font-weight:600; color:#475569; margin-bottom:4px; }
+.it-btn { padding:9px 22px; background:var(--p-turquesa-texto, #0b7570); color:#fff; border:none; border-radius:999px; font-weight:700; cursor:pointer; font-size:0.88rem; transition:all 0.2s; }
+.it-badge { background:var(--p-turquesa-texto, #0b7570); color:#fff; padding:3px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; }
+
+/* KANBAN OPERACIONAL JEV */
+.kanban-board { display:flex; gap:14px; overflow-x:auto; padding-bottom:14px; align-items:flex-start; }
+.kanban-col { flex:1; min-width:270px; max-width:320px; background:var(--p-marfim, #fbf8f4); border:1px solid var(--p-borda, #eae3dc); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:10px; }
+.kanban-col-head { display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.88rem; padding-bottom:6px; border-bottom:2px solid var(--p-borda, #eae3dc); }
+.kanban-card { background:#fff; border:1px solid var(--p-borda, #eae3dc); border-radius:8px; padding:12px; box-shadow:0 1px 2px rgba(0,0,0,0.04); display:flex; flex-direction:column; gap:6px; }
+.kanban-card:hover { border-color:var(--p-turquesa-texto, #0b7570); }
+.kanban-card-title { font-weight:800; font-size:0.92rem; color:var(--p-texto, #231726); }
+.kanban-card-meta { font-size:0.8rem; color:var(--p-texto-suave, #5e5563); line-height:1.35; }
+.kanban-card-actions { display:flex; gap:6px; margin-top:6px; border-top:1px solid #F1F5F9; padding-top:6px; }
+.kanban-btn-action { flex:1; padding:5px; border:1px solid #CBD5E1; background:#F8FAFC; border-radius:4px; font-size:0.75rem; font-weight:700; cursor:pointer; }
+.kanban-btn-action:hover { background:#E2E8F0; }
+
+/* MODAIS */
+.it-modal { position:fixed; inset:0; background:rgba(15,23,42,0.6); display:none; align-items:center; justify-content:center; z-index:9999; padding:20px; }
+.it-modal.open { display:flex; }
+.it-dialog { width:min(640px, 100%); max-height:90vh; overflow-y:auto; background:#fff; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,0.25); }
+.it-dialog-head { padding:16px 20px; border-bottom:1px solid var(--p-borda, #eae3dc); display:flex; justify-content:space-between; align-items:center; }
+.it-dialog-body { padding:20px; }
+.it-dialog-foot { padding:14px 20px; border-top:1px solid #E2E8F0; display:flex; justify-content:flex-end; gap:8px; }
+</style>
+
+<div class="it-wrap">
+  <!-- NAVEGAÇÃO 4 SUB-ABAS -->
+  <div class="it-tabs">
+    <button type="button" class="it-tab active" data-alvo="it-v-tags">🏷️ Tags & Perfil JEV</button>
+    <button type="button" class="it-tab" data-alvo="it-v-comp">🧩 Serviços Compostos & Equipes</button>
+    <button type="button" class="it-tab" data-alvo="it-v-log">🚚 Roteamento Logístico & Cal.com</button>
+    <button type="button" class="it-tab" data-alvo="it-v-cockpit">⚡ Cockpit & Gestão de Agenda (Kanban)</button>
+  </div>
+
+  <div id="it-alerta" style="display:none; padding:12px 16px; border-radius:8px; font-size:0.9rem;"></div>
+
+  <!-- SUB-ABA 1: TAGS & JEV -->
+  <div id="it-v-tags" class="it-subview">
+    <div class="it-card">
+      <h3 style="margin:0 0 4px; font-size:1.2rem; color:#0F172A;">Matriz de Tags & Contexto JEV</h3>
+      <p style="margin:0 0 16px; color:#64748B; font-size:0.88rem;">Classificação dinâmica de clientes, produtos e atendimentos para guiar a abordagem comercial conversacional.</p>
+      
+      <div style="display:flex; gap:10px; flex-wrap:wrap; background:#F8FAFC; padding:14px; border-radius:8px; border:1px solid #E2E8F0; align-items:flex-end;">
+        <div style="flex:2; min-width:160px;">
+          <label class="it-lbl">Nome da Tag</label>
+          <input type="text" id="tag-nome" placeholder="ex: VIP, NR10 Obrigatorio" class="it-inp">
+        </div>
+        <div style="flex:1; min-width:130px;">
+          <label class="it-lbl">Categoria</label>
+          <select id="tag-categoria" class="it-inp">
+            <option value="cliente">Cliente / Perfil</option>
+            <option value="servico">Serviço / Catálogo</option>
+            <option value="atendimento">Atendimento / O.S.</option>
+          </select>
+        </div>
+        <div style="width:65px;">
+          <label class="it-lbl">Cor</label>
+          <input type="color" id="tag-cor" value="#0DA2B6" style="width:100%; height:36px; padding:2px; border:1px solid #CBD5E1; border-radius:6px; cursor:pointer;">
+        </div>
+        <div style="flex:2; min-width:160px;">
+          <label class="it-lbl">Instrução JEV</label>
+          <input type="text" id="tag-descricao" placeholder="Abordagem comercial recomendada" class="it-inp">
+        </div>
+        <button type="button" onclick="window.intelCriarTag()" class="it-btn">+ Adicionar</button>
+      </div>
+
+      <div style="overflow-x:auto; margin-top:16px;">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.88rem;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--p-borda, #eae3dc); color:#475569;">
+              <th style="padding:8px;">Tag</th>
+              <th style="padding:8px;">Categoria</th>
+              <th style="padding:8px;">Instrução JEV</th>
+              <th style="padding:8px; text-align:right;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="it-tags-body">
+            <tr><td colspan="4" style="padding:15px; color:#64748B; text-align:center;">Carregando tags...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUB-ABA 2: SERVIÇOS COMPOSTOS -->
+  <div id="it-v-comp" class="it-subview" style="display:none;">
+    <div class="it-card">
+      <h3 style="margin:0 0 4px; font-size:1.2rem; color:#0F172A;">Engenharia de Serviços Compostos</h3>
+      <p style="margin:0 0 16px; color:#64748B; font-size:0.88rem;">Agrupamento de múltiplos subprocessos, durações somadas e alocação por competência técnica.</p>
+
+      <div style="background:#F8FAFC; padding:16px; border-radius:8px; border:1px solid #E2E8F0; margin-bottom:18px;">
+        <div style="display:grid; grid-template-columns:1fr 2fr; gap:12px; margin-bottom:12px;">
+          <div>
+            <label class="it-lbl">Nome do Pacote Composto</label>
+            <input type="text" id="comp-nome" placeholder="ex: Manutenção e Instalação" class="it-inp">
+          </div>
+          <div>
+            <label class="it-lbl">Descrição Operacional</label>
+            <input type="text" id="comp-desc" placeholder="Detalhamento operacional" class="it-inp">
+          </div>
+        </div>
+
+        <div style="border-top:1px solid #E2E8F0; padding-top:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong style="font-size:0.85rem; color:#1E293B;">Etapas Sequenciais</strong>
+            <button type="button" onclick="window.intelAdicionarLinhaEtapa()" style="padding:5px 10px; background:#E2E8F0; border:none; border-radius:5px; font-size:0.8rem; cursor:pointer;">+ Adicionar Etapa</button>
+          </div>
+          <div id="comp-etapas-container" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; border-top:1px solid #E2E8F0; padding-top:10px;">
+          <div style="font-size:0.9rem; color:#0F172A; font-weight:700;">
+            Tempo Total Somado: <span id="comp-tempo-total" style="color:#0DA2B6;">0 min</span>
+          </div>
+          <button type="button" onclick="window.intelSalvarComposto()" class="it-btn">Salvar Pacote Composto</button>
+        </div>
+      </div>
+
+      <h4 style="margin:14px 0 8px; color:#1E293B;">Pacotes Cadastrados</h4>
+      <div id="it-pacotes-lista" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- SUB-ABA 3: ROTEAMENTO LOGÍSTICO & CAL.COM -->
+  <div id="it-v-log" class="it-subview" style="display:none;">
+    <div class="it-card">
+      <h3 style="margin:0 0 4px; font-size:1.2rem; color:#0F172A;">Roteamento Logístico & Cal.com</h3>
+      <p style="margin:0 0 16px; color:#64748B; font-size:0.88rem;">Parametrização de raio operacional, endereço base, buffer de trânsito e sincronização Cal.com.</p>
+
+      <form onsubmit="window.intelSalvarLogistica(event)" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div style="grid-column:span 2;">
+          <label class="it-lbl">Endereço da Base Operacional</label>
+          <input type="text" id="log-base-address" placeholder="ex: Rua XV de Novembro, 100 - Pomerode / SC" class="it-inp">
+        </div>
+        <div>
+          <label class="it-lbl">Raio Máximo de Atendimento (KM)</label>
+          <input type="number" id="log-radius" value="35" min="1" max="500" class="it-inp">
+        </div>
+        <div>
+          <label class="it-lbl">Buffer de Trânsito / Deslocamento (Minutos)</label>
+          <input type="number" id="log-traffic-buffer" value="30" min="0" max="180" class="it-inp">
+        </div>
+        <div>
+          <label class="it-lbl">Slug do Evento Cal.com</label>
+          <input type="text" id="log-cal-slug" placeholder="ex: visita-tecnica" class="it-inp">
+        </div>
+        <div>
+          <label class="it-lbl">Chave de API Cal.com</label>
+          <input type="password" id="log-cal-key" placeholder="••••••••••••••••••••" class="it-inp">
+        </div>
+        <div style="grid-column:span 2; display:flex; gap:20px; background:#F8FAFC; padding:10px 14px; border-radius:6px; border:1px solid #E2E8F0;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; cursor:pointer;">
+            <input type="checkbox" id="log-remind-24h" checked style="accent-color:#0DA2B6;"> WhatsApp 24h antes (Anti-no-show)
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; cursor:pointer;">
+            <input type="checkbox" id="log-remind-2h" checked style="accent-color:#0DA2B6;"> WhatsApp 2h antes (Deslocamento)
+          </label>
+        </div>
+        <div style="grid-column:span 2; display:flex; justify-content:flex-end;">
+          <button type="submit" class="it-btn">Salvar Parâmetros Logísticos</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SUB-ABA 4: COCKPIT & KANBAN OPERACIONAL JEV -->
+  <div id="it-v-cockpit" class="it-subview" style="display:none;">
+    <div class="it-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+        <div>
+          <h3 style="margin:0; font-size:1.25rem; color:#0F172A; font-weight:800;">Cockpit & Gestão de Agenda JEV</h3>
+          <p style="margin:3px 0 0; color:#64748B; font-size:0.88rem;">Kanban em tempo real, monitoramento de filas e reencaixe inteligente de desistências (Gap-Filling).</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" onclick="window.intelAbrirModalWaitlist()" class="it-btn" style="background:#0284C7;">+ Fila de Espera</button>
+          <button type="button" onclick="window.intelCarregarKanban()" class="it-btn" style="background:#475569;">🔄 Atualizar</button>
+        </div>
+      </div>
+
+      <!-- MÉTRICAS DE OPERAÇÃO -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; margin-bottom:18px;">
+        <div style="background:#FFFBEB; border:1px solid #FEF3C7; padding:12px; border-radius:8px;">
+          <div style="font-size:0.75rem; font-weight:700; color:#B45309;">FILA DE ESPERA</div>
+          <div id="kb-m-fila" style="font-size:1.4rem; font-weight:800; color:#92400E; margin-top:2px;">0</div>
+        </div>
+        <div style="background:#F0FDFA; border:1px solid #CCFBF1; padding:12px; border-radius:8px;">
+          <div style="font-size:0.75rem; font-weight:700; color:#0F766E;">CONFIRMADOS</div>
+          <div id="kb-m-conf" style="font-size:1.4rem; font-weight:800; color:#115E59; margin-top:2px;">0</div>
+        </div>
+        <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:12px; border-radius:8px;">
+          <div style="font-size:0.75rem; font-weight:700; color:#475569;">HOJE / EM ROTA</div>
+          <div id="kb-m-hoje" style="font-size:1.4rem; font-weight:800; color:#1E293B; margin-top:2px;">0</div>
+        </div>
+        <div style="background:#FEF2F2; border:1px solid #FEE2E2; padding:12px; border-radius:8px;">
+          <div style="font-size:0.75rem; font-weight:700; color:#B91C1C;">DESISTÊNCIAS / VAGAS</div>
+          <div id="kb-m-desist" style="font-size:1.4rem; font-weight:800; color:#991B1B; margin-top:2px;">0</div>
+        </div>
+      </div>
+
+      <!-- QUADRO KANBAN (5 COLUNAS OPERACIONAIS) -->
+      <div class="kanban-board">
+        <!-- Coluna 1: Fila de Espera -->
+        <div class="kanban-col">
+          <div class="kanban-col-head" style="color:#B45309;">
+            <span>⏳ Fila de Espera (Triagem)</span>
+            <span id="col-count-fila" class="it-badge" style="background:#F59E0B;">0</span>
+          </div>
+          <div id="col-cards-fila" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- Coluna 2: Confirmados -->
+        <div class="kanban-col">
+          <div class="kanban-col-head" style="color:#0F766E;">
+            <span>📅 Confirmados / Agendados</span>
+            <span id="col-count-conf" class="it-badge" style="background:#0DA2B6;">0</span>
+          </div>
+          <div id="col-cards-conf" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- Coluna 3: Em Rota / Hoje -->
+        <div class="kanban-col">
+          <div class="kanban-col-head" style="color:#6366F1;">
+            <span>🚗 Em Rota / Hoje</span>
+            <span id="col-count-hoje" class="it-badge" style="background:#6366F1;">0</span>
+          </div>
+          <div id="col-cards-hoje" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- Coluna 4: Concluídos -->
+        <div class="kanban-col">
+          <div class="kanban-col-head" style="color:#15803D;">
+            <span>✅ Concluídos (Pós-Venda)</span>
+            <span id="col-count-conc" class="it-badge" style="background:#22C55E;">0</span>
+          </div>
+          <div id="col-cards-conc" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- Coluna 5: Desistências / Vagas Abertas -->
+        <div class="kanban-col" style="background:#FFF1F2; border-color:#FECDD3;">
+          <div class="kanban-col-head" style="color:#BE123C;">
+            <span>⚠️ Desistências (Vagas)</span>
+            <span id="col-count-desist" class="it-badge" style="background:#E11D48;">0</span>
+          </div>
+          <div id="col-cards-desist" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: REENCAIXE PREDITIVO JEV (GAP-FILLING) -->
+<div class="it-modal" id="modalGapFill">
+  <div class="it-dialog">
+    <div class="it-dialog-head">
+      <div>
+        <h3 style="margin:0; color:#0F172A; font-size:1.1rem; font-weight:800;">⚡ Recuperação de Vaga (Motor JEV)</h3>
+        <small id="gapFillSubtitulo" style="color:#64748B;">Identificando clientes ideais para preencher a vaga ociosa.</small>
+      </div>
+      <button type="button" onclick="window.intelFecharModalGapFill()" style="border:none; background:#F1F5F9; border-radius:6px; padding:6px 10px; cursor:pointer; font-weight:bold;">✕</button>
+    </div>
+    <div class="it-dialog-body">
+      <div id="gapFillInfoVaga" style="background:#F0FDFA; border:1px solid #CCFBF1; padding:12px; border-radius:8px; margin-bottom:16px; font-size:0.88rem; color:#115E59;"></div>
+      <h4 style="margin:0 0 10px; color:#1E293B; font-size:0.95rem;">Candidatos Recomendados da Fila de Espera</h4>
+      <div id="gapFillListaCandidatos" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ENTRADA NA FILA DE ESPERA -->
+<div class="it-modal" id="modalWaitlist">
+  <div class="it-dialog">
+    <div class="it-dialog-head">
+      <h3 style="margin:0; color:#0F172A; font-size:1.1rem; font-weight:800;">+ Adicionar Cliente à Fila de Espera</h3>
+      <button type="button" onclick="window.intelFecharModalWaitlist()" style="border:none; background:#F1F5F9; border-radius:6px; padding:6px 10px; cursor:pointer; font-weight:bold;">✕</button>
+    </div>
+    <div class="it-dialog-body">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="grid-column:span 2;">
+          <label class="it-lbl">Nome do Cliente</label>
+          <input type="text" id="wl-nome" placeholder="ex: Roberto Carlos" class="it-inp">
+        </div>
+        <div style="grid-column:span 2;">
+          <label class="it-lbl">WhatsApp (DDD + Número)</label>
+          <input type="text" id="wl-fone" placeholder="ex: 47999999999" class="it-inp">
+        </div>
+        <div>
+          <label class="it-lbl">Nível de Prioridade JEV</label>
+          <select id="wl-prio" class="it-inp">
+            <option value="1">1 - Padrão</option>
+            <option value="2">2 - Médio</option>
+            <option value="3">3 - Alta Prioridade (VIP)</option>
+          </select>
+        </div>
+        <div>
+          <label class="it-lbl">Data Limite Desejada</label>
+          <input type="date" id="wl-data" class="it-inp">
+        </div>
+      </div>
+    </div>
+    <div class="it-dialog-foot">
+      <button type="button" onclick="window.intelFecharModalWaitlist()" style="padding:8px 16px; background:#F1F5F9; border:1px solid #CBD5E1; border-radius:6px; cursor:pointer;">Cancelar</button>
+      <button type="button" onclick="window.intelSalvarWaitlist()" class="it-btn">Salvar na Fila</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  console.info("[PRESENTHIA-INTEL] Inicializando torre de controle JEV...");
+
+  window.currentTenantSlug = window.currentTenantSlug || (function() {
+    var p = window.location.pathname.replace(/^\/|\/$/g, '').split('/').filter(Boolean);
+    return (p.length > 0 && p[0] !== 'tenant') ? p[0] : 'mani';
+  })();
+
+  window.intelTrocarAba = function(alvo) {
+    var abas = ['it-v-tags', 'it-v-comp', 'it-v-log', 'it-v-cockpit'];
+    abas.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = (id === alvo) ? 'block' : 'none';
+    });
+    document.querySelectorAll('.it-tab').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.alvo === alvo);
+    });
+    if (alvo === 'it-v-cockpit') window.intelCarregarKanban();
+  };
+
+  document.querySelectorAll('.it-tab').forEach(function(b) {
+    b.onclick = function() { window.intelTrocarAba(b.dataset.alvo); };
+  });
+
+  window.intelMostrarAlerta = function(msg, ok) {
+    var el = document.getElementById('it-alerta');
+    if (!el) return;
+    el.style.display = 'block';
+    el.style.background = ok ? '#ECFDF5' : '#FEF2F2';
+    el.style.color = ok ? '#065F46' : '#991B1B';
+    el.style.border = '1px solid ' + (ok ? '#A7F3D0' : '#FECACA');
+    el.innerText = msg;
+    setTimeout(function() { el.style.display = 'none'; }, 4000);
+  };
+
+  window.intelCarregarKanban = async function() {
+    try {
+      var res = await fetch('/intel/kanban/' + window.currentTenantSlug);
+      if (!res.ok) return;
+      var data = await res.json();
+      var cols = data.columns || {};
+      var met = data.metrics || {};
+
+      if (document.getElementById('kb-m-fila')) document.getElementById('kb-m-fila').innerText = met.total_fila || 0;
+      if (document.getElementById('kb-m-conf')) document.getElementById('kb-m-conf').innerText = met.total_confirmados || 0;
+      if (document.getElementById('kb-m-hoje')) document.getElementById('kb-m-hoje').innerText = met.total_hoje || 0;
+      if (document.getElementById('kb-m-desist')) document.getElementById('kb-m-desist').innerText = met.total_desistencias || 0;
+
+      if (document.getElementById('col-count-fila')) document.getElementById('col-count-fila').innerText = (cols.fila_espera||[]).length;
+      if (document.getElementById('col-count-conf')) document.getElementById('col-count-conf').innerText = (cols.confirmados||[]).length;
+      if (document.getElementById('col-count-hoje')) document.getElementById('col-count-hoje').innerText = (cols.em_rota_hoje||[]).length;
+      if (document.getElementById('col-count-conc')) document.getElementById('col-count-conc').innerText = (cols.concluidos||[]).length;
+      if (document.getElementById('col-count-desist')) document.getElementById('col-count-desist').innerText = (cols.desistencias||[]).length;
+
+      var elFila = document.getElementById('col-cards-fila');
+      if (elFila) {
+        elFila.innerHTML = (cols.fila_espera && cols.fila_espera.length) ? cols.fila_espera.map(function(w) {
+          var prioLabel = (w.priority >= 3) ? `<span style="background:#EF4444; color:#fff; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:800;">VIP</span>` : `<span style="background:#CBD5E1; color:#334155; padding:2px 6px; border-radius:10px; font-size:10px;">P${w.priority}</span>`;
+          return `<div class="kanban-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="kanban-card-title">${w.customer_name}</span>${prioLabel}
+            </div>
+            <div class="kanban-card-meta">
+              📞 ${w.customer_phone}<br>
+              🛠️ ${w.service_name} (${w.service_duration}m)<br>
+              📅 ${w.desired_window}
+            </div>
+          </div>`;
+        }).join('') : '<div style="color:#94A3B8; font-size:0.8rem; text-align:center; padding:15px;">Fila vazia.</div>';
+      }
+
+      var elConf = document.getElementById('col-cards-conf');
+      if (elConf) {
+        elConf.innerHTML = (cols.confirmados && cols.confirmados.length) ? cols.confirmados.map(function(a) {
+          return `<div class="kanban-card">
+            <span class="kanban-card-title">${a.customer_name}</span>
+            <div class="kanban-card-meta">
+              📅 ${a.data_fmt} • ${a.hora_fmt}<br>
+              🛠️ ${a.service_name}<br>
+              📞 ${a.customer_phone}
+            </div>
+            <div class="kanban-card-actions">
+              <button type="button" onclick="window.intelMudarStatusAgendamento('${a.id}', 'completed')" class="kanban-btn-action" style="color:#16A34A;">✓ Concluir</button>
+              <button type="button" onclick="window.intelMudarStatusAgendamento('${a.id}', 'cancelled')" class="kanban-btn-action" style="color:#DC2626;">✕ Cancelar</button>
+            </div>
+          </div>`;
+        }).join('') : '<div style="color:#94A3B8; font-size:0.8rem; text-align:center; padding:15px;">Nenhum agendamento futuro.</div>';
+      }
+
+      var elHoje = document.getElementById('col-cards-hoje');
+      if (elHoje) {
+        elHoje.innerHTML = (cols.em_rota_hoje && cols.em_rota_hoje.length) ? cols.em_rota_hoje.map(function(a) {
+          return `<div class="kanban-card" style="border-left:4px solid #6366F1;">
+            <span class="kanban-card-title">${a.customer_name}</span>
+            <div class="kanban-card-meta">
+              ⏰ ${a.hora_fmt} (HOJE)<br>
+              🛠️ ${a.service_name}<br>
+              📞 ${a.customer_phone}
+            </div>
+            <div class="kanban-card-actions">
+              <button type="button" onclick="window.intelMudarStatusAgendamento('${a.id}', 'completed')" class="kanban-btn-action" style="color:#16A34A;">✓ Concluir</button>
+              <button type="button" onclick="window.intelMudarStatusAgendamento('${a.id}', 'no_show')" class="kanban-btn-action" style="color:#DC2626;">No-Show</button>
+            </div>
+          </div>`;
+        }).join('') : '<div style="color:#94A3B8; font-size:0.8rem; text-align:center; padding:15px;">Sem atendimentos hoje.</div>';
+      }
+
+      var elConc = document.getElementById('col-cards-conc');
+      if (elConc) {
+        elConc.innerHTML = (cols.concluidos && cols.concluidos.length) ? cols.concluidos.map(function(a) {
+          return `<div class="kanban-card" style="opacity:0.85;">
+            <span class="kanban-card-title">${a.customer_name}</span>
+            <div class="kanban-card-meta">
+              📅 ${a.data_fmt}<br>
+              🛠️ ${a.service_name}
+            </div>
+          </div>`;
+        }).join('') : '<div style="color:#94A3B8; font-size:0.8rem; text-align:center; padding:15px;">Nenhum concluído recente.</div>';
+      }
+
+      var elDesist = document.getElementById('col-cards-desist');
+      if (elDesist) {
+        elDesist.innerHTML = (cols.desistencias && cols.desistencias.length) ? cols.desistencias.map(function(a) {
+          return `<div class="kanban-card" style="background:#FFF; border-color:#FDA4AF;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:#BE123C; font-size:0.88rem;">VAGA ABERTA</strong>
+              <span style="font-size:10px; color:#991B1B; font-weight:bold;">${a.status.toUpperCase()}</span>
+            </div>
+            <div class="kanban-card-meta">
+              📅 ${a.data_fmt} • ${a.hora_fmt}<br>
+              Cancelado por: ${a.customer_name}
+            </div>
+            <button type="button" onclick="window.intelAbrirModalGapFill('${a.id}')" class="it-btn" style="padding:6px; font-size:0.75rem; background:#E11D48; margin-top:4px;">
+              ⚡ Recuperar Vaga (JEV)
+            </button>
+          </div>`;
+        }).join('') : '<div style="color:#94A3B8; font-size:0.8rem; text-align:center; padding:15px;">Sem desistências registradas.</div>';
+      }
+
+    } catch (e) {
+      console.error("Erro ao carregar Kanban:", e);
+    }
+  };
+
+  window.intelMudarStatusAgendamento = async function(id, novoStatus) {
+    try {
+      var res = await fetch('/intel/kanban/status/' + window.currentTenantSlug, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({item_id: id, item_type: 'appointment', new_status: novoStatus})
+      });
+      if (res.ok) {
+        window.intelMostrarAlerta('Status operacional atualizado!', true);
+        window.intelCarregarKanban();
+      }
+    } catch(e) {}
+  };
+
+  var gapAppointmentIdAtual = null;
+  window.intelAbrirModalGapFill = async function(appointmentId) {
+    gapAppointmentIdAtual = appointmentId;
+    var m = document.getElementById('modalGapFill');
+    var elInfo = document.getElementById('gapFillInfoVaga');
+    var elLista = document.getElementById('gapFillListaCandidatos');
+    if (m) m.classList.add('open');
+    if (elLista) elLista.innerHTML = '<p style="color:#64748B; font-size:0.85rem;">Calculando aderência dos clientes na fila...</p>';
+
+    try {
+      var res = await fetch('/intel/gap-fill/' + window.currentTenantSlug + '/' + appointmentId);
+      if (!res.ok) return;
+      var data = await res.json();
+
+      if (elInfo) {
+        elInfo.innerHTML = `<strong>Vaga Disponível:</strong> ${data.gap_data_fmt} das ${data.gap_hora_fmt} (${data.gap_dur_minutes} min)`;
+      }
+
+      if (!data.candidates || data.candidates.length === 0) {
+        elLista.innerHTML = '<div style="background:#F8FAFC; padding:15px; border-radius:6px; color:#64748B; text-align:center; font-size:0.85rem;">Nenhum cliente aguardando na fila de espera no momento.</div>';
+        return;
+      }
+
+      elLista.innerHTML = data.candidates.map(function(c) {
+        var scoreColor = (c.score_aderencia >= 80) ? '#16A34A' : '#D97706';
+        return `<div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong style="font-size:0.9rem; color:#0F172A;">${c.customer_name}</strong> 
+            <span style="font-size:11px; font-weight:800; color:${scoreColor};">Fit: ${c.score_aderencia}%</span><br>
+            <span style="font-size:0.8rem; color:#64748B;">📞 ${c.customer_phone} • ${c.service_name} (${c.service_duration} min)</span>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button type="button" onclick="window.intelEfetivarEncaixe('${c.waitlist_id}')" class="it-btn" style="padding:6px 12px; font-size:0.8rem; background:#16A34A;">Encaixar 1-Click</button>
+          </div>
+        </div>`;
+      }).join('');
+
+    } catch(e) {
+      if (elLista) elLista.innerHTML = '<p style="color:#EF4444;">Erro ao processar encaixes.</p>';
+    }
+  };
+
+  window.intelFecharModalGapFill = function() {
+    var m = document.getElementById('modalGapFill');
+    if (m) m.classList.remove('open');
+  };
+
+  window.intelEfetivarEncaixe = async function(waitlistId) {
+    if (!confirm('Deseja preencher esta vaga com este cliente da fila?')) return;
+    try {
+      var res = await fetch('/intel/gap-fill/encaixar/' + window.currentTenantSlug, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({waitlist_id: waitlistId, appointment_id: gapAppointmentIdAtual})
+      });
+      if (res.ok) {
+        window.intelMostrarAlerta('Encaixe realizado com sucesso! Agendamento reativado.', true);
+        window.intelFecharModalGapFill();
+        window.intelCarregarKanban();
+      }
+    } catch(e) {
+      alert('Erro ao processar encaixe.');
+    }
+  };
+
+  window.intelAbrirModalWaitlist = function() {
+    document.getElementById('wl-nome').value = '';
+    document.getElementById('wl-fone').value = '';
+    var m = document.getElementById('modalWaitlist');
+    if (m) m.classList.add('open');
+  };
+
+  window.intelFecharModalWaitlist = function() {
+    var m = document.getElementById('modalWaitlist');
+    if (m) m.classList.remove('open');
+  };
+
+  window.intelSalvarWaitlist = async function() {
+    var nome = (document.getElementById('wl-nome')||{}).value;
+    var fone = (document.getElementById('wl-fone')||{}).value;
+    var prio = parseInt((document.getElementById('wl-prio')||{}).value)||1;
+    if (!nome || !fone) { alert('Preencha nome e telefone.'); return; }
+
+    try {
+      var res = await fetch('/intel/waitlist/' + window.currentTenantSlug, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({customer_name: nome, customer_phone: fone, priority: prio})
+      });
+      if (res.ok) {
+        window.intelMostrarAlerta('Cliente adicionado à fila de espera JEV!', true);
+        window.intelFecharModalWaitlist();
+        window.intelCarregarKanban();
+      }
+    } catch(e){}
+  };
+
+  window.intelCarregarTags = async function() {
+    try {
+      var res = await fetch('/intel/tags/' + window.currentTenantSlug);
+      if (!res.ok) return;
+      var data = await res.json();
+      var tbody = document.getElementById('it-tags-body');
+      if (!tbody) return;
+      if (!data.tags || data.tags.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="padding:12px; color:#64748B; text-align:center;">Nenhuma tag cadastrada ainda.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.tags.map(function(t) {
+        return `<tr style="border-bottom:1px solid #F1F5F9;">
+          <td style="padding:8px;"><span style="background:${t.cor}; color:#fff; padding:3px 8px; border-radius:10px; font-weight:700; font-size:0.75rem;">${t.nome}</span></td>
+          <td style="padding:8px; color:#475569; text-transform:capitalize;">${t.categoria}</td>
+          <td style="padding:8px; color:#64748B;">${t.descricao || '—'}</td>
+          <td style="padding:8px; text-align:right;"><button type="button" onclick="window.intelExcluirTag('${t.id}')" style="color:#EF4444; background:none; border:none; cursor:pointer; font-weight:600;">Excluir</button></td>
+        </tr>`;
+      }).join('');
+    } catch (e) {}
+  };
+
+  window.intelCriarTag = async function() {
+    var nome = (document.getElementById('tag-nome') || {}).value;
+    var categoria = (document.getElementById('tag-categoria') || {}).value;
+    var cor = (document.getElementById('tag-cor') || {}).value;
+    var descricao = (document.getElementById('tag-descricao') || {}).value;
+    if (!nome || !nome.trim()) { window.intelMostrarAlerta('Informe o nome da tag.', false); return; }
+
+    try {
+      var res = await fetch('/intel/tags/' + window.currentTenantSlug, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({nome: nome, categoria: categoria, cor: cor, descricao: descricao})
+      });
+      if (res.ok) {
+        document.getElementById('tag-nome').value = '';
+        document.getElementById('tag-descricao').value = '';
+        window.intelMostrarAlerta('Tag adicionada!', true);
+        window.intelCarregarTags();
+      }
+    } catch(e) {}
+  };
+
+  window.intelExcluirTag = async function(id) {
+    if (!confirm('Remover esta tag?')) return;
+    try {
+      var res = await fetch('/intel/tags/' + window.currentTenantSlug + '/' + id, {method: 'DELETE'});
+      if (res.ok) { window.intelMostrarAlerta('Tag removida!', true); window.intelCarregarTags(); }
+    } catch(e) {}
+  };
+
+  var etapasBuffer = [];
+  window.intelAdicionarLinhaEtapa = function() {
+    etapasBuffer.push({name: 'Etapa ' + (etapasBuffer.length + 1), duration_minutes: 30, buffer_minutes: 10, required_skill_tag: ''});
+    window.intelRenderizarEtapas();
+  };
+
+  window.intelRemoverEtapa = function(idx) {
+    etapasBuffer.splice(idx, 1);
+    window.intelRenderizarEtapas();
+  };
+
+  window.intelRenderizarEtapas = function() {
+    var cont = document.getElementById('comp-etapas-container');
+    if (!cont) return;
+    var total = 0;
+    cont.innerHTML = etapasBuffer.map(function(et, idx) {
+      total += (parseInt(et.duration_minutes) || 0) + (parseInt(et.buffer_minutes) || 0);
+      return `<div style="display:flex; gap:8px; align-items:center; background:#fff; padding:6px 10px; border-radius:6px; border:1px solid #CBD5E1;">
+        <span style="font-weight:700; color:#64748B; font-size:0.8rem;">#${idx+1}</span>
+        <input type="text" value="${et.name}" onchange="etapasBuffer[${idx}].name=this.value" placeholder="Nome da etapa" style="flex:2; padding:5px; border:1px solid #CBD5E1; border-radius:4px;">
+        <input type="number" value="${et.duration_minutes}" onchange="etapasBuffer[${idx}].duration_minutes=parseInt(this.value)||0; window.intelRenderizarEtapas();" title="Duração (min)" style="width:65px; padding:5px; border:1px solid #CBD5E1; border-radius:4px;"> min
+        <input type="number" value="${et.buffer_minutes}" onchange="etapasBuffer[${idx}].buffer_minutes=parseInt(this.value)||0; window.intelRenderizarEtapas();" title="Buffer (min)" style="width:65px; padding:5px; border:1px solid #CBD5E1; border-radius:4px;"> buf
+        <input type="text" value="${et.required_skill_tag||''}" onchange="etapasBuffer[${idx}].required_skill_tag=this.value" placeholder="Tag técnica" style="flex:1; padding:5px; border:1px solid #CBD5E1; border-radius:4px;">
+        <button type="button" onclick="window.intelRemoverEtapa(${idx})" style="color:#EF4444; background:none; border:none; cursor:pointer; font-weight:bold;">×</button>
+      </div>`;
+    }).join('');
+    var elT = document.getElementById('comp-tempo-total');
+    if (elT) elT.innerText = total + ' min (' + (total/60).toFixed(1) + 'h)';
+  };
+
+  window.intelSalvarComposto = async function() {
+    var nome = (document.getElementById('comp-nome') || {}).value;
+    var desc = (document.getElementById('comp-desc') || {}).value;
+    if (!nome || !nome.trim()) { window.intelMostrarAlerta('Informe o nome do pacote.', false); return; }
+
+    try {
+      var res = await fetch('/intel/composite/' + window.currentTenantSlug, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name: nome, description: desc, steps: etapasBuffer})
+      });
+      if (res.ok) {
+        window.intelMostrarAlerta('Pacote composto salvo!', true);
+        document.getElementById('comp-nome').value = '';
+        document.getElementById('comp-desc').value = '';
+        etapasBuffer = [];
+        window.intelRenderizarEtapas();
+        window.intelCarregarCompostos();
+      }
+    } catch(e) {}
+  };
+
+  window.intelCarregarCompostos = async function() {
+    try {
+      var res = await fetch('/intel/composite/' + window.currentTenantSlug);
+      if (!res.ok) return;
+      var data = await res.json();
+      var lista = document.getElementById('it-pacotes-lista');
+      if (!lista) return;
+      if (!data.packages || data.packages.length === 0) {
+        lista.innerHTML = '<p style="color:#64748B; font-size:0.88rem;">Nenhum pacote cadastrado.</p>';
+        return;
+      }
+      lista.innerHTML = data.packages.map(function(p) {
+        return `<div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:10px 14px; border-radius:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>${p.name}</strong>
+            <span class="it-badge">${p.total_duration_minutes} min total</span>
+          </div>
+          <p style="margin:3px 0 6px; font-size:0.82rem; color:#64748B;">${p.description || ''}</p>
+          <div style="font-size:0.78rem; color:#475569;">Etapas: ${p.steps.map(function(s){ return s.name + ' (' + s.duration_minutes + 'm)'; }).join(' → ')}</div>
+        </div>`;
+      }).join('');
+    } catch(e) {}
+  };
+
+  window.intelCarregarLogistica = async function() {
+    try {
+      var res = await fetch('/calendar/logistics/config/' + window.currentTenantSlug);
+      if (!res.ok) return;
+      var cfg = await res.json();
+      if (cfg) {
+        if (document.getElementById('log-base-address')) document.getElementById('log-base-address').value = cfg.base_address || '';
+        if (document.getElementById('log-radius')) document.getElementById('log-radius').value = cfg.radius_km || 35;
+        if (document.getElementById('log-traffic-buffer')) document.getElementById('log-traffic-buffer').value = cfg.buffer_traffic || 30;
+        if (document.getElementById('log-cal-slug')) document.getElementById('log-cal-slug').value = cfg.cal_event_slug || '';
+        if (document.getElementById('log-remind-24h')) document.getElementById('log-remind-24h').checked = (cfg.remind_24h !== false);
+        if (document.getElementById('log-remind-2h')) document.getElementById('log-remind-2h').checked = (cfg.remind_2h !== false);
+      }
+    } catch(e) {}
+  };
+
+  window.intelSalvarLogistica = async function(e) {
+    if (e) e.preventDefault();
+    var payload = {
+      base_address: (document.getElementById('log-base-address') || {}).value,
+      radius_km: parseInt((document.getElementById('log-radius') || {}).value) || 35,
+      buffer_traffic: parseInt((document.getElementById('log-traffic-buffer') || {}).value) || 30,
+      cal_event_slug: (document.getElementById('log-cal-slug') || {}).value,
+      cal_api_key: (document.getElementById('log-cal-key') || {}).value,
+      remind_24h: (document.getElementById('log-remind-24h') || {}).checked,
+      remind_2h: (document.getElementById('log-remind-2h') || {}).checked
+    };
+
+    try {
+      var res = await fetch('/calendar/logistics/config/' + window.currentTenantSlug, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        window.intelMostrarAlerta('Parâmetros logísticos salvos com sucesso!', true);
+        window.intelCarregarLogistica();
+      } else {
+        window.intelMostrarAlerta('Falha ao salvar logística.', false);
+      }
+    } catch(err) {
+      window.intelMostrarAlerta('Erro de conexão.', false);
+    }
+  };
+
+  // Inicialização padrão
+  window.intelTrocarAba('it-v-tags');
+  window.intelCarregarTags();
+  window.intelCarregarCompostos();
+  window.intelCarregarLogistica();
+  window.intelAdicionarLinhaEtapa();
+})();
+</script>

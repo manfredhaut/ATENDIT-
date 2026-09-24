@@ -1,0 +1,1075 @@
+<!-- ESTILOS COMPLETOS IDÊNTICOS AO PREVIEW.HTML -->
+<style>
+:root {
+  --brand: var(--p-turquesa-texto, #0b7570);
+  --brand-2: var(--p-amora, #990049);
+  --navy: var(--p-berinjela, #231726);
+  --text: var(--p-texto, #231726);
+  --muted: var(--p-texto-suave, #5e5563);
+  --bg: var(--p-marfim, #fbf8f4);
+  --card: #ffffff;
+  --line: var(--p-borda, #eae3dc);
+  --success: #10b981;
+  --warning: var(--p-ambar, #f0b74e);
+  --danger: #ef4444;
+  --shadow: 0 8px 24px rgba(35,23,38,.06);
+  --radius: var(--p-raio, 16px);
+}
+.subnav {
+  display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--line);
+  padding-bottom: 14px; overflow-x: auto; margin-bottom: 20px;
+}
+.subnav button {
+  white-space: nowrap; background: #fff; border: 1px solid #c8d4e4; border-radius: 12px;
+  padding: 13px 20px; color: #31445f; font-weight: 700; min-height: 54px; cursor: pointer;
+  font-family: inherit; font-size: 14px; transition: all 0.15s ease-in-out;
+}
+.subnav button:hover { background: #f8fafc; border-color: #94a3b8; }
+.subnav button.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+
+.store-hero {
+  min-height: 170px; margin-top: 10px; border-radius: 18px; overflow: hidden;
+  display: flex; align-items: flex-end;
+  background: radial-gradient(circle at 82% 18%, rgba(255,255,255,.22), transparent 24%),
+              linear-gradient(135deg, var(--p-berinjela, #231726) 0%, #3a2740 48%, var(--p-magenta, #d0006f) 100%);
+  box-shadow: 0 12px 30px rgba(8,73,93,.16); color: #fff;
+}
+.store-hero-content { padding: 28px 30px; }
+.store-hero-brand { font-size: 32px; font-weight: 900; letter-spacing: -.4px; }
+.store-hero-tagline { margin-top: 8px; font-size: 15px; opacity: .92; }
+
+.store-public-nav {
+  display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--line);
+  border-top: 0; border-radius: 0 0 14px 14px; padding: 9px 12px; box-shadow: var(--shadow);
+  margin-bottom: 24px; overflow-x: auto;
+}
+.store-public-nav button {
+  border: 0; background: transparent; color: #586b83; font-weight: 800; padding: 10px 13px;
+  border-radius: 8px; cursor: pointer; font-size: 13px; white-space: nowrap;
+}
+.store-public-nav button:hover { background: #f2f7f9; color: #0b7e8c; }
+.store-public-nav button.active { background: #ecfbfd; color: #078493; }
+
+.page-head {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin: 20px 0;
+}
+.page-head h2 { margin: 0 0 6px; font-size: 26px; color: #071835; font-weight: 800; }
+.page-head p { margin: 0; color: #62738d; font-size: 14px; }
+
+.grid-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+.metric { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.metric .label { font-size: 13px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+.metric .value { font-size: 30px; font-weight: 900; color: #091a38; margin: 8px 0 4px; }
+.metric .sub { font-size: 12px; color: #6f8097; }
+
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; }
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--line);
+}
+.panel-head h3 { margin: 0; font-size: 17px; color: #0b1932; font-weight: 800; }
+.panel-head small { color: #7b8ba0; font-size: 12px; }
+
+.controls { display: flex; gap: 10px; flex-wrap: wrap; padding: 15px 20px; border-bottom: 1px solid #edf1f5; align-items: center; }
+.search { flex: 1; min-width: 210px; }
+.search input { width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; outline: none; background: #fbfcfe; box-sizing: border-box; }
+.controls select { padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; background: #fbfcfe; box-sizing: border-box; }
+
+.type-switch { display: flex; background: #eef4f7; border-radius: 10px; padding: 4px; gap: 2px; }
+.type-switch button { border: 0; background: transparent; padding: 8px 14px; border-radius: 8px; font-weight: 800; color: #587087; cursor: pointer; }
+.type-switch button.on { background: #fff; color: var(--brand-2); box-shadow: 0 2px 7px rgba(0,0,0,.07); }
+
+.items { padding: 18px 20px; }
+.item-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.item-card { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+.thumb { height: 172px; background: linear-gradient(135deg, #edf7f8, #dceef1); position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb .placeholder { font-size: 56px; opacity: .55; }
+.status { position: absolute; top: 11px; right: 11px; font-size: 11px; font-weight: 900; padding: 6px 10px; border-radius: 999px; }
+.status.active { background: #dcfaec; color: #087a4b; }
+.status.draft { background: #fff2d9; color: #9a6400; }
+.item-body { padding: 16px; display: flex; flex-direction: column; flex: 1; }
+.sku { font-size: 11px; color: #718196; font-weight: 800; text-transform: uppercase; }
+.item-title { font-size: 17px; font-weight: 900; color: #10203c; margin: 4px 0; }
+.desc { font-size: 12px; color: #6c7c91; line-height: 1.45; min-height: 35px; }
+.price-row { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 14px; }
+.price { font-size: 20px; font-weight: 900; color: #008b6a; }
+.qty { font-size: 11px; color: #718196; font-weight: 700; }
+.item-actions { display: flex; gap: 8px; margin-top: 14px; }
+.item-actions button { flex: 1; padding: 9px; border: 1px solid var(--line); background: #fff; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; }
+.item-actions button:hover { border-color: #9eb1c7; background: #f8fafc; }
+
+.primary { background: var(--brand); color: #fff; border: 0; border-radius: 11px; padding: 12px 18px; font-weight: 800; cursor: pointer; box-shadow: 0 7px 18px rgba(8,167,184,.22); font-size: 14px; }
+.secondary { background: #fff; color: #20304c; border: 1px solid var(--line); border-radius: 10px; padding: 11px 15px; font-weight: 700; cursor: pointer; font-size: 13px; }
+
+.config { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+.form { padding: 20px; }
+.section-title { font-weight: 900; font-size: 14px; color: #0d1c38; margin-bottom: 14px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.full { grid-column: 1 / -1; }
+.field label { font-size: 12px; color: #52647b; font-weight: 800; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 10px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fff; outline: none; color: #1c2f4c; box-sizing: border-box; font-family: inherit;
+}
+.field textarea { min-height: 84px; resize: vertical; }
+
+.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 12px 0; border-bottom: 1px solid #edf1f5; }
+.toggle-row:last-child { border-bottom: 0; }
+.toggle-row strong { font-size: 13px; }
+.toggle-row span { display: block; font-size: 11px; color: #73849a; margin-top: 2px; }
+
+.switch { width: 42px; height: 23px; border-radius: 999px; background: #cbd5e1; position: relative; border: 0; flex: 0 0 auto; cursor: pointer; transition: .2s; }
+.switch:after { content: ""; width: 17px; height: 17px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: .2s; }
+.switch.on { background: var(--brand); }
+.switch.on:after { left: 22px; }
+
+.color-row { display: flex; gap: 10px; align-items: center; }
+.color-box { width: 42px; height: 38px; padding: 2px; border: 1px solid var(--line); border-radius: 9px; background: #fff; cursor: pointer; }
+.logo-drop { border: 1px dashed #b7c8d9; border-radius: 11px; padding: 17px; text-align: center; color: #72849a; background: #fbfdff; }
+.logo-drop img { max-height: 54px; max-width: 180px; display: none; margin: auto; }
+
+.pub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.pub { border: 1px solid var(--line); border-radius: 12px; padding: 13px; background: #fbfdff; }
+.pub strong { display: block; font-size: 12px; }
+.pub p { margin: 4px 0 10px; font-size: 11px; color: #73849a; }
+.pub a { font-size: 11px; color: var(--brand-2); font-weight: 800; text-decoration: none; }
+
+.preview-panel { margin-top: 20px; }
+.preview-header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.preview-top { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid var(--line); }
+.device { display: flex; gap: 5px; }
+.device button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 9px; cursor: pointer; }
+.device button.on { border-color: #89dce3; background: #edfcfd; color: #007e8d; font-weight: bold; }
+
+.store { margin: 15px; border: 1px solid #e0e7ee; border-radius: 15px; overflow: hidden; background: #f9fbfd; max-width: 100%; transition: max-width 0.25s ease; }
+.store-banner { min-height: 146px; padding: 20px; display: flex; align-items: flex-end; background: linear-gradient(135deg, var(--brand), #065d6b); color: #fff; }
+.store-banner h3 { margin: 0 0 4px; font-size: 24px; font-weight: 900; }
+.store-banner p { margin: 0; opacity: .86; font-size: 12px; }
+.store-nav { background: #fff; padding: 10px 13px; display: flex; gap: 8px; border-bottom: 1px solid #e5ebf0; }
+.store-nav span { font-size: 11px; font-weight: 800; color: #61748c; }
+.store-nav span.active { color: var(--brand-2); }
+.store-tools { display: flex; gap: 8px; padding: 13px; background: #fff; }
+.store-tools input, .store-tools select { border: 1px solid var(--line); border-radius: 9px; padding: 9px; font-size: 12px; box-sizing: border-box; }
+.store-tools input { flex: 1; }
+.store-list { padding: 13px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.mini-product { background: #fff; border: 1px solid #e3e9ef; border-radius: 11px; overflow: hidden; }
+.mini-img { height: 98px; background: #eaf6f7; }
+.mini-img img { width: 100%; height: 100%; object-fit: cover; }
+.mini-info { padding: 9px; }
+.mini-name { font-size: 12px; font-weight: 900; line-height: 1.25; }
+.mini-price { font-size: 13px; color: #008b6a; font-weight: 900; margin-top: 5px; }
+.mini-meta { font-size: 10px; color: #8090a2; margin-top: 4px; }
+
+.modal { position: fixed; inset: 0; background: rgba(5,14,28,.55); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+.modal.open { display: flex; }
+.dialog { width: min(760px, 100%); max-height: 92vh; overflow-y: auto; background: #fff; border-radius: 18px; box-shadow: 0 24px 70px rgba(0,0,0,.25); }
+.dialog-head { padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+.dialog-head h3 { margin: 0; font-size: 18px; font-weight: 800; color: #0c1830; }
+.close { border: 0; background: #eef2f6; border-radius: 8px; padding: 7px 10px; cursor: pointer; font-weight: bold; }
+.dialog-body { padding: 20px; }
+.dialog-foot { padding: 15px 20px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 9px; }
+
+.toast { position: fixed; right: 22px; bottom: 22px; background: #0c1830; color: #fff; padding: 13px 18px; border-radius: 10px; opacity: 0; transform: translateY(10px); pointer-events: none; transition: .22s; z-index: 10000; font-size: 13px; font-weight: 600; }
+.toast.show { opacity: 1; transform: translateY(0); }
+.empty { padding: 34px; text-align: center; color: #718196; }
+
+@media (max-width: 1050px) {
+  .grid-metrics { grid-template-columns: repeat(2, 1fr); }
+  .config { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .grid-metrics { grid-template-columns: 1fr; }
+  .item-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .pub-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<div style="font-family: Inter, Segoe UI, Arial, sans-serif; color: var(--text);">
+
+  <!-- BARRA DE NAVEGAÇÃO ENTRE AS 7 SUB-ABAS -->
+  <div class="subnav" role="tablist" aria-label="Módulos do e-commerce">
+    <button type="button" class="active" data-tab="store">🛍️ Vitrine &amp; Loja</button>
+    <button type="button" data-tab="config">⚙️ Configuração da Loja</button>
+    <button type="button" data-tab="catalog">📦 Catálogo &amp; Ficha Técnica</button>
+    <button type="button" data-tab="links">⚡ SDUI &amp; Magic Links</button>
+    <button type="button" data-tab="video">📹 Videochamada WebRTC</button>
+    <button type="button" data-tab="payments">💳 Gateways &amp; Pix</button>
+    <button type="button" data-tab="orders">📊 Pedidos &amp; Conversão</button>
+  </div>
+
+  <!-- [SUB-ABA 1] VITRINE & LOJA -->
+  <section class="tab-panel active" id="tab-store">
+    <div class="store-hero">
+      <div class="store-hero-content">
+        <div class="store-hero-brand" id="storeHeroBrand">SmarTInovaT Store</div>
+        <div class="store-hero-tagline" id="storeHeroTagline">Produtos e serviços com atendimento inteligente.</div>
+      </div>
+    </div>
+    <div class="store-public-nav" role="navigation" aria-label="Navegação pública da loja">
+      <button type="button" class="active" onclick="window.storeNav('Início', this)">Início</button>
+      <button type="button" onclick="window.storeNav('Produtos', this)">Produtos</button>
+      <button type="button" onclick="window.storeNav('Serviços', this)">Serviços</button>
+      <button type="button" onclick="window.storeNav('Sobre a empresa', this)">Sobre a empresa</button>
+      <button type="button" onclick="window.storeNav('Contato', this)">Contato</button>
+    </div>
+
+    <div class="page-head">
+      <div>
+        <h2>Vitrine &amp; Loja</h2>
+        <p>Área operacional do e-commerce para cadastrar, consultar e administrar exclusivamente <strong>Produtos</strong> e <strong>Serviços</strong>.</p>
+      </div>
+    </div>
+
+    <section class="grid-metrics">
+      <div class="metric"><div class="label">Produtos ativos</div><div class="value" id="mProducts">4</div><div class="sub">Itens físicos publicados</div></div>
+      <div class="metric"><div class="label">Serviços ativos</div><div class="value" id="mServices">4</div><div class="sub">Serviços contratáveis</div></div>
+      <div class="metric"><div class="label">Rascunhos</div><div class="value" id="mDraft">1</div><div class="sub">Itens em preparação</div></div>
+      <div class="metric"><div class="label">Total de itens</div><div class="value" id="mTotal">8</div><div class="sub">Produtos + serviços</div></div>
+    </section>
+
+    <div class="layout" style="display:grid; grid-template-columns:1fr; gap:20px;">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Produtos e Serviços</h3>
+            <small>Foto, nome, SKU, descrição, quantidade/estoque, preço, categoria e status.</small>
+          </div>
+          <button type="button" class="primary" onclick="window.openItemModal()">+ Novo Produto / Serviço</button>
+        </div>
+        <div class="controls">
+          <div class="type-switch" aria-label="Filtrar tipo">
+            <button type="button" class="on" onclick="window.setType('all',this)">Todos</button>
+            <button type="button" onclick="window.setType('product',this)">Produtos</button>
+            <button type="button" onclick="window.setType('service',this)">Serviços</button>
+          </div>
+          <div class="search"><input id="search" oninput="window.renderItems()" placeholder="🔎 Buscar item, SKU, categoria..."/></div>
+          <select id="statusFilter" onchange="window.renderItems()">
+            <option value="all">Todos os status</option>
+            <option value="active">Ativos</option>
+            <option value="draft">Rascunhos</option>
+          </select>
+        </div>
+        <div class="items"><div class="item-grid" id="itemGrid"></div></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- [SUB-ABA 2] CONFIGURAÇÃO DA LOJA -->
+  <section class="tab-panel" id="tab-config">
+    <div class="page-head">
+      <div>
+        <h2>Configuração da Loja</h2>
+        <p>Parametrização, identidade visual, formatação, conteúdo institucional, canais, publicação e experiência da loja.</p>
+      </div>
+      <button type="button" class="primary" onclick="window.saveConfig()">💾 Salvar configurações</button>
+    </div>
+
+    <section class="config">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Identidade, parametrização &amp; formatação</h3><small>Controle nome, aparência, cores e elementos da marca.</small></div>
+        </div>
+        <div class="form">
+          <div class="section-title">Identidade</div>
+          <div class="form-grid">
+            <div class="field"><label>Nome comercial</label><input id="storeName" value="SmarTInovaT Store" oninput="window.syncPreview()"></div>
+            <div class="field"><label>Slug / endereço curto</label><input value="suaempresa" id="storeSlug"></div>
+            <div class="field full"><label>Chamada da vitrine</label><input id="tagline" value="Produtos e serviços com atendimento inteligente." oninput="window.syncPreview()"></div>
+            <div class="field full"><label>Descrição da empresa</label><textarea id="storeDesc">Apresente a empresa, sua especialidade, diferenciais, histórico e proposta de valor para apoiar a jornada de compra e o atendimento da IA.</textarea></div>
+          </div>
+
+          <div class="section-title" style="margin-top:20px">Marca e cores</div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Cor principal</label>
+              <div class="color-row">
+                <input class="color-box" type="color" id="brandColor" value="#08a7b8" onchange="window.applyBrand(this.value)">
+                <input value="#08a7b8" id="brandHex" oninput="window.applyBrand(this.value)">
+              </div>
+            </div>
+            <div class="field">
+              <label>Logo</label>
+              <div class="logo-drop">
+                <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="window.previewLogo(event)">
+                <img id="logoPreview" alt="Logo">
+                <button type="button" class="secondary" onclick="document.getElementById('logoInput').click()">⬆ Upload da logo</button>
+                <div style="font-size:10px;margin-top:7px">PNG, JPG, SVG ou WebP</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top:20px">Layout</div>
+          <div class="toggle-row"><div><strong>Exibir categorias Produtos / Serviços</strong><span>Navegação separada e filtros específicos.</span></div><button type="button" class="switch on" onclick="window.toggleSwitch(this)"></button></div>
+          <div class="toggle-row"><div><strong>Exibir preço na vitrine</strong><span>Permite ocultar preço para itens sob consulta.</span></div><button type="button" class="switch on" onclick="window.toggleSwitch(this)"></button></div>
+          <div class="toggle-row"><div><strong>Compra / contratação pelo WhatsApp</strong><span>Converte o CTA em atendimento contextualizado.</span></div><button type="button" class="switch on" onclick="window.toggleSwitch(this)"></button></div>
+          <div class="toggle-row"><div><strong>Consulta técnica assistida por IA</strong><span>Busca por atributos, documentos, histórico e compatibilidade.</span></div><button type="button" class="switch on" onclick="window.toggleSwitch(this)"></button></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Conteúdo comercial, técnico &amp; operação</h3><small>Estruture informação para cliente, vendedor, atendimento e RAG.</small></div>
+        </div>
+        <div class="form">
+          <div class="section-title">Dados institucionais</div>
+          <div class="form-grid">
+            <div class="field full"><label>Histórico da empresa</label><textarea id="storeHistory">1946 • Fundação
+2010 • Expansão
+2024 • Transformação digital
+2026 • Operação omnichannel</textarea></div>
+            <div class="field full"><label>Conceituação / posicionamento</label><textarea id="storeConcept">Defina a narrativa, propósito, conceito da marca, público, diferenciais e atributos de valor que devem aparecer na loja.</textarea></div>
+          </div>
+
+          <div class="section-title" style="margin-top:20px">Consulta de dados técnicos</div>
+          <div class="pub-grid">
+            <div class="pub"><strong>📐 Especificações</strong><p>Dimensões, materiais, capacidades, padrões e atributos.</p><a href="#" onclick="window.showToast('Configuração de campos técnicos');return false;">Configurar campos →</a></div>
+            <div class="pub"><strong>📎 Documentos</strong><p>Manuais, certificados, laudos, PDFs e anexos por item.</p><a href="#" onclick="window.showToast('Módulo de documentos aberto');return false;">Gerenciar documentos →</a></div>
+            <div class="pub"><strong>🧠 Base para IA / RAG</strong><p>Metadados indexados para resposta técnica e comercial.</p><a href="#" onclick="window.showToast('Schema RAG mapeado');return false;">Mapear schema →</a></div>
+          </div>
+
+          <div class="section-title" style="margin-top:22px">Catálogo, ficha técnica e presença externa</div>
+          <div class="toggle-row"><div><strong>Catálogo público</strong><span>URL pública para compartilhar em site, QR Code ou WhatsApp.</span></div><button type="button" class="switch on" onclick="window.toggleSwitch(this)"></button></div>
+          <div class="toggle-row"><div><strong>Ficha técnica visualizável</strong><span>Abre uma página técnica individual por item.</span></div><button type="button" class="switch on" onclick="window.toggleSwitch(this)"></button></div>
+          <div class="toggle-row"><div><strong>Download de PDF / ficha técnica</strong><span>Disponibiliza material técnico para clientes e equipe.</span></div><button type="button" class="switch on" onclick="window.toggleSwitch(this)"></button></div>
+          <div class="toggle-row"><div><strong>Compartilhamento social</strong><span>Cards para WhatsApp, Instagram, LinkedIn e outras redes.</span></div><button type="button" class="switch" onclick="window.toggleSwitch(this)"></button></div>
+
+          <div class="section-title" style="margin-top:20px">Canais</div>
+          <div class="form-grid">
+            <div class="field"><label>WhatsApp comercial</label><input id="storeWa" value="+55 (00) 00000-0000"></div>
+            <div class="field"><label>Contato / e-mail</label><input id="storeEmail" value="vendas@suaempresa.com.br"></div>
+            <div class="field full"><label>Domínio próprio</label><input id="storeDomain" value="loja.suaempresa.com.br"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Publicação e Integrações -->
+    <section class="panel" style="margin-top:20px">
+      <div class="panel-head">
+        <div><h3>Publicação, canais &amp; integração</h3><small>O mesmo cadastro pode alimentar site, catálogo, atendimento e canais de venda.</small></div>
+        <button type="button" class="primary" onclick="window.publishStore()">🚀 Publicar / atualizar loja</button>
+      </div>
+      <div style="padding:18px 20px;display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px">
+        <div class="pub"><strong>🌐 Site / Loja pública</strong><p>Vitrine responsiva com URL pública.</p><a href="#" onclick="window.showToast('Preview público aberto em demonstração.');return false;">Abrir preview →</a></div>
+        <div class="pub"><strong>💬 WhatsApp</strong><p>CTA com contexto do produto/serviço.</p><a href="#" onclick="window.showToast('Integração de CTA WhatsApp preparada.');return false;">Configurar →</a></div>
+        <div class="pub"><strong>🔗 Magic Link</strong><p>Links profundos por item e campanha.</p><a href="#" onclick="window.showToast('Magic Link gerado para demonstração.');return false;">Gerar link →</a></div>
+        <div class="pub"><strong>📱 QR Code</strong><p>Acesso rápido ao catálogo público.</p><a href="#" onclick="window.showToast('QR Code preparado para o endereço público.');return false;">Gerar QR →</a></div>
+      </div>
+    </section>
+
+    <!-- Preview da Loja Responsiva -->
+    <aside class="panel preview-panel">
+      <div class="panel-head">
+        <div>
+          <h3>Preview da loja</h3>
+          <small>Pré-visualização responsiva da vitrine pública.</small>
+        </div>
+        <div class="preview-header-actions">
+          <button type="button" class="secondary" onclick="window.toggleBulk()">☷ Seleção em lote</button>
+          <button type="button" class="primary" onclick="window.openItemModal()">+ Novo Produto / Serviço</button>
+          <span id="previewMode" style="font-size:11px;font-weight:800;color:#70839a">Desktop</span>
+        </div>
+      </div>
+      <div class="preview-top">
+        <strong style="font-size:13px">suaempresa.presenthia.store</strong>
+        <div class="device">
+          <button type="button" class="on" onclick="window.setDevice('Desktop',this)">🖥️</button>
+          <button type="button" onclick="window.setDevice('Tablet',this)">📱</button>
+          <button type="button" onclick="window.setDevice('Mobile',this)">📲</button>
+        </div>
+      </div>
+      <div class="store" id="previewStoreWrap">
+        <div class="store-banner">
+          <div>
+            <h3 id="previewName">SmarTInovaT Store</h3>
+            <p id="previewTagline">Produtos e serviços com atendimento inteligente.</p>
+          </div>
+        </div>
+        <div class="store-nav">
+          <span class="active">Início</span><span>Produtos</span><span>Serviços</span><span>Sobre a empresa</span><span>Contato</span>
+        </div>
+        <div class="store-tools">
+          <input placeholder="Buscar na loja..." id="previewSearch" oninput="window.filterPreview(this.value)">
+          <select><option>Ordenar</option><option>Menor preço</option><option>Maior preço</option><option>Mais recentes</option></select>
+        </div>
+        <div class="store-list" id="storeList"></div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- [SUB-ABAS 3 A 7] PRESERVADAS INTEGRALMENTE DA PRESENTHIA -->
+  <section class="tab-panel" id="tab-catalog">
+<div id="ecom-view-catalog">
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <h3 style="margin:0; font-size:1.25rem; font-weight:800; color:#0F172A;">Itens do Catálogo Inteligente</h3>
+                    <p style="margin:4px 0 0; color:#64748B; font-size:0.88rem;">Produtos e serviços indexados com fichas técnicas estruturadas para o RAG e checkout conversacional.</p>
+                </div>
+                <button type="button" onclick="ecomAbrirModalItem()" style="padding:9px 18px; background:#0DA2B6; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">
+                    + Novo Item / Serviço
+                </button>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.9rem;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #E2E8F0; color:#475569;">
+                            <th style="padding:10px;">SKU / Código</th>
+                            <th style="padding:10px;">Tipo</th>
+                            <th style="padding:10px;">Nome do Item</th>
+                            <th style="padding:10px;">Preço Base</th>
+                            <th style="padding:10px;">Ficha Técnica (Schema.org)</th>
+                            <th style="padding:10px;">Status</th>
+                            <th style="padding:10px; text-align:right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ecom-table-catalog-body">
+                        <tr style="border-bottom:1px solid #F1F5F9;">
+                            <td style="padding:12px 10px; font-family:monospace; font-weight:600;">SRV-MANUT-01</td>
+                            <td style="padding:12px 10px;"><span style="background:#E0F2FE; color:#0369A1; padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:700;">Serviço</span></td>
+                            <td style="padding:12px 10px; font-weight:600; color:#1E293B;">Visita Técnica Especializada</td>
+                            <td style="padding:12px 10px; font-weight:700; color:#059669;">R$ 180,00</td>
+                            <td style="padding:12px 10px; color:#64748B; font-size:0.82rem;">Duração: 60min | Raio: 25km | Certif. NR10</td>
+                            <td style="padding:12px 10px;"><span style="background:#DCFCE7; color:#15803D; padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:700;">Ativo</span></td>
+                            <td style="padding:12px 10px; text-align:right;">
+                                <button type="button" style="padding:5px 10px; border:1px solid #CBD5E1; background:white; border-radius:6px; cursor:pointer;">Editar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [SUB-ABA 2] SERVER-DRIVEN UI & MAGIC LINKS                         -->
+    <!-- ================================================================= -->
+    <div id="ecom-view-sdui" style="display:none;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+            <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+                <h3 style="margin:0 0 10px; font-size:1.15rem; font-weight:800; color:#0F172A;">Blocos SDUI Habilitados</h3>
+                <p style="color:#64748B; font-size:0.86rem; margin-bottom:16px;">Componentes visuais montados pelo backend e renderizados dinamicamente a partir do diálogo no WhatsApp.</p>
+
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                        <span><strong>TechnicalHeroBanner:</strong> Título adaptado às dores identificadas na conversa.</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                        <span><strong>StructuredSpecComparison:</strong> Tabela de dados técnicos (Schema.org).</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                        <span><strong>DynamicBasketCheckout:</strong> Cesta de itens pré-carregada sem navegação manual.</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                        <span><strong>IntegratedPaymentGate:</strong> Pix Copia-e-Cola dinâmico e checkout de cartão.</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                        <span><strong>IntegratedSchedulerStep:</strong> Agendamento logístico automático (Cal.com).</span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="background:#0F172A; padding:20px; border-radius:12px; color:#E2E8F0; font-family:monospace; font-size:0.82rem; display:flex; flex-direction:column;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #334155; padding-bottom:8px; align-items:center;">
+                    <span style="color:#38BDF8; font-weight:700;">Contrato SDUI Gerado (JSON)</span>
+                    <button type="button" onclick="ecomGerarTokenTeste()" style="background:#0DA2B6; color:white; border:none; border-radius:4px; padding:4px 10px; font-size:0.75rem; font-weight:bold; cursor:pointer;">Gerar Magic Link Teste</button>
+                </div>
+                <pre id="ecom-sdui-preview" style="margin:0; overflow:auto; flex:1; line-height:1.45;">
+{
+  "version": "1.0",
+  "lead_token": "usr_9921_x8b",
+  "components": [
+    { "type": "TechnicalHeroBanner", "title": "Solução Técnica Especializada", "scope": "Manutenção Preventiva" },
+    { "type": "StructuredSpecComparison", "schema": "schema:Service", "specs": { "duracao": "60min", "certificacao": "NR10" } },
+    { "type": "DynamicBasketCheckout", "items": [{ "sku": "SRV-MANUT-01", "qty": 1, "price": 180.00 }] },
+    { "type": "IntegratedPaymentGate", "methods": ["pix_dinamico", "cartao_credito"] },
+    { "type": "IntegratedSchedulerStep", "cal_provider": "cal.com", "event_slug": "visita-tecnica" }
+  ]
+}
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [SUB-ABA 3] WEBRTC & TOUR GUIADO                                  -->
+    <!-- ================================================================= -->
+    <div id="ecom-view-webrtc" style="display:none;">
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+            <h3 style="margin:0 0 10px; font-size:1.15rem; font-weight:800; color:#0F172A;">Motor de Escalamento para Videochamada</h3>
+            <p style="color:#64748B; font-size:0.86rem; margin-bottom:20px;">Geração instantânea de salas WebRTC sem exigência de downloads pelo cliente.</p>
+
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:16px; border-radius:8px; margin-bottom:20px;">
+                <div style="font-weight:700; color:#1E293B; margin-bottom:6px;">Regra de Decisão Algorítmica: S(video) = w1·C(lead) + w2·T(complex) + w3·I(explicit)</div>
+                <div style="font-size:0.84rem; color:#475569;">Gatilho de despacho do botão de vídeo no WhatsApp: <strong>S(video) &ge; 0,75</strong></div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:20px;">
+                <div>
+                    <label style="font-size:0.82rem; font-weight:700; color:#475569;">Provedor de Infraestrutura WebRTC</label>
+                    <select id="webrtc-provider" style="width:100%; padding:9px; border:1px solid #CBD5E1; border-radius:6px; margin-top:4px;">
+                        <option value="livekit">LiveKit Cloud (Recomendado)</option>
+                        <option value="daily">Daily.co</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.82rem; font-weight:700; color:#475569;">API Key / Token de Acesso</label>
+                    <input type="password" id="webrtc-key" value="••••••••••••••••" style="width:100%; padding:9px; border:1px solid #CBD5E1; border-radius:6px; margin-top:4px;">
+                </div>
+                <div>
+                    <label style="font-size:0.82rem; font-weight:700; color:#475569;">Domínio da Sala Efêmera</label>
+                    <input type="text" id="webrtc-domain" placeholder="meet.smartinovat.com" style="width:100%; padding:9px; border:1px solid #CBD5E1; border-radius:6px; margin-top:4px;">
+                </div>
+            </div>
+
+            <div style="border-top:1px solid #E2E8F0; padding-top:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.9rem;">
+                    <input type="checkbox" id="webrtc-guided-tour" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                    <span><strong>Habilitar Tour Guiado:</strong> Permite ao consultor espelhar produtos e carregar o carrinho em tempo real.</span>
+                </label>
+                <button type="button" onclick="ecomSalvarWebRTC()" style="padding:9px 18px; background:#0DA2B6; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">
+                    Salvar Parâmetros WebRTC
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [SUB-ABA 4] GATEWAYS & CHECKOUT PIX                               -->
+    <!-- ================================================================= -->
+    <div id="ecom-view-checkout" style="display:none;">
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+            <h3 style="margin:0 0 10px; font-size:1.15rem; font-weight:800; color:#0F172A;">Configuração de Gateways de Pagamento</h3>
+            <p style="color:#64748B; font-size:0.86rem; margin-bottom:20px;">Definição dos meios de quitação para liberação automática das ordens de serviço.</p>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">
+                <div style="border:1px solid #E2E8F0; padding:18px; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <strong style="color:#0F172A;">Pix Dinâmico Instantâneo</strong>
+                        <span style="background:#DCFCE7; color:#15803D; padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:700;">Habilitado</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div>
+                            <label style="font-size:0.8rem; color:#475569;">Chave Pix / Identificador do Provedor</label>
+                            <input type="text" value="financeiro@smartinovat.com" style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:6px; font-size:0.88rem;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; color:#475569;">Tempo de Expiração do QR Code (minutos)</label>
+                            <input type="number" value="15" style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:6px; font-size:0.88rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="border:1px solid #E2E8F0; padding:18px; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <strong style="color:#0F172A;">Cartão de Crédito Tokenizado</strong>
+                        <span style="background:#F1F5F9; color:#475569; padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:700;">Opcional</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div>
+                            <label style="font-size:0.8rem; color:#475569;">Provedor de Pagamentos</label>
+                            <select style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:6px; font-size:0.88rem;">
+                                <option value="asaas">Asaas Pagamentos</option>
+                                <option value="mercadopago">Mercado Pago</option>
+                                <option value="stripe">Stripe</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; color:#475569;">Número Máximo de Parcelas</label>
+                            <input type="number" value="12" style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:6px; font-size:0.88rem;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [SUB-ABA 5] PEDIDOS & CONVERSÃO                                   -->
+    <!-- ================================================================= -->
+    <div id="ecom-view-orders" style="display:none;">
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+                <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:#0F172A;">Histórico de Transações e Conversão</h3>
+                <span style="font-size:0.85rem; color:#64748B;">Reconciliação assíncrona automática via Webhook</span>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.88rem;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #E2E8F0; color:#475569;">
+                            <th style="padding:10px;">ID do Pedido</th>
+                            <th style="padding:10px;">Origem</th>
+                            <th style="padding:10px;">Cliente</th>
+                            <th style="padding:10px;">Itens Contratados</th>
+                            <th style="padding:10px;">Valor Total</th>
+                            <th style="padding:10px;">Status Financeiro</th>
+                            <th style="padding:10px;">Logística / Agenda</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ecom-table-orders-body">
+                        <tr style="border-bottom:1px solid #F1F5F9;">
+                            <td style="padding:10px; font-family:monospace; font-weight:600;">#ORD-9021</td>
+                            <td style="padding:10px;"><span style="background:#EDE9FE; color:#6D28D9; padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:700;">Videochamada</span></td>
+                            <td style="padding:10px;">(47) 99876-5432</td>
+                            <td style="padding:10px;">Visita Técnica (1x)</td>
+                            <td style="padding:10px; font-weight:700; color:#059669;">R$ 180,00</td>
+                            <td style="padding:10px;"><span style="background:#DCFCE7; color:#15803D; padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:700;">Pix Pago</span></td>
+                            <td style="padding:10px; color:#0284C7; font-weight:600;">Cal.com Bloqueado</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- SCRIPT DE CHAVEAMENTO DE ABAS E INTERAÇÃO -->
+
+<!-- =========================================================================
+     ATENDIT - SCRIPT OPERACIONAL LOJA & E-COMMERCE (CORREÇÃO DE SINTAXE E ABAS)
+     ========================================================================= -->
+  </section>
+
+</div>
+
+<!-- MODAL DE CADASTRO E EDIÇÃO DO PREVIEW.HTML -->
+<div class="modal" id="itemModal">
+  <div class="dialog">
+    <div class="dialog-head">
+      <h3 id="modalTitle">Novo Produto / Serviço</h3>
+      <button type="button" class="close" onclick="window.closeItemModal()">✕</button>
+    </div>
+    <div class="dialog-body">
+      <div class="form-grid">
+        <div class="field"><label>Tipo</label><select id="itemType"><option value="product">Produto</option><option value="service">Serviço</option></select></div>
+        <div class="field"><label>SKU / Código</label><input id="itemSku" placeholder="PROD-001"></div>
+        <div class="field full"><label>Nome do item</label><input id="itemName" placeholder="Nome comercial"></div>
+        <div class="field full"><label>Descrição</label><textarea id="itemDesc" placeholder="Benefícios, aplicação, diferenciais e resumo comercial"></textarea></div>
+        <div class="field"><label>Quantidade / estoque / capacidade</label><input id="itemQty" value="0"></div>
+        <div class="field"><label>Preço base (R$)</label><input id="itemPrice" type="number" step="0.01" value="0"></div>
+        <div class="field"><label>Categoria</label><input id="itemCat" placeholder="Ex.: Automação"></div>
+        <div class="field"><label>Status</label><select id="itemStatus"><option value="active">Ativo</option><option value="draft">Rascunho</option></select></div>
+        <div class="field full"><label>Foto do item</label><input id="itemImage" type="file" accept="image/*"></div>
+        <div class="field full"><label>Campos técnicos / observações para IA</label><textarea id="itemTech" placeholder="Dimensões, materiais, normas, compatibilidade, prazo, garantia, certificados..."></textarea></div>
+        <div class="field full">
+          <label>Publicação do item</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <label style="border:1px solid var(--line);padding:10px;border-radius:9px;display:flex;align-items:center;gap:6px"><input type="checkbox" checked> Vitrine</label>
+            <label style="border:1px solid var(--line);padding:10px;border-radius:9px;display:flex;align-items:center;gap:6px"><input type="checkbox" checked> Catálogo</label>
+            <label style="border:1px solid var(--line);padding:10px;border-radius:9px;display:flex;align-items:center;gap:6px"><input type="checkbox"> PDF técnico</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-foot">
+      <button type="button" class="secondary" onclick="window.closeItemModal()">Cancelar</button>
+      <button type="button" class="primary" onclick="window.saveItem()">Salvar item</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- SCRIPT COMPLETO E ISOLADO DE PREVIEW.HTML (100% NO ESCOPO WINDOW) -->
+<script>
+(function() {
+  console.info("[PRESENTHIA-ECOM] Carregando motor da Vitrine e Configuração da Loja...");
+
+  window.items = [
+    {id:1,type:'product',sku:'PROD-AUT-001',name:'Kit Sensor Industrial IoT',desc:'Conjunto para coleta de dados de temperatura e vibração.',qty:42,price:1290.00,cat:'IoT Industrial',status:'active',image:'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80'},
+    {id:2,type:'product',sku:'PROD-PLC-002',name:'Gateway Edge 4.0',desc:'Conectividade industrial com processamento de borda.',qty:18,price:2490.00,cat:'Automação',status:'active',image:'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=900&q=80'},
+    {id:3,type:'product',sku:'PROD-HMI-003',name:'Painel HMI Touch 10\"',desc:'Interface touch para supervisão e operação de máquinas.',qty:9,price:3190.00,cat:'Automação',status:'active',image:'https://images.unsplash.com/photo-1581090700227-1e37b190418e?auto=format&fit=crop&w=900&q=80'},
+    {id:4,type:'product',sku:'PROD-MTR-004',name:'Motor Industrial Premium',desc:'Motor de alto rendimento para aplicações contínuas.',qty:7,price:6840.00,cat:'Motores',status:'draft',image:'https://images.unsplash.com/photo-1581092335397-9fa341ce5f6d?auto=format&fit=crop&w=900&q=80'},
+    {id:5,type:'service',sku:'SRV-DIAG-001',name:'Diagnóstico de Maturidade Digital',desc:'Avaliação estruturada e roadmap para Indústria 4.0.',qty:20,price:2800.00,cat:'Consultoria',status:'active',image:'https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=900&q=80'},
+    {id:6,type:'service',sku:'SRV-IA-002',name:'Implantação de IA Aplicada',desc:'Descoberta, priorização e implantação de casos de uso de IA.',qty:12,price:6900.00,cat:'Inteligência Artificial',status:'active',image:'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=900&q=80'},
+    {id:7,type:'service',sku:'SRV-CONS-003',name:'Consultoria Estratégica C-Level',desc:'Sessões executivas para estratégia, inovação e transformação.',qty:30,price:1800.00,cat:'Consultoria',status:'active',image:'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=80'},
+    {id:8,type:'service',sku:'SRV-MANUT-01',name:'Visita Técnica Especializada',desc:'Atendimento técnico presencial com raio e requisitos configuráveis.',qty:15,price:180.00,cat:'Campo',status:'active',image:'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=900&q=80'}
+  ];
+
+  window.currentTypeFilter = 'all';
+  window.editingItemId = null;
+  window.previewSearchQuery = '';
+
+  window.money = function(v) {
+    return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  };
+
+  window.showToast = function(msg) {
+    var t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 2600);
+  };
+
+  window.renderItems = function() {
+    var q = (document.getElementById('search') || {}).value || '';
+    q = q.toLowerCase();
+    var status = (document.getElementById('statusFilter') || {}).value || 'all';
+
+    var filtered = window.items.filter(function(x) {
+      var matchType = (window.currentTypeFilter === 'all' || x.type === window.currentTypeFilter);
+      var matchStatus = (status === 'all' || x.status === status);
+      var matchQ = [x.name, x.sku, x.cat, x.desc].join(' ').toLowerCase().indexOf(q) !== -1;
+      return matchType && matchStatus && matchQ;
+    });
+
+    var grid = document.getElementById('itemGrid');
+    if (grid) {
+      if (!filtered.length) {
+        grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Nenhum item encontrado.</div>';
+      } else {
+        grid.innerHTML = filtered.map(function(x) {
+          var badgeClass = (x.status === 'active') ? 'status active' : 'status draft';
+          var badgeLabel = (x.status === 'active') ? 'Ativo' : 'Rascunho';
+          var typeLabel = (x.type === 'product') ? 'PRODUTO' : 'SERVIÇO';
+          var qtyLabel = (x.type === 'product') ? 'Estoque' : 'Disponibilidade';
+          var imgEl = x.image ? '<img src="' + x.image + '" alt="">' : '<div class="placeholder">🛍️</div>';
+
+          return '<article class="item-card">' +
+            '<div class="thumb">' + imgEl + '<span class="' + badgeClass + '">' + badgeLabel + '</span></div>' +
+            '<div class="item-body">' +
+              '<div class="sku">' + typeLabel + ' • ' + x.sku + '</div>' +
+              '<div class="item-title">' + x.name + '</div>' +
+              '<div class="desc">' + x.desc + '</div>' +
+              '<div class="price-row">' +
+                '<div class="price">' + window.money(x.price) + '</div>' +
+                '<div class="qty">' + qtyLabel + ': ' + x.qty + '</div>' +
+              '</div>' +
+              '<div class="item-actions">' +
+                '<button type="button" onclick="window.editItem(' + x.id + ')">✏️ Editar</button>' +
+                '<button type="button" onclick="window.showToast(\'Ficha técnica aberta para ' + x.sku + '\')">📄 Ficha</button>' +
+                '<button type="button" onclick="window.showToast(\'Link público gerado para ' + x.sku + '\')">🔗 Link</button>' +
+              '</div>' +
+            '</div>' +
+          '</article>';
+        }).join('');
+      }
+    }
+
+    if (document.getElementById('mProducts')) document.getElementById('mProducts').textContent = window.items.filter(function(i){ return i.type==='product' && i.status==='active'; }).length;
+    if (document.getElementById('mServices')) document.getElementById('mServices').textContent = window.items.filter(function(i){ return i.type==='service' && i.status==='active'; }).length;
+    if (document.getElementById('mDraft')) document.getElementById('mDraft').textContent = window.items.filter(function(i){ return i.status==='draft'; }).length;
+    if (document.getElementById('mTotal')) document.getElementById('mTotal').textContent = window.items.length;
+
+    window.renderPreview();
+  };
+
+  window.renderPreview = function() {
+    var q = (window.previewSearchQuery || '').toLowerCase();
+    var filtered = window.items.filter(function(x) {
+      return (window.currentTypeFilter === 'all' || x.type === window.currentTypeFilter) &&
+             x.status === 'active' &&
+             [x.name, x.cat].join(' ').toLowerCase().indexOf(q) !== -1;
+    }).slice(0, 6);
+
+    var list = document.getElementById('storeList');
+    if (!list) return;
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty" style="grid-column:1/-1">Sem resultados na prévia.</div>';
+    } else {
+      list.innerHTML = filtered.map(function(x) {
+        var imgHtml = x.image ? '<img src="' + x.image + '" alt="">' : '';
+        var tLabel = (x.type === 'product') ? 'Produto' : 'Serviço';
+        return '<div class="mini-product">' +
+          '<div class="mini-img">' + imgHtml + '</div>' +
+          '<div class="mini-info">' +
+            '<div class="mini-name">' + x.name + '</div>' +
+            '<div class="mini-price">' + window.money(x.price) + '</div>' +
+            '<div class="mini-meta">' + tLabel + ' • ' + x.cat + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+  };
+
+  window.setType = function(v, btn) {
+    window.currentTypeFilter = v;
+    document.querySelectorAll('.type-switch button').forEach(function(b) { b.classList.remove('on'); });
+    if (btn) btn.classList.add('on');
+    window.renderItems();
+  };
+
+  window.storeNav = function(label, btn) {
+    document.querySelectorAll('.store-public-nav button').forEach(function(b) { b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+    window.showToast('Seção "' + label + '" selecionada na vitrine.');
+  };
+
+  window.filterPreview = function(v) {
+    window.previewSearchQuery = v;
+    window.renderPreview();
+  };
+
+  window.setDevice = function(label, btn) {
+    document.querySelectorAll('.device button').forEach(function(b) { b.classList.remove('on'); });
+    if (btn) btn.classList.add('on');
+    var el = document.getElementById('previewMode');
+    if (el) el.textContent = label;
+    var wrap = document.getElementById('previewStoreWrap');
+    if (wrap) {
+      if (label === 'Mobile') wrap.style.maxWidth = '375px';
+      else if (label === 'Tablet') wrap.style.maxWidth = '680px';
+      else wrap.style.maxWidth = '100%';
+    }
+  };
+
+  window.syncPreview = function() {
+    var name = (document.getElementById('storeName') || {}).value || 'Sua loja';
+    var tag = (document.getElementById('tagline') || {}).value || 'Produtos e serviços';
+    if (document.getElementById('previewName')) document.getElementById('previewName').textContent = name;
+    if (document.getElementById('previewTagline')) document.getElementById('previewTagline').textContent = tag;
+    if (document.getElementById('storeHeroBrand')) document.getElementById('storeHeroBrand').textContent = name;
+    if (document.getElementById('storeHeroTagline')) document.getElementById('storeHeroTagline').textContent = tag;
+  };
+
+  window.applyBrand = function(v) {
+    if (!v) return;
+    document.documentElement.style.setProperty('--brand', v);
+    if (document.getElementById('brandHex')) document.getElementById('brandHex').value = v;
+    if (document.getElementById('brandColor')) document.getElementById('brandColor').value = v;
+  };
+
+  window.toggleSwitch = function(btn) {
+    btn.classList.toggle('on');
+  };
+
+  window.previewLogo = function(e) {
+    var f = e.target.files[0];
+    if (!f) return;
+    var img = document.getElementById('logoPreview');
+    if (img) {
+      img.src = URL.createObjectURL(f);
+      img.style.display = 'block';
+    }
+    window.showToast('Logo carregada para a prévia.');
+  };
+
+  window.saveConfig = function() {
+    window.showToast('Configurações da loja salvas com sucesso!');
+  };
+
+  window.publishStore = function() {
+    window.showToast('Vitrine pública publicada e sincronizada!');
+  };
+
+  window.toggleBulk = function() {
+    window.showToast('Seleção em lote ativada para produtos/serviços.');
+  };
+
+  window.openItemModal = function() {
+    window.editingItemId = null;
+    var t = document.getElementById('modalTitle');
+    if (t) t.textContent = 'Novo Produto / Serviço';
+    ['itemSku', 'itemName', 'itemDesc', 'itemCat', 'itemTech'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    if (document.getElementById('itemQty')) document.getElementById('itemQty').value = '0';
+    if (document.getElementById('itemPrice')) document.getElementById('itemPrice').value = '0';
+    if (document.getElementById('itemType')) document.getElementById('itemType').value = 'product';
+    if (document.getElementById('itemStatus')) document.getElementById('itemStatus').value = 'active';
+    var m = document.getElementById('itemModal');
+    if (m) m.classList.add('open');
+  };
+
+  window.closeItemModal = function() {
+    var m = document.getElementById('itemModal');
+    if (m) m.classList.remove('open');
+  };
+
+  window.editItem = function(id) {
+    var x = window.items.find(function(i){ return i.id === id; });
+    if (!x) return;
+    window.editingItemId = id;
+    var t = document.getElementById('modalTitle');
+    if (t) t.textContent = 'Editar item';
+    if (document.getElementById('itemType')) document.getElementById('itemType').value = x.type;
+    if (document.getElementById('itemSku')) document.getElementById('itemSku').value = x.sku;
+    if (document.getElementById('itemName')) document.getElementById('itemName').value = x.name;
+    if (document.getElementById('itemDesc')) document.getElementById('itemDesc').value = x.desc;
+    if (document.getElementById('itemQty')) document.getElementById('itemQty').value = x.qty;
+    if (document.getElementById('itemPrice')) document.getElementById('itemPrice').value = x.price;
+    if (document.getElementById('itemCat')) document.getElementById('itemCat').value = x.cat;
+    if (document.getElementById('itemStatus')) document.getElementById('itemStatus').value = x.status;
+    var m = document.getElementById('itemModal');
+    if (m) m.classList.add('open');
+  };
+
+  window.saveItem = function() {
+    var name = (document.getElementById('itemName') || {}).value;
+    if (!name || !name.trim()) {
+      alert('Informe o nome do item.');
+      return;
+    }
+    var data = {
+      type: (document.getElementById('itemType') || {}).value || 'product',
+      sku: (document.getElementById('itemSku') || {}).value || 'SEM-SKU',
+      name: name.trim(),
+      desc: (document.getElementById('itemDesc') || {}).value || '',
+      qty: Number((document.getElementById('itemQty') || {}).value) || 0,
+      price: Number((document.getElementById('itemPrice') || {}).value) || 0,
+      cat: (document.getElementById('itemCat') || {}).value || 'Geral',
+      status: (document.getElementById('itemStatus') || {}).value || 'active',
+      image: ''
+    };
+
+    if (window.editingItemId) {
+      var item = window.items.find(function(i){ return i.id === window.editingItemId; });
+      if (item) Object.assign(item, data);
+      window.showToast('Item atualizado com sucesso.');
+    } else {
+      data.id = Date.now();
+      window.items.unshift(data);
+      window.showToast('Novo item cadastrado na vitrine.');
+    }
+    window.closeItemModal();
+    window.renderItems();
+  };
+
+  // 3. Sistema de Alternância Entre as 7 Sub-Abas
+  window.showTab = function(name) {
+    document.querySelectorAll('.subnav button').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.tab === name);
+    });
+
+    var mapAbasLegado = {
+      'catalog': 'ecom-view-catalog',
+      'links': 'ecom-view-sdui',
+      'video': 'ecom-view-webrtc',
+      'payments': 'ecom-view-checkout',
+      'orders': 'ecom-view-orders'
+    };
+
+    document.querySelectorAll('.tab-panel').forEach(function(p) {
+      if (p.id === 'tab-store') p.classList.toggle('active', name === 'store');
+      else if (p.id === 'tab-config') p.classList.toggle('active', name === 'config');
+      else if (p.id === 'tab-catalog') p.classList.toggle('active', name !== 'store' && name !== 'config');
+    });
+
+    if (name !== 'store' && name !== 'config') {
+      var idAlvo = mapAbasLegado[name] || 'ecom-view-' + name;
+      ['ecom-view-catalog', 'ecom-view-sdui', 'ecom-view-webrtc', 'ecom-view-checkout', 'ecom-view-orders'].forEach(function(vid) {
+        var el = document.getElementById(vid);
+        if (el) el.style.display = (vid === idAlvo) ? 'block' : 'none';
+      });
+    }
+
+    if (name === 'store') window.renderItems();
+    if (name === 'config') { window.syncPreview(); window.renderPreview(); }
+  };
+
+  document.querySelectorAll('.subnav button').forEach(function(btn) {
+    btn.onclick = function() { window.showTab(btn.dataset.tab); };
+  });
+
+  // Inicialização padrão: abre em Vitrine & Loja
+  window.syncPreview();
+  window.renderItems();
+  window.applyBrand('#08a7b8');
+  window.showTab('store');
+
+  console.info("[PRESENTHIA-ECOM] Dashboard integrado e pronto!");
+})();
+(function() {
+    console.info("[PRESENTHIA-ECOM] Inicializando controlador da Loja & E-Commerce...");
+
+    window.currentTenantSlug = window.currentTenantSlug || (function() {
+        var p = window.location.pathname.replace(/^\/|\/$/g, '').split('/').filter(Boolean);
+        return (p.length > 0 && p[0] !== 'tenant') ? p[0] : 'mani';
+    })();
+
+    // 1. Função de Chaveamento das 5 Sub-Abas
+    window.ecomTrocarAba = function(alvo) {
+        console.info("[PRESENTHIA-ECOM] Trocando para sub-aba:", alvo);
+        var abas = ['ecom-view-catalog', 'ecom-view-sdui', 'ecom-view-webrtc', 'ecom-view-checkout', 'ecom-view-orders'];
+        
+        abas.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = (id === alvo) ? 'block' : 'none';
+        });
+
+        document.querySelectorAll('.ecom-tab').forEach(function(b) {
+            var ativo = (b.dataset.alvo === alvo);
+            b.style.background = ativo ? '#0DA2B6' : 'white';
+            b.style.color = ativo ? 'white' : '#475569';
+            b.style.borderColor = ativo ? '#0DA2B6' : '#CBD5E1';
+            b.style.fontWeight = ativo ? '700' : '600';
+        });
+    };
+
+    // Vincula o evento de clique nos botões das sub-abas
+    document.querySelectorAll('.ecom-tab').forEach(function(b) {
+        b.onclick = function() {
+            window.ecomTrocarAba(b.dataset.alvo);
+        };
+    });
+
+    // 2. Alertas
+    window.ecomMostrarAlerta = function(msg, sucesso) {
+        var el = document.getElementById('ecom-alerta');
+        if (!el) return;
+        el.style.display = 'block';
+        el.style.background = sucesso ? '#ECFDF5' : '#FEF2F2';
+        el.style.color = sucesso ? '#065F46' : '#991B1B';
+        el.style.border = '1px solid ' + (sucesso ? '#A7F3D0' : '#FECACA');
+        el.innerText = msg;
+        setTimeout(function() { el.style.display = 'none'; }, 4000);
+    };
+
+    // 3. Ações dos Botões Exportadas no Escopo Global (window)
+    window.ecomAbrirModalItem = function() {
+        alert('Cadastro de Item/Serviço: Em breve formulário dinâmico com Ficha Técnica Schema.org.');
+    };
+
+    window.ecomGerarTokenTeste = function() {
+        var dummyToken = 'https://atendit.smartinovat.com/meet/teste_' + Math.random().toString(36).substring(2, 10);
+        alert('Magic Link de Sala de Demonstração:\n' + dummyToken);
+    };
+
+    window.ecomSalvarWebRTC = async function() {
+        var provedor = (document.getElementById('webrtc-provider') || {}).value;
+        var dominio = (document.getElementById('webrtc-domain') || {}).value;
+        var tour = (document.getElementById('webrtc-guided-tour') || {}).checked;
+
+        var payload = {
+            provider: provedor,
+            domain: dominio,
+            guided_tour_enabled: tour
+        };
+
+        try {
+            var res = await fetch('/v1/video/config/' + window.currentTenantSlug, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                window.ecomMostrarAlerta('Parâmetros de WebRTC e Tour Guiado salvos com sucesso!', true);
+            } else {
+                window.ecomMostrarAlerta('Parâmetros salvos localmente.', true);
+            }
+        } catch (err) {
+            window.ecomMostrarAlerta('Parâmetros salvos localmente.', true);
+        }
+    };
+
+    // Abre a primeira sub-aba por padrão
+    window.ecomTrocarAba('ecom-view-catalog');
+    console.info("[PRESENTHIA-ECOM] Controlador inicializado com sucesso.");
+})();
+</script>
