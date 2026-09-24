@@ -1,125 +1,278 @@
-<div style="animation: fadeIn 0.3s; font-family: system-ui, -apple-system, sans-serif;">
-    <div style="background: #FFF; padding: 30px; border-radius: 12px; border: 1px solid var(--border, #E2E8F0); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 25px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h4 style="font-size: 1.1rem; color: #1E293B; margin: 0; font-weight: 700;">💬 Monitor de Conversas Ativas (Fila Real Chat)</h4>
-            <span id="chat-badge-count" style="background: #074f57; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 700;">Sincronizando...</span>
-        </div>
-        <p style="font-size: 0.85rem; color: #546e7a; margin-bottom: 20px;">Painel de monitoramento síncrono das instâncias de transmissão com transbordo humano e triagem cognitiva.</p>
-        
-        <div style="overflow-x: auto; border: 1px solid var(--border, #E2E8F0); border-radius: 8px; margin-bottom: 20px;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
-                <thead>
-                    <tr style="background: #F8FAFC; border-bottom: 2px solid #E2E8F0; color: #475569;">
-                        <th style="padding: 12px 15px; font-weight: 600;">Cliente / Instância</th>
-                        <th style="padding: 12px 15px; font-weight: 600;">Última Interação Semântica</th>
-                        <th style="padding: 12px 15px; font-weight: 600;">Canal / Status</th>
-                        <th style="padding: 12px 15px; font-weight: 600; text-align: center;">Controle Operacional</th>
-                    </tr>
-                </thead>
-                <tbody id="chat-queue-table-body">
-                    <tr>
-                        <td colspan="4" style="padding: 30px; text-align: center; color: #64748B; font-style: italic;">
-                            Conectando ao barramento de eventos do gateway de chats...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+<div style="font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 20px;">
+    <!-- 1. PAINEL SUPERIOR: MÉTRICAS E CONTROLES DE FILTRO -->
+    <div style="background: #ffffff; padding: 24px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-top: 4px solid var(--p-turquesa, #3ccbc5); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h4 style="font-size: 1.15rem; color: var(--p-texto, #231726); margin: 0; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                    💬 Gestão, Resgate e Análise de Conversas
+                </h4>
+                <p style="font-size: 0.85rem; color: var(--p-texto-suave, #5e5563); margin: 4px 0 0 0;">
+                    Monitoramento síncrono das conversas no WhatsApp com transcrição de diálogos e transbordo humano.
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <span id="metric-total" style="background: #F1F5F9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">Total: 0</span>
+                <span id="metric-ia" style="background: #E0F2FE; color: #0284C7; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">🤖 IA: 0</span>
+                <span id="metric-humano" style="background: #FEF3C7; color: #D97706; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">👤 Humano: 0</span>
+                <button onclick="window.carregarFilaAtendimento()" style="background: var(--p-turquesa-texto, #0b7570); color: white; border: none; padding: 7px 18px; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: 0.82rem; transition: all 0.2s;">
+                    🔄 Sincronizar
+                </button>
+            </div>
         </div>
 
-        <div style="background: #E0F7FA; border-left: 4px solid var(--color-cyan, #0da2b6); padding: 12px 15px; border-radius: 4px; font-size: 0.82rem; color: #006064; display: flex; justify-content: space-between; align-items: center;">
-            <div><strong>📡 Status de Rede:</strong> <span id="net-status-text">Escuta do gateway de eventos ativa com sucesso.</span></div>
-            <button onclick="window.carregarFilaAtendimento()" style="background: transparent; border: 1px solid rgba(0,96,100,0.3); color: #006064; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 700;">Forçar Sincronia</button>
+        <!-- BARRA DE FILTROS E BUSCA -->
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="filtro-busca-chat" oninput="window.filtrarConversasLocalmente()" placeholder="🔍 Buscar por nome do cliente ou WhatsApp..." style="flex: 1; min-width: 260px; padding: 9px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; outline: none;">
+            <select id="filtro-status-chat" onchange="window.filtrarConversasLocalmente()" style="padding: 9px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; outline: none; background: white;">
+                <option value="todos">Todos os Modos</option>
+                <option value="ia">🤖 Somente Agente IA</option>
+                <option value="humano">👤 Em Transbordo Humano</option>
+                <option value="encerrado">📁 Encerrados / Arquivados</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 2. TABELA PRINCIPAL DE CONVERSAS -->
+    <div style="background: #ffffff; padding: 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+            <thead>
+                <tr style="background: var(--p-marfim, #fbf8f4); border-bottom: 2px solid var(--p-borda, #eae3dc); color: #475569;">
+                    <th style="padding: 12px 14px; font-weight: 600;">Cliente / WhatsApp</th>
+                    <th style="padding: 12px 14px; font-weight: 600;">Última Mensagem Registrada</th>
+                    <th style="padding: 12px 14px; font-weight: 600; text-align: center;">Canal / Modo</th>
+                    <th style="padding: 12px 14px; font-weight: 600; text-align: center;">Ações & Transcrição</th>
+                </tr>
+            </thead>
+            <tbody id="chat-queue-table-body">
+                <tr>
+                    <td colspan="4" style="padding: 30px; text-align: center; color: #64748B; font-style: italic;">
+                        Conectando ao banco de conversas e mensagens...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 3. MODAL DE TRANSCRIÇÃO & ANÁLISE COMPLETA DO DIÁLOGO -->
+    <div id="modal-transcricao" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #ffffff; width: 100%; max-width: 680px; max-height: 85vh; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden;">
+            <!-- TOPO DO MODAL -->
+            <div style="padding: 16px 20px; background: var(--p-berinjela, #231726); color: white; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 id="modal-chat-title" style="margin: 0; font-size: 1.05rem; font-weight: 800;">Transcrição da Conversa</h4>
+                    <span id="modal-chat-subtitle" style="font-size: 0.8rem; opacity: 0.85;">Carregando histórico...</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="window.copiarTranscricao()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
+                        📋 Copiar Histórico
+                    </button>
+                    <button onclick="window.fecharModalTranscricao()" style="background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 0 6px;">
+                        ✕
+                    </button>
+                </div>
+            </div>
+
+            <!-- CORPO DO CHAT COM AS MENSAGENS -->
+            <div id="modal-chat-messages" style="flex: 1; overflow-y: auto; padding: 20px; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
+                <p style="text-align: center; color: #94a3b8; font-style: italic;">Carregando mensagens...</p>
+            </div>
+
+            <!-- RODAPÉ DO MODAL -->
+            <div style="padding: 12px 20px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
+                <button onclick="window.fecharModalTranscricao()" style="background: #fff; color: var(--p-texto-suave, #5e5563); border: 1px solid var(--p-borda, #eae3dc); padding: 8px 20px; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: 0.85rem;">
+                    Fechar
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    (async function() {
-        await window.carregarFilaAtendimento();
-    })();
+(function() {
+    var conversasCarregadas = [];
 
-    async function carregarFilaAtendimento() {
-        const tbody = document.getElementById('chat-queue-table-body');
-        const badge = document.getElementById('chat-badge-count');
-        const netText = document.getElementById('net-status-text');
-        
+    window.carregarFilaAtendimento = async function() {
+        var tbody = document.getElementById('chat-queue-table-body');
+        var slug = window.currentTenantSlug;
+        if (!slug) return;
+
         try {
-            const response = await fetch(`${window.location.origin}/v1/whatsapp/chats?tenant_slug=${window.currentTenantSlug}`);
-            if (!response.ok) throw new Error();
-            
-            const chats = await response.json();
-            tbody.innerHTML = "";
-            
-            if (!chats || chats.length === 0) {
-                if(badge) badge.innerText = "0 Ativos";
-                tbody.innerHTML = `<tr><td colspan="4" style="padding:30px; text-align:center; color:#94A3B8; font-style:italic;">Nenhum cliente ativo na esteira de conversas neste momento.</td></tr>`;
+            var res = await fetch('/v1/whatsapp/chats?tenant_slug=' + slug);
+            if (!res.ok) throw new Error();
+            conversasCarregadas = await res.json();
+            window.atualizarMetricas();
+            window.filtrarConversasLocalmente();
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="4" style="padding:30px; text-align:center; color:#94A3B8; font-style:italic;">Nenhuma conversa sincronizada no momento. Conforme clientes enviarem mensagens pelo WhatsApp, o histórico aparecerá aqui.</td></tr>';
+        }
+    };
+
+    window.atualizarMetricas = function() {
+        var total = conversasCarregadas.length;
+        var ia = conversasCarregadas.filter(function(c) { return c.status === 'ia'; }).length;
+        var humano = conversasCarregadas.filter(function(c) { return c.status === 'humano'; }).length;
+
+        var elTot = document.getElementById('metric-total');
+        var elIa = document.getElementById('metric-ia');
+        var elHum = document.getElementById('metric-humano');
+
+        if (elTot) elTot.innerText = 'Total: ' + total;
+        if (elIa) elIa.innerText = '🤖 IA: ' + ia;
+        if (elHum) elHum.innerText = '👤 Humano: ' + humano;
+    };
+
+    window.filtrarConversasLocalmente = function() {
+        var tbody = document.getElementById('chat-queue-table-body');
+        var termo = (document.getElementById('filtro-busca-chat').value || '').toLowerCase().trim();
+        var stFiltro = document.getElementById('filtro-status-chat').value;
+
+        var filtradas = conversasCarregadas.filter(function(c) {
+            var bateTermo = !termo ||
+                (c.client_name && c.client_name.toLowerCase().includes(termo)) ||
+                (c.contact && c.contact.includes(termo)) ||
+                (c.last_message && c.last_message.toLowerCase().includes(termo));
+
+            var bateStatus = (stFiltro === 'todos') || (c.status === stFiltro);
+            return bateTermo && bateStatus;
+        });
+
+        if (filtradas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="padding:30px; text-align:center; color:#94A3B8; font-style:italic;">Nenhuma conversa corresponde aos filtros selecionados.</td></tr>';
+            return;
+        }
+
+        var html = '';
+        filtradas.forEach(function(chat) {
+            var isIa = (chat.status === 'ia');
+            var isHumano = (chat.status === 'humano');
+            var badgeColor = isIa ? '#0284C7' : (isHumano ? '#D97706' : '#64748B');
+            var badgeBg = isIa ? '#E0F2FE' : (isHumano ? '#FEF3C7' : '#F1F5F9');
+            var badgeLabel = isIa ? '🤖 AGENTE IA' : (isHumano ? '👤 OPERADOR' : '📁 ENCERRADO');
+
+            html += '<tr style="border-bottom: 1px solid #E2E8F0;">'
+                 + '  <td style="padding: 14px 15px;">'
+                 + '    <strong style="color:#0F172A; display:block; font-size:0.92rem;">' + (chat.client_name || chat.contact) + '</strong>'
+                 + '    <span style="font-size:11px; color:#64748B; font-family:monospace;">' + chat.contact + '</span>'
+                 + '  </td>'
+                 + '  <td style="padding: 14px 15px; color: var(--p-texto, #231726); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">'
+                 + '    <span>' + (chat.last_message || '<em>Sem mensagens</em>') + '</span>'
+                 + '    <span style="font-size:10.5px; color:#94A3B8; display:block; margin-top:3px;">' + (chat.updated_at || '') + '</span>'
+                 + '  </td>'
+                 + '  <td style="padding: 14px 15px; text-align: center;">'
+                 + '    <span style="background:' + badgeBg + '; color:' + badgeColor + '; padding: 4px 10px; border-radius: var(--p-raio, 16px); font-size: 11px; font-weight: 700; display: inline-block;">'
+                 +        badgeLabel
+                 + '    </span>'
+                 + '  </td>'
+                 + '  <td style="padding: 14px 15px; text-align: center; display: flex; gap: 8px; justify-content: center; align-items: center;">'
+                 + '    <button onclick="window.abrirModalTranscricao(\'' + chat.remoteJid + '\', \'' + (chat.client_name || chat.contact) + '\', \'' + chat.contact + '\')" style="background: var(--p-turquesa-texto, #0b7570); color: white; border: none; padding: 6px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 999px; cursor: pointer;">'
+                 + '      📜 Ver Histórico'
+                 + '    </button>'
+                 + (isIa ?
+                     '    <button onclick="window.alterarStatusChat(\'' + chat.remoteJid + '\', \'humano\')" style="background: var(--p-berinjela, #231726); color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer;">'
+                   + '      Assumir'
+                   + '    </button>'
+                   :
+                     '    <button onclick="window.alterarStatusChat(\'' + chat.remoteJid + '\', \'ia\')" style="background: var(--p-texto, #231726); color: white; border: none; padding: 6px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 999px; cursor: pointer;">'
+                   + '      Devolver IA'
+                   + '    </button>'
+                   )
+                 + '    <button onclick="window.alterarStatusChat(\'' + chat.remoteJid + '\', \'encerrado\')" style="background: #EF4444; color: white; border: none; padding: 6px 10px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer;">'
+                 + '      Encerrar'
+                 + '    </button>'
+                 + '  </td>'
+                 + '</tr>';
+        });
+        tbody.innerHTML = html;
+    };
+
+    // AÇÕES DE STATUS
+    window.alterarStatusChat = async function(target, novoStatus) {
+        var slug = window.currentTenantSlug;
+        try {
+            var res = await fetch('/v1/whatsapp/chats/' + encodeURIComponent(target) + '/status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slug: slug, status: novoStatus })
+            });
+            if (res.ok) {
+                await window.carregarFilaAtendimento();
+            } else {
+                alert('Não foi possível alterar o status da conversa.');
+            }
+        } catch (e) {
+            alert('Falha na comunicação com o servidor.');
+        }
+    };
+
+    // TRANSCRIÇÃO & HISTÓRICO
+    var mensagensHistoricoAtual = [];
+
+    window.abrirModalTranscricao = async function(remoteJid, nome, contato) {
+        var modal = document.getElementById('modal-transcricao');
+        var boxMsg = document.getElementById('modal-chat-messages');
+        var title = document.getElementById('modal-chat-title');
+        var sub = document.getElementById('modal-chat-subtitle');
+        var slug = window.currentTenantSlug;
+
+        if (title) title.innerText = 'Transcrição: ' + nome;
+        if (sub) sub.innerText = 'WhatsApp: ' + contato;
+        if (boxMsg) boxMsg.innerHTML = '<p style="text-align:center; color:#94A3B8; font-style:italic;">Carregando mensagens do banco de dados...</p>';
+        if (modal) modal.style.display = 'flex';
+
+        try {
+            var r = await fetch('/v1/whatsapp/chats/' + encodeURIComponent(remoteJid) + '/messages?tenant_slug=' + slug);
+            if (!r.ok) throw new Error();
+            var msgs = await r.json();
+            mensagensHistoricoAtual = msgs;
+
+            if (msgs.length === 0) {
+                boxMsg.innerHTML = '<p style="text-align:center; color:#94A3B8; font-style:italic;">Nenhuma mensagem registrada nesta conversa.</p>';
                 return;
             }
 
-            if(badge) badge.innerText = `${chats.length} Ativos`;
-            
-            chats.forEach(chat => {
-                const statusColor = chat.status === 'ia' ? '#0284C7' : '#D97706';
-                const statusLabel = chat.status === 'ia' ? '🤖 AGENTE IA' : '👤 HUMANO';
-                
-                tbody.innerHTML += `
-                    <tr style="border-bottom: 1px solid #E2E8F0; transition: background 0.2s;">
-                        <td style="padding: 14px 15px;">
-                            <strong style="color:#1E293B; display:block;">${chat.client_name || chat.contact}</strong>
-                            <span style="font-size:11px; color:#64748B;">${chat.contact}</span>
-                        </td>
-                        <td style="padding: 14px 15px; color: #475569; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                            ${chat.last_message || '<em>Sem mensagens no buffer</em>'}
-                        </td>
-                        <td style="padding: 14px 15px;">
-                            <span style="background: ${statusColor}15; color: ${statusColor}; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-block;">
-                                ${statusLabel}
-                            </span>
-                        </td>
-                        <td style="padding: 14px 15px; text-align: center; display: flex; gap: 8px; justify-content: center;">
-                            ${chat.status === 'ia' ? `
-                                <button onclick="window.assumirAtendimento('${chat.id || chat.contact}')" style="background: #074f57; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer;">
-                                    Intervir / Assumir
-                                </button>
-                            ` : `
-                                <button onclick="window.devolverParaIA('${chat.id || chat.contact}')" style="background: #334155; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer;">
-                                    Devolver para IA
-                                </button>
-                            `}
-                            <button onclick="window.encerrarSessaoChat('${chat.id || chat.contact}')" style="background: #EF4444; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer;">
-                                Encerrar
-                            </button>
-                        </td>
-                    </tr>
-                `;
+            var html = '';
+            msgs.forEach(function(m) {
+                var align = m.from_me ? 'flex-end' : 'flex-start';
+                var bg = m.from_me ? '#231726' : '#ffffff';
+                var color = m.from_me ? '#ffffff' : '#231726';
+                var border = m.from_me ? 'none' : '1px solid #eae3dc';
+
+                html += '<div style="display: flex; justify-content: ' + align + '; margin-bottom: 4px;">'
+                     + '  <div style="max-width: 78%; background: ' + bg + '; color: ' + color + '; border: ' + border + '; border-radius: 10px; padding: 10px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">'
+                     + '    <div style="font-size: 0.72rem; font-weight: 700; opacity: 0.85; margin-bottom: 3px;">' + (m.sender || (m.from_me ? 'Atendente / IA' : 'Cliente')) + '</div>'
+                     + '    <div style="font-size: 0.9rem; line-height: 1.4; word-break: break-word;">' + m.text + '</div>'
+                     + '    <div style="font-size: 0.68rem; opacity: 0.7; text-align: right; margin-top: 4px;">' + (m.time || '') + '</div>'
+                     + '  </div>'
+                     + '</div>';
             });
+            boxMsg.innerHTML = html;
+            boxMsg.scrollTop = boxMsg.scrollHeight;
         } catch (err) {
-            if(badge) badge.innerText = "1 Ativo";
-            tbody.innerHTML = `
-                <tr style="border-bottom: 1px solid #E2E8F0;">
-                    <td style="padding: 14px 15px;"><strong>Eliane Martins da Silva</strong><br><span style="font-size:11px; color:#64748B;">5547999991234</span></td>
-                    <td style="padding: 14px 15px; color: #475569;">Gostaria de confirmar o ensaio do Coral Pommern Sänger.</td>
-                    <td style="padding: 14px 15px;"><span style="background: #0284C715; color: #0284C7; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;">🤖 AGENTE IA</span></td>
-                    <td style="padding: 14px 15px; text-align: center; display: flex; gap: 8px; justify-content: center;">
-                        <button onclick="window.assumirAtendimento('5547999991234')" style="background: #074f57; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer;">Intervir / Assumir</button>
-                        <button onclick="window.encerrarSessaoChat('5547999991234')" style="background: #EF4444; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer;">Encerrar</button>
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-    window.assumirAtendimento = async function(chatId) {
-        alert(`✓ Atendimento de ${chatId} assumido pelo operador manual.`);
-    };
-
-    window.devolverParaIA = async function(chatId) {
-        alert(`✓ Instância devolvida com sucesso para a Inteligência Artificial.`);
-    };
-
-    window.encerrarSessaoChat = async function(chatId) {
-        if (confirm(`Deseja fechar e arquivar o atendimento de ${chatId}?`)) {
-            await window.carregarFilaAtendimento();
+            boxMsg.innerHTML = '<p style="text-align:center; color:#EF4444;">Erro ao carregar mensagens do servidor.</p>';
         }
     };
+
+    window.fecharModalTranscricao = function() {
+        var modal = document.getElementById('modal-transcricao');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.copiarTranscricao = function() {
+        if (!mensagensHistoricoAtual || mensagensHistoricoAtual.length === 0) {
+            alert('Não há mensagens para copiar.');
+            return;
+        }
+        var textoCompleto = mensagensHistoricoAtual.map(function(m) {
+            return '[' + (m.time || '') + '] ' + m.sender + ': ' + m.text;
+        }).join('\n');
+
+        navigator.clipboard.writeText(textoCompleto).then(function() {
+            alert('✓ Histórico copiado para a área de transferência!');
+        }).catch(function() {
+            alert('Falha ao copiar transcrição.');
+        });
+    };
+
+    window.carregarFilaAtendimento();
+})();
 </script>

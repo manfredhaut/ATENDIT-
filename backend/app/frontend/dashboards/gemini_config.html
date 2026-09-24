@@ -143,28 +143,28 @@
 <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display:none;" onload="eval(document.getElementById('multi-ai-script-payload').textContent);">
 
 <div style="font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 25px;">
-    <div style="background: #FFF; padding: 25px; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h4 style="font-size: 1rem; color: #1E293B; margin: 0 0 20px 0; font-weight: 700;">Configuração da IA do Atendente</h4>
+    <div style="background: #FFF; padding: 25px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="font-size: 1rem; color: var(--p-texto, #231726); margin: 0 0 20px 0; font-weight: 700;">Configuração da IA do Atendente</h4>
         
         <div style="margin-bottom: 15px;">
-            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Provedor de Inteligência Artificial Core</label>
-            <select id="ai-provider-select" onchange="window.alternarProvedorCognitivo()" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; background:white; font-size:0.88rem; color: #1E293B; font-weight: 600;">
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: var(--p-texto, #231726);">Provedor de Inteligência Artificial Core</label>
+            <select id="ai-provider-select" onchange="window.alternarProvedorCognitivo()" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; background:white; font-size:0.88rem; color: var(--p-texto, #231726); font-weight: 600;">
                 <option value="google">Google Cloud AI (Plataforma Gemini Studio Nativa)</option>
                 <option value="openai">OpenAI Engine (Plataforma ChatGPT Oficial)</option>
                 <option value="custom">Outro Provedor Opcional (Qualquer API Livre Escolha do Cliente)</option>
             </select>
         </div>
 
-        <div id="wrapper-endpoint-custom" style="margin-bottom: 15px; display: none; background: #F8FAFC; padding: 15px; border-radius: 6px; border: 1px solid #E2E8F0;">
-            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #0F172A;">Endpoint da URL Base da API Customizada</label>
-            <input type="text" id="ai-endpoint-custom" placeholder="Ex: https://api.deepseek.com/v1" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; font-size:0.88rem; color: #1E293B;">
+        <div id="wrapper-endpoint-custom" style="margin-bottom: 15px; display: none; background: #F8FAFC; padding: 15px; border-radius: 6px; border: 1px solid var(--p-borda, #eae3dc);">
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: var(--p-texto, #231726);">Endpoint da URL Base da API Customizada</label>
+            <input type="text" id="ai-endpoint-custom" placeholder="Ex: https://api.deepseek.com/v1" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; font-size:0.88rem; color: var(--p-texto, #231726);">
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label id="label-api-key" style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Chave de Acesso - API Key</label>
+            <label id="label-api-key" style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: var(--p-texto, #231726);">Chave de Acesso - API Key</label>
             <div style="display: flex; gap: 15px; align-items: center;">
-                <input type="password" id="ai-api-key" placeholder="Insira o token secreto de autenticação..." style="flex: 1; padding: 10px; border: 1px solid #CBD5E1; border-radius: 6px; outline: none; font-size: 0.88rem;">
-                <button onclick="window.testarConexaoProvedor()" style="background: #2563EB; color: white; border: none; padding: 10px 20px; font-size: 0.88rem; font-weight: 600; border-radius: 6px; cursor: pointer; white-space: nowrap;">Testar Conexão</button>
+                <input type="password" id="ai-api-key" placeholder="Insira o token secreto de autenticação..." style="flex: 1; padding: 10px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 6px; outline: none; font-size: 0.88rem;">
+                <button onclick="window.testarConexaoProvedor()" style="background: var(--p-turquesa-texto, #0b7570); color: white; border: none; padding: 10px 22px; font-size: 0.88rem; font-weight: 700; border-radius: 999px; cursor: pointer; white-space: nowrap; transition: all 0.2s;">Testar Conexão</button>
             </div>
         </div>
 
@@ -173,24 +173,24 @@
         </div>
     </div>
 
-    <div style="background: #FFF; padding: 25px; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h4 style="font-size: 1rem; color: #1E293B; margin: 0 0 20px 0; font-weight: 700;">Calibração e Instruções de Comportamento</h4>
+    <div style="background: #FFF; padding: 25px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="font-size: 1rem; color: var(--p-texto, #231726); margin: 0 0 20px 0; font-weight: 700;">Calibração e Instruções de Comportamento</h4>
 
         <div id="wrapper-model-select" style="margin-bottom: 18px;">
-            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Modelo Ativo no Barramento</label>
-            <select id="ai-model-select" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; background:white; font-size:0.88rem; color: #334155; font-weight: 500;">
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: var(--p-texto, #231726);">Modelo Ativo no Barramento</label>
+            <select id="ai-model-select" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; background:white; font-size:0.88rem; color: var(--p-texto, #231726); font-weight: 500;">
                 <option value="gemini-2.5-flash">gemini-2.5-flash (Alta Velocidade)</option>
                 <option value="gemini-2.5-pro">gemini-2.5-pro (Alta Performance / Raciocínio Complexo)</option>
             </select>
         </div>
 
         <div id="wrapper-model-custom" style="margin-bottom: 18px; display: none;">
-            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Identificador do Modelo Opcional (String ID)</label>
-            <input type="text" id="ai-model-custom" placeholder="Ex: deepseek-chat, claude-3-5-sonnet" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; font-size:0.88rem; color: #1E293B; font-weight: 600;">
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: var(--p-texto, #231726);">Identificador do Modelo Opcional (String ID)</label>
+            <input type="text" id="ai-model-custom" placeholder="Ex: deepseek-chat, claude-3-5-sonnet" style="width:100%; padding:10px; border:1px solid #CBD5E1; border-radius:6px; outline:none; font-size:0.88rem; color: var(--p-texto, #231726); font-weight: 600;">
         </div>
 
         <div style="margin-bottom: 18px;">
-            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Temperatura de Amostragem (Criatividade)</label>
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: var(--p-texto, #231726);">Temperatura de Amostragem (Criatividade)</label>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <input type="range" id="ai-temperature" min="0.0" max="1.0" step="0.1" value="0.3" style="flex: 1; cursor: pointer;">
                 <span id="temp-val" style="font-weight: 700; font-size: 0.88rem; background: #F1F5F9; padding: 4px 10px; border-radius: 4px; min-width: 35px; text-align: center;">0.3</span>
@@ -198,19 +198,19 @@
         </div>
 
         <div style="margin-bottom: 20px;">
-            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: #334155;">Instruções Base do Sistema (System Instruction)</label>
-            <textarea id="ai-system-instruction" rows="5" style="width:100%; padding:11px; border:1px solid #CBD5E1; border-radius:6px; outline:none; font-family:inherit; font-size:0.88rem; color: #1E293B; line-height: 1.5;" placeholder="Você é o assistente virtual..."></textarea>
+            <label style="display:block; margin-bottom:6px; font-weight:600; font-size:0.88rem; color: var(--p-texto, #231726);">Instruções Base do Sistema (System Instruction)</label>
+            <textarea id="ai-system-instruction" rows="5" style="width:100%; padding:11px; border:1px solid #CBD5E1; border-radius:6px; outline:none; font-family:inherit; font-size:0.88rem; color: var(--p-texto, #231726); line-height: 1.5;" placeholder="Você é o assistente virtual..."></textarea>
         </div>
 
         <div style="display: flex; align-items: center; gap: 15px;">
-            <button onclick="window.salvarConfiguracoesMultiAI()" style="padding: 12px 24px; background: #22C55E; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:0.92rem; box-shadow: 0 2px 4px rgba(34,197,94,0.2);">
+            <button onclick="window.salvarConfiguracoesMultiAI()" style="padding: 12px 28px; background: var(--p-magenta, #d0006f); color:white; border:none; border-radius:999px; font-weight:bold; cursor:pointer; font-size:0.92rem; box-shadow: 0 2px 6px rgba(208,0,111,0.25); transition: all 0.2s;">
                 Gravar Configurações no Barramento
             </button>
             <span id="ai-save-status" style="font-weight: 700; font-size: 0.88rem;"></span>
         </div>
     </div>
 
-    <div style="background: #F8FAFC; padding: 15px; border-radius: 6px; font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 6px; border: 1px solid #E2E8F0;">
+    <div style="background: #F8FAFC; padding: 15px; border-radius: 6px; font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 6px; border: 1px solid var(--p-borda, #eae3dc);">
         💡 <strong>Telemetria Multi-LLM:</strong> <span id="ai-telemetry-text">Parâmetros sincronizados com a memória de estado do backend.</span>
     </div>
 </div>
