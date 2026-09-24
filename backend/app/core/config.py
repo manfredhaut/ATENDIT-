@@ -42,6 +42,11 @@ class Settings(BaseSettings):
     EVOLUTION_API_KEY: Optional[str] = None
     EVOLUTION_HOST: Optional[str] = None
 
+    # Avaliador Semântico JEV (TypeSafe AI) & Escalamento de Vídeo
+    JEV_API_KEY: Optional[str] = Field(default=None, validation_alias="JEV_API_KEY")
+    JEV_API_URL: str = Field(default="https://api.typesafe.ai/v1/evaluate", validation_alias="JEV_API_URL")
+    JEV_VIDEO_THRESHOLD: float = Field(default=0.75, validation_alias="JEV_VIDEO_THRESHOLD")
+
     # Parâmetros de Negócio SaaS e Storage RAG
     DEFAULT_TRIAL_DAYS: int = 15
     RAG_STORAGE_PATH: str = "/workspace/storage/tenants"

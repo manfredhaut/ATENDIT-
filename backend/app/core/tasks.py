@@ -145,3 +145,14 @@ def enviar_lembretes() -> dict:
     if r.get("verificados"):
         logger.info(f"[LEMBRETE] {r}")
     return r
+
+
+@celery_app.task(name="app.core.tasks.verificar_lembretes_logisticos")
+def verificar_lembretes_logisticos() -> dict:
+    """Dispara réguas de lembretes anti-no-show para agendamentos logísticos."""
+    from app.services import logistics_reminder_service
+
+    r = _rodar_isolado(logistics_reminder_service.verificar_e_enviar_lembretes())
+    if r.get("verificados"):
+        logger.info(f"[LOGISTICA LEMBRETE] {r}")
+    return r

@@ -26,6 +26,10 @@ celery_app.conf.update(
             "task": "app.core.tasks.heartbeat",
             "schedule": 60.0,
         },
+                "lembretes-logisticos-a-cada-5-minutos": {
+            "task": "app.core.tasks.verificar_lembretes_logisticos",
+            "schedule": 300.0,
+        },
         "lembretes-a-cada-5-minutos": {
             "task": "app.core.tasks.enviar_lembretes",
             "schedule": 300.0,

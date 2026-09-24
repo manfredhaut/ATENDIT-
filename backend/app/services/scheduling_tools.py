@@ -52,6 +52,22 @@ def _parse_data(texto: str) -> datetime:
 # --------------------------------------------------------------------------
 DECLARACOES: List[Dict[str, Any]] = [
     {
+        "name": "iniciar_videoconferencia_tour",
+        "description": (
+            "Gera uma sala segura de videoconferência WebRTC com Tour Guiado do catálogo de produtos e serviços. "
+            "Utilize quando o cliente solicitar chamada de vídeo, apresentar problema técnico complexo ou desejar demonstração visual."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "motivo": {"type": "string", "description": "Motivo ou contexto do atendimento em vídeo."},
+                "foco_produto": {"type": "string", "description": "Produto, serviço ou componente de interesse principal."}
+            },
+            "required": ["motivo"]
+        }
+    },
+
+    {
         "name": "check_availability",
         "description": (
             "Consulta os horários REALMENTE livres na agenda para uma data. "
@@ -355,6 +371,46 @@ def construir_ferramentas(
             logger.error(f"[TOOL join_waitlist] {exc}")
             return {"erro": "Não consegui te colocar na lista de espera agora."}
 
+
+    async def iniciar_videoconferencia_tour(motivo: str, foco_produto: Optional[str] = None) -> Dict[str, Any]:
+        try:
+            import secrets
+            from datetime import timedelta, timezone
+            from app.models.video import VideoRoom
+            from app.core.database import AsyncSessionLocal
+            from app.core.config import settings
+
+            token = secrets.token_urlsafe(16)
+            agora = datetime.now(timezone.utc)
+            expira = agora + timedelta(hours=2)
+
+            async with AsyncSessionLocal() as s:
+                sala = VideoRoom(
+                    tenant_id=tenant_id,
+                    room_token=token,
+                    customer_phone=customer_phone,
+                    customer_name=customer_name or "Cliente",
+                    status="waiting",
+                    tags_context={"motivo": motivo, "foco_produto": foco_produto or ""},
+                    escalation_score=0.85,
+                    created_at=agora,
+                    expires_at=expira
+                )
+                s.add(sala)
+                await s.commit()
+
+            base_url = (getattr(settings, "PUBLIC_BASE_URL", "") or "https://atendit.smartinovat.com").rstrip("/")
+            link_sala = f"{base_url}/meet/{token}"
+            logger.info(f"[TOOL iniciar_videoconferencia_tour] Sala criada: {link_sala}")
+            return {
+                "sucesso": True,
+                "link": link_sala,
+                "mensagem": f"Sala gerada: {link_sala}. Convide o cliente a acessar para iniciar o Tour Guiado com suporte a voz natural."
+            }
+        except Exception as exc:
+            logger.error(f"[TOOL iniciar_videoconferencia_tour] Erro: {exc}")
+            return {"erro": "Não foi possível gerar a sala de vídeo no momento."}
+
     handlers: Dict[str, Callable] = {
         "check_availability": check_availability,
         "book_appointment": book_appointment,
@@ -363,6 +419,7 @@ def construir_ferramentas(
         "list_my_appointments": list_my_appointments,
         "share_scheduling_link": share_scheduling_link,
         "join_waitlist": join_waitlist,
+        "iniciar_videoconferencia_tour": iniciar_videoconferencia_tour,
     }
     return DECLARACOES, handlers
 
