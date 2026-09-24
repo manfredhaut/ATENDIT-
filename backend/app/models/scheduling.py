@@ -314,20 +314,24 @@ class MessageTemplate(Base):
 
 class Lead(Base):
     """
-    Mensagem enviada pelo formulario publico da landing page.
-
-    Sem tenant_id: a landing e do produto, nao de um inquilino. Se um dia
-    houver landing por inquilino, a coluna entra aqui.
+    Lead capturado via formulário público, landing page ou canais omnichannel.
     """
 
     __tablename__ = "leads"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    tenant_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True, index=True
+    )
     nome: Mapped[str] = mapped_column(String(150), nullable=False)
     whatsapp: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     comentario: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     origem: Mapped[str] = mapped_column(String(40), nullable=False, default="landing")
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="novo", index=True)
+    utm_source: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    utm_medium: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    utm_campaign: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     __table_args__ = (Index("ix_leads_created_at", "created_at"),)

@@ -982,3 +982,152 @@ async def api_remover_membro(usuario_id: str, request: Request):
         await session.commit()
         return JSONResponse(content={"ok": True, "mensagem": "Membro removido da equipe com sucesso."})
 
+
+
+
+# ---------------------------------------------------------------------------
+# F2.1 - Formulários de Captura e Endpoints Públicos de Leads
+# ---------------------------------------------------------------------------
+@router.post("/api/public/{slug}/leads")
+async def api_public_captura_lead(slug: str, request: Request, tarefas: BackgroundTasks):
+    """
+    Endpoint público com CORS aberto para receber leads de formulários externos,
+    landing pages e integrações de marketing vinculados ao slug do cliente.
+    """
+    from fastapi.responses import JSONResponse
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select
+    from app.models.tenant import Tenant
+    from app.models.scheduling import Lead
+
+    try:
+        corpo = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Payload JSON inválido."})
+
+    nome = (corpo.get("nome") or "").strip()
+    if not nome:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "O campo 'nome' é obrigatório."})
+
+    whatsapp_bruto = (corpo.get("whatsapp") or corpo.get("telefone") or "").strip()
+    # Sanitização: apenas dígitos
+    whatsapp_limpo = "".join([c for c in whatsapp_bruto if c.isdigit()])
+    if whatsapp_limpo and len(whatsapp_limpo) < 10:
+        whatsapp_limpo = None
+
+    email = (corpo.get("email") or "").strip().lower() or None
+    comentario = (corpo.get("comentario") or corpo.get("mensagem") or "").strip() or None
+    origem = (corpo.get("origem") or "formulario_web").strip()[:40]
+
+    utm_source = (corpo.get("utm_source") or "").strip()[:100] or None
+    utm_medium = (corpo.get("utm_medium") or "").strip()[:100] or None
+    utm_campaign = (corpo.get("utm_campaign") or "").strip()[:100] or None
+
+    async with AsyncSessionLocal() as session:
+        # Localiza o tenant pelo slug
+        res = await session.execute(select(Tenant).where(Tenant.slug == slug))
+        inquilino = res.scalar_one_or_none()
+        if not inquilino:
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": f"Inquilino '{slug}' não encontrado."})
+
+        novo_lead = Lead(
+            tenant_id=inquilino.id,
+            nome=nome[:150],
+            whatsapp=whatsapp_limpo[:32] if whatsapp_limpo else None,
+            email=email[:255] if email else None,
+            comentario=comentario,
+            origem=origem,
+            status="novo",
+            utm_source=utm_source,
+            utm_medium=utm_medium,
+            utm_campaign=utm_campaign
+        )
+        session.add(novo_lead)
+        await session.commit()
+        await session.refresh(novo_lead)
+        lead_id = str(novo_lead.id)
+
+    return JSONResponse(status_code=201, content={
+        "ok": True,
+        "mensagem": "Lead capturado com sucesso!",
+        "lead_id": lead_id
+    })
+
+@router.get("/api/tenant/leads")
+async def api_listar_leads_tenant(request: Request, status_filtro: Optional[str] = None):
+    """Listagem de leads filtrada por tenant."""
+    from fastapi.responses import JSONResponse
+    from app.core import autorizacao as _autz
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select, desc
+    from app.models.scheduling import Lead
+
+    sessao_t = _autz.sessao_tenant(request)
+    sessao_adm = _autz.sessao_admin(request)
+    if not sessao_t and not sessao_adm:
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Não autenticado."})
+
+    tenant_id = sessao_t.get("tenant_id") if sessao_t else None
+
+    async with AsyncSessionLocal() as session:
+        query = select(Lead)
+        if tenant_id:
+            query = query.where(Lead.tenant_id == tenant_id)
+        if status_filtro and status_filtro != "todos":
+            query = query.where(Lead.status == status_filtro)
+
+        query = query.order_by(desc(Lead.created_at)).limit(100)
+        res = await session.execute(query)
+        leads = res.scalars().all()
+
+        lista = []
+        for l in leads:
+            lista.append({
+                "id": str(l.id),
+                "nome": l.nome,
+                "whatsapp": l.whatsapp or "—",
+                "email": l.email or "—",
+                "comentario": l.comentario or "—",
+                "origem": l.origem,
+                "status": l.status or "novo",
+                "utm_source": l.utm_source or "—",
+                "utm_medium": l.utm_medium or "—",
+                "utm_campaign": l.utm_campaign or "—",
+                "criado_em": l.created_at.strftime("%d/%m/%Y %H:%M") if l.created_at else "—"
+            })
+
+        return JSONResponse(content={"ok": True, "leads": lista})
+
+@router.patch("/api/tenant/leads/{lead_id}/status")
+async def api_atualizar_status_lead(lead_id: str, request: Request):
+    """Atualiza a fase do lead no funil."""
+    from fastapi.responses import JSONResponse
+    from app.core import autorizacao as _autz
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select
+    from app.models.scheduling import Lead
+    import uuid
+
+    if not _autz.tem_alguma_sessao(request):
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Não autenticado."})
+
+    try:
+        lid = uuid.UUID(lead_id)
+    except ValueError:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de lead inválido."})
+
+    corpo = await request.json()
+    novo_status = corpo.get("status")
+    if novo_status not in ("novo", "qualificado", "em_atendimento", "convertido", "arquivado"):
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Status inválido."})
+
+    async with AsyncSessionLocal() as session:
+        res = await session.execute(select(Lead).where(Lead.id == lid))
+        lead = res.scalar_one_or_none()
+        if not lead:
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Lead não encontrado."})
+
+        lead.status = novo_status
+        await session.commit()
+        return JSONResponse(content={"ok": True, "mensagem": f"Status atualizado para {novo_status}!"})
+

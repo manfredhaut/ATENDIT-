@@ -1,0 +1,243 @@
+<div style="display: flex; flex-direction: column; gap: 24px;" class="fade-in">
+    <!-- CABEÇALHO -->
+    <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 6px;">📥 Captação de Leads & Formulários (F2.1)</h2>
+            <p style="font-size: 0.88rem; color: #64748b; line-height: 1.4;">
+                Gerenciamento de contatos recebidos via landing pages, sites externos e links de conversão omnichannel.
+            </p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="alternarAbaLeads('lista')" id="btn-aba-lista" style="background: var(--p-magenta, #D0006F); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 0.86rem; cursor: pointer;">
+                📋 Leads Recebidos
+            </button>
+            <button onclick="alternarAbaLeads('embed')" id="btn-aba-embed" style="background: transparent; border: 1px solid var(--p-borda, #eae3dc); color: #64748b; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 0.86rem; cursor: pointer;">
+                ⚙️ Gerador de Formulário & Embed
+            </button>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 1: TABELA E FUNIL DE LEADS -->
+    <div id="secao-leads-lista" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="background: #ffffff; padding: 14px 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); display: flex; gap: 12px; align-items: center;">
+            <span style="font-size: 0.82rem; font-weight: 700; color: var(--p-texto, #231726);">Filtrar por Status:</span>
+            <select id="filtro-status-leads" onchange="carregarLeads()" style="padding: 6px 12px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 6px; font-size: 0.85rem; background: #fff;">
+                <option value="todos">Todos os Leads</option>
+                <option value="novo">Novo</option>
+                <option value="qualificado">Qualificado</option>
+                <option value="em_atendimento">Em Atendimento</option>
+                <option value="convertido">Convertido</option>
+                <option value="arquivado">Arquivado</option>
+            </select>
+            <button onclick="carregarLeads()" style="margin-left: auto; background: transparent; border: 1px solid var(--p-borda, #eae3dc); border-radius: 6px; padding: 6px 12px; font-size: 0.82rem; cursor: pointer; color: #64748b;">🔄 Atualizar</button>
+        </div>
+
+        <div style="background: #ffffff; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; min-width: 780px;">
+                <thead>
+                    <tr style="background: var(--p-marfim, #FBF8F4); border-bottom: 1px solid var(--p-borda, #eae3dc); color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase;">
+                        <th style="padding: 16px 20px;">Contato / Nome</th>
+                        <th style="padding: 16px 20px;">Canais</th>
+                        <th style="padding: 16px 20px;">Origem & UTM</th>
+                        <th style="padding: 16px 20px;">Status</th>
+                        <th style="padding: 16px 20px;">Data de Entrada</th>
+                        <th style="padding: 16px 20px; text-align: right;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-leads-corpo">
+                    <tr>
+                        <td colspan="6" style="padding: 32px; text-align: center; color: #94a3b8;">Carregando leads...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 2: GERADOR DE FORMULÁRIO E EMBED -->
+    <div id="secao-leads-embed" style="display: none; flex-direction: column; gap: 20px;">
+        <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc);">
+            <h3 style="font-size: 1.12rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 8px;">Código de Integração do Formulário</h3>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 18px; line-height: 1.4;">
+                Copie o snippet abaixo e cole em qualquer landing page, site em WordPress, Webflow ou HTML. O formulário envia o contato diretamente para o seu console Presenthia com captura automática de parâmetros UTM.
+            </p>
+
+            <div style="background: #1e1b2e; padding: 18px; border-radius: 12px; position: relative;">
+                <button onclick="copiarCodigoEmbed()" style="position: absolute; top: 12px; right: 12px; background: var(--p-magenta, #D0006F); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">📋 Copiar Código</button>
+                <pre id="codigo-embed-snippet" style="color: #f8fafc; font-family: monospace; font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; line-height: 1.5;"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let tenantSlugAtual = 'conta';
+
+    function alternarAbaLeads(aba) {
+        const secLista = document.getElementById('secao-leads-lista');
+        const secEmbed = document.getElementById('secao-leads-embed');
+        const btnLista = document.getElementById('btn-aba-lista');
+        const btnEmbed = document.getElementById('btn-aba-embed');
+
+        if (aba === 'lista') {
+            secLista.style.display = 'flex';
+            secEmbed.style.display = 'none';
+            btnLista.style.background = 'var(--p-magenta, #D0006F)';
+            btnLista.style.color = '#fff';
+            btnEmbed.style.background = 'transparent';
+            btnEmbed.style.color = '#64748b';
+            carregarLeads();
+        } else {
+            secLista.style.display = 'none';
+            secEmbed.style.display = 'flex';
+            btnEmbed.style.background = 'var(--p-magenta, #D0006F)';
+            btnEmbed.style.color = '#fff';
+            btnLista.style.background = 'transparent';
+            btnLista.style.color = '#64748b';
+            gerarCodigoEmbed();
+        }
+    }
+
+    async function carregarLeads() {
+        const filtro = document.getElementById('filtro-status-leads').value;
+        const tbody = document.getElementById('tabela-leads-corpo');
+        try {
+            const res = await fetch(`/api/tenant/leads?status_filtro=${filtro}`);
+            const data = await res.json();
+            if (!data.ok || !data.leads || data.leads.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="padding: 32px; text-align: center; color: #94a3b8;">Nenhum lead registrado até o momento.</td></tr>';
+                return;
+            }
+
+            const statusBadges = {
+                'novo': { bg: '#e0f2fe', cor: '#0369a1', label: 'Novo' },
+                'qualificado': { bg: '#fef3c7', cor: '#b45309', label: 'Qualificado' },
+                'em_atendimento': { bg: '#f3e8ff', cor: '#6b21a8', label: 'Em Atendimento' },
+                'convertido': { bg: '#dcfce7', cor: '#15803d', label: 'Convertido' },
+                'arquivado': { bg: '#f1f5f9', cor: '#64748b', label: 'Arquivado' }
+            };
+
+            tbody.innerHTML = data.leads.map(l => {
+                const b = statusBadges[l.status] || statusBadges['novo'];
+                return `
+                    <tr style="border-bottom: 1px solid var(--p-borda, #eae3dc);">
+                        <td style="padding: 14px 20px;">
+                            <div style="font-weight: 700; color: var(--p-texto, #231726);">${l.nome}</div>
+                            <div style="font-size: 0.74rem; color: #64748b;">${l.comentario !== '—' ? l.comentario : 'Sem observação'}</div>
+                        </td>
+                        <td style="padding: 14px 20px; font-size: 0.82rem;">
+                            <div>📱 ${l.whatsapp}</div>
+                            <div style="color: #64748b;">✉️ ${l.email}</div>
+                        </td>
+                        <td style="padding: 14px 20px; font-size: 0.78rem;">
+                            <span style="font-weight: 600; color: #0B7570;">${l.origem}</span>
+                            <div style="color: #94a3b8;">${l.utm_source !== '—' ? 'utm: ' + l.utm_source : ''}</div>
+                        </td>
+                        <td style="padding: 14px 20px;">
+                            <select onchange="atualizarStatusLead('${l.id}', this.value)" style="background: ${b.bg}; color: ${b.cor}; border: none; font-weight: 700; padding: 4px 8px; border-radius: 12px; font-size: 0.74rem; cursor: pointer;">
+                                <option value="novo" ${l.status === 'novo' ? 'selected' : ''}>Novo</option>
+                                <option value="qualificado" ${l.status === 'qualificado' ? 'selected' : ''}>Qualificado</option>
+                                <option value="em_atendimento" ${l.status === 'em_atendimento' ? 'selected' : ''}>Em Atendimento</option>
+                                <option value="convertido" ${l.status === 'convertido' ? 'selected' : ''}>Convertido</option>
+                                <option value="arquivado" ${l.status === 'arquivado' ? 'selected' : ''}>Arquivado</option>
+                            </select>
+                        </td>
+                        <td style="padding: 14px 20px; font-size: 0.78rem; color: #64748b;">${l.criado_em}</td>
+                        <td style="padding: 14px 20px; text-align: right;">
+                            <button onclick="iniciarAtendimentoLead('${l.whatsapp}', '${l.nome}')" style="background: #0B7570; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.76rem; font-weight: 700; cursor: pointer;">Chamar WhatsApp</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding: 24px; text-align: center; color: #ef4444;">Erro ao carregar leads.</td></tr>';
+        }
+    }
+
+    async function atualizarStatusLead(id, novoStatus) {
+        try {
+            const res = await fetch(`/api/tenant/leads/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: novoStatus })
+            });
+            const data = await res.json();
+            if (data.ok) carregarLeads();
+            else alert(data.mensagem || 'Falha ao atualizar status.');
+        } catch (e) {
+            alert('Falha de conexão com o servidor.');
+        }
+    }
+
+    function iniciarAtendimentoLead(num, nome) {
+        if (!num || num === '—') return alert('Contato sem número de WhatsApp cadastrado.');
+        const limpo = num.replace(/\D/g, '');
+        window.open(`https://wa.me/${limpo}?text=Ol%C3%A1%20${encodeURIComponent(nome)}%2C%20recebemos%20seu%20contato!`, '_blank');
+    }
+
+    function gerarCodigoEmbed() {
+        const urlOrigem = window.location.origin;
+        const snippet = `<!-- FORMULÁRIO DE CAPTURA PRESENTHIA -->
+<form id="presenthia-lead-form" style="max-width: 420px; font-family: sans-serif; display: flex; flex-direction: column; gap: 12px;">
+    <input type="text" id="p-nome" placeholder="Seu Nome Completo" required style="padding: 11px; border: 1px solid #ccc; border-radius: 8px;">
+    <input type="tel" id="p-whatsapp" placeholder="Seu WhatsApp com DDD" required style="padding: 11px; border: 1px solid #ccc; border-radius: 8px;">
+    <input type="email" id="p-email" placeholder="Seu Melhor E-mail" style="padding: 11px; border: 1px solid #ccc; border-radius: 8px;">
+    <textarea id="p-mensagem" placeholder="Como podemos te ajudar?" rows="3" style="padding: 11px; border: 1px solid #ccc; border-radius: 8px;"></textarea>
+    <button type="submit" style="background: #D0006F; color: #fff; font-weight: 700; border: none; padding: 13px; border-radius: 8px; cursor: pointer;">Quero Atendimento</button>
+    <div id="p-aviso" style="display: none; font-size: 0.85rem; text-align: center;"></div>
+</form>
+
+<script>
+document.getElementById('presenthia-lead-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    const aviso = document.getElementById('p-aviso');
+    btn.disabled = true;
+    btn.innerText = 'Enviando...';
+
+    const p = new URLSearchParams(window.location.search);
+    const payload = {
+        nome: document.getElementById('p-nome').value,
+        whatsapp: document.getElementById('p-whatsapp').value,
+        email: document.getElementById('p-email').value,
+        comentario: document.getElementById('p-mensagem').value,
+        origem: 'formulario_site',
+        utm_source: p.get('utm_source'),
+        utm_medium: p.get('utm_medium'),
+        utm_campaign: p.get('utm_campaign')
+    };
+
+    try {
+        const r = await fetch('${urlOrigem}/api/public/conta/leads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const res = await r.json();
+        if (r.ok && res.ok) {
+            aviso.style.color = '#15803d';
+            aviso.innerText = 'Mensagem enviada com sucesso! Em breve entraremos em contato.';
+            aviso.style.display = 'block';
+            document.getElementById('presenthia-lead-form').reset();
+        } else {
+            throw new Error(res.mensagem || 'Erro ao enviar.');
+        }
+    } catch (err) {
+        aviso.style.color = '#dc2626';
+        aviso.innerText = 'Falha ao enviar contato. Tente novamente.';
+        aviso.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Quero Atendimento';
+    }
+});
+<\/script>`;
+        document.getElementById('codigo-embed-snippet').innerText = snippet;
+    }
+
+    function copiarCodigoEmbed() {
+        const codigo = document.getElementById('codigo-embed-snippet').innerText;
+        navigator.clipboard.writeText(codigo).then(() => alert('Snippet HTML copiado com sucesso!'));
+    }
+
+    carregarLeads();
+</script>
