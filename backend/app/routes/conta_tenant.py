@@ -400,8 +400,7 @@ async def painel_tenant(request: Request):
     <a class="item ativo" data-v="inicio">📊 Painel Principal</a>
     <a class="item" data-v="empresa_cadastro">🏢 Cadastro da Empresa</a>
     <a class="item" data-v="ia_config">⚙️ Configurações do Atendente</a>
-    <a class="item" data-v="link_whatsapp">📲 Conexão WhatsApp QR Code</a>
-    <a class="item" data-v="meta_config">🌐 WhatsApp Meta Oficial</a>
+    <a class="item" data-v="canais">📡 Canais WhatsApp</a>
     <a class="item" data-v="calendar_config">📅 Configuração do Calendário</a>
     <a class="item" data-v="rag_management">📁 Gestão de Documentos</a>
     <a class="item" data-v="fila_atendimento">💬 Atendimento</a>
@@ -463,8 +462,8 @@ const htmlInicio = `<div class="p-card" style="padding: 32px; max-width: 820px; 
           <div style="font-weight: 700; font-size: 0.92rem; color: var(--p-texto, #231726); margin-bottom: 6px;">📱 Canais de WhatsApp</div>
           <p style="font-size: 0.82rem; color: var(--p-texto-suave, #5e5563); margin: 0 0 12px 0;">Conecte via Evolution API (QR Code) ou configure a API Oficial da Meta com faturamento direto.</p>
           <div style="display: flex; gap: 10px;">
-            <a href="javascript:void(0)" onclick="document.querySelector('[data-v=link_whatsapp]').click()" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Conectar QR Code ↗</a>
-            <a href="javascript:void(0)" onclick="document.querySelector('[data-v=meta_config]').click()" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Configurar Meta ↗</a>
+            <a href="javascript:void(0)" onclick="carregarView('canais', document.querySelector('[data-v=canais]')).then(() => { if (window.abrirCanaisSubaba) window.abrirCanaisSubaba('qrcode'); })" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Conectar QR Code ↗</a>
+            <a href="javascript:void(0)" onclick="carregarView('canais', document.querySelector('[data-v=canais]')).then(() => { if (window.abrirCanaisSubaba) window.abrirCanaisSubaba('meta'); })" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Configurar Meta ↗</a>
           </div>
         </div>
 
@@ -485,6 +484,16 @@ async function carregarView(nome, el) {{
   if (el) el.classList.add('ativo');
   const area = document.getElementById('conteudo');
 
+  if (nome === 'link_whatsapp') {
+    await carregarView('canais', document.querySelector('[data-v=canais]'));
+    if (window.abrirCanaisSubaba) window.abrirCanaisSubaba('qrcode');
+    return;
+  }
+  if (nome === 'meta_config') {
+    await carregarView('canais', document.querySelector('[data-v=canais]'));
+    if (window.abrirCanaisSubaba) window.abrirCanaisSubaba('meta');
+    return;
+  }
   if (nome === 'inicio') {{
     area.innerHTML = htmlInicio;
     document.getElementById('titulo').textContent = {inquilino.name!r};

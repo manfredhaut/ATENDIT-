@@ -1,0 +1,176 @@
+<!-- PRESENTHIA DESIGN SYSTEM - ABA CANAIS (ITEM F1.5) -->
+<div style="font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-in-out;">
+
+    <!-- 1. TOPO DA ABA CANAIS COM SELETOR DE SUB-ABAS -->
+    <div style="background: #ffffff; padding: 22px 26px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
+            <div>
+                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--p-texto, #231726); display: flex; align-items: center; gap: 10px;">
+                    📡 Central de Canais de Mensageria
+                </h3>
+                <p style="margin: 4px 0 0 0; font-size: 0.88rem; color: var(--p-texto-suave, #5e5563);">
+                    Conecte e gerencie seus números de WhatsApp. A Presenthia suporta operação simultânea de múltiplos modos.
+                </p>
+            </div>
+            <span style="background: var(--p-marfim, #fbf8f4); border: 1px solid var(--p-borda, #eae3dc); padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570);">
+                Fase 1: Canais Ativos
+            </span>
+        </div>
+
+        <!-- BARRA DE SUB-ABAS -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--p-borda, #eae3dc); padding-top: 16px;">
+            <button type="button" id="tab-btn-meta" onclick="window.abrirCanaisSubaba('meta')" style="padding: 10px 20px; background: var(--p-turquesa-texto, #0b7570); color: #ffffff; border: 1px solid var(--p-turquesa-texto, #0b7570); border-radius: 999px; font-weight: 700; cursor: pointer; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                <span>🌐</span> WhatsApp Oficial (Cloud API)
+            </button>
+            <button type="button" id="tab-btn-qrcode" onclick="window.abrirCanaisSubaba('qrcode')" style="padding: 10px 20px; background: #ffffff; color: var(--p-texto-suave, #5e5563); border: 1px solid var(--p-borda, #eae3dc); border-radius: 999px; font-weight: 600; cursor: pointer; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                <span>📲</span> WhatsApp QR Code (Evolution)
+            </button>
+            <button type="button" id="tab-btn-comparativo" onclick="window.abrirCanaisSubaba('comparativo')" style="padding: 10px 20px; background: #ffffff; color: var(--p-texto-suave, #5e5563); border: 1px solid var(--p-borda, #eae3dc); border-radius: 999px; font-weight: 600; cursor: pointer; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                <span>⚖️</span> Comparativo de Recursos
+            </button>
+        </div>
+    </div>
+
+    <!-- SUB-ABA 1: WHATSAPP META OFICIAL -->
+    <div id="view-canal-meta" style="display: block;">
+        <div id="container-meta-content" style="min-height: 200px;">
+            <div style="padding: 30px; text-align: center; color: var(--p-texto-suave, #5e5563); font-style: italic;">
+                Carregando integração WhatsApp Meta Oficial...
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB-ABA 2: WHATSAPP QR CODE (EVOLUTION) -->
+    <div id="view-canal-qrcode" style="display: none;">
+        <div id="container-qrcode-content" style="min-height: 200px;">
+            <div style="padding: 30px; text-align: center; color: var(--p-texto-suave, #5e5563); font-style: italic;">
+                Carregando módulo de conexão QR Code...
+            </div>
+        </div>
+    </div>
+
+    <!-- SUB-ABA 3: COMPARATIVO OFICIAL DE RECURSOS E LIMITAÇÕES (F1.5) -->
+    <div id="view-canal-comparativo" style="display: none;">
+        <div style="background: #ffffff; padding: 26px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <h4 style="margin: 0 0 8px 0; font-size: 1.15rem; font-weight: 800; color: var(--p-texto, #231726);">
+                ⚖️ Comparativo de Limitações Técnicas e Diretrizes da Meta
+            </h4>
+            <p style="margin: 0 0 20px 0; font-size: 0.88rem; color: var(--p-texto-suave, #5e5563); line-height: 1.5;">
+                A Presenthia permite operar números em ambos os modelos simultaneamente. Escolha o canal ideal de acordo com o caso de uso do seu negócio.
+            </p>
+
+            <div style="overflow-x: auto; border: 1px solid var(--p-borda, #eae3dc); border-radius: 12px;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+                    <thead>
+                        <tr style="background: var(--p-marfim, #fbf8f4); border-bottom: 2px solid var(--p-borda, #eae3dc);">
+                            <th style="padding: 14px 18px; font-weight: 700; color: var(--p-texto, #231726);">Recurso / Parâmetro</th>
+                            <th style="padding: 14px 18px; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); background: rgba(60,203,197,0.08);">WhatsApp Oficial (Cloud API)</th>
+                            <th style="padding: 14px 18px; font-weight: 700; color: #990049; background: rgba(153,0,73,0.05);">WhatsApp QR Code (Evolution)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid var(--p-borda, #eae3dc);">
+                            <td style="padding: 12px 18px; font-weight: 600; color: var(--p-texto, #231726);">Origem de anúncio Click-to-WhatsApp</td>
+                            <td style="padding: 12px 18px; color: #166534; font-weight: 700; background: rgba(60,203,197,0.04);">✓ Sim (Rastreamento Nativo)</td>
+                            <td style="padding: 12px 18px; color: #991b1b; font-weight: 600; background: rgba(153,0,73,0.02);">⚠️ Não confiável</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--p-borda, #eae3dc);">
+                            <td style="padding: 12px 18px; font-weight: 600; color: var(--p-texto, #231726);">Botões e listas interativas</td>
+                            <td style="padding: 12px 18px; color: #166534; font-weight: 700; background: rgba(60,203,197,0.04);">✓ Sim (Suporte Total)</td>
+                            <td style="padding: 12px 18px; color: #d97706; font-weight: 600; background: rgba(153,0,73,0.02);">⚠️ Limitado</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--p-borda, #eae3dc);">
+                            <td style="padding: 12px 18px; font-weight: 600; color: var(--p-texto, #231726);">Pix dentro da conversa</td>
+                            <td style="padding: 12px 18px; color: #166534; font-weight: 700; background: rgba(60,203,197,0.04);">✓ Sim (Nativo Meta Pay)</td>
+                            <td style="padding: 12px 18px; color: #64748b; background: rgba(153,0,73,0.02);">✕ Não disponível</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--p-borda, #eae3dc);">
+                            <td style="padding: 12px 18px; font-weight: 600; color: var(--p-texto, #231726);">Chamadas de voz pela API</td>
+                            <td style="padding: 12px 18px; color: #166534; font-weight: 700; background: rgba(60,203,197,0.04);">✓ Sim (Suportado)</td>
+                            <td style="padding: 12px 18px; color: #64748b; background: rgba(153,0,73,0.02);">✕ Não disponível</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--p-borda, #eae3dc);">
+                            <td style="padding: 12px 18px; font-weight: 600; color: var(--p-texto, #231726);">Custo por mensagem da Meta</td>
+                            <td style="padding: 12px 18px; color: #b45309; font-weight: 600; background: rgba(60,203,197,0.04);">Cobrança direta no cartão pelo WABA</td>
+                            <td style="padding: 12px 18px; color: #166534; font-weight: 700; background: rgba(153,0,73,0.02);">✓ Gratuito (Sem tarifa Meta)</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--p-borda, #eae3dc);">
+                            <td style="padding: 12px 18px; font-weight: 600; color: var(--p-texto, #231726);">Risco de bloqueio do número</td>
+                            <td style="padding: 12px 18px; color: #166534; font-weight: 700; background: rgba(60,203,197,0.04);">✓ Baixo (Canal Homologado)</td>
+                            <td style="padding: 12px 18px; color: #b91c1c; font-weight: 700; background: rgba(153,0,73,0.02);">⚠️ Maior (Risco de desconexão)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 14px 18px; font-weight: 700; color: var(--p-texto, #231726);">Indicado para</td>
+                            <td style="padding: 14px 18px; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); background: rgba(60,203,197,0.04);">
+                                Anúncios, escala, volume alto, vendas seguras
+                            </td>
+                            <td style="padding: 14px 18px; font-weight: 700; color: #990049; background: rgba(153,0,73,0.02);">
+                                Operações pequenas, testes, números já existentes
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    "use strict";
+
+    var modulosCarregados = { meta: false, qrcode: false };
+
+    async function injetarModulo(nomeDashboard, containerId) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        try {
+            var res = await fetch('/dashboards/' + nomeDashboard);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            var html = await res.json();
+            container.innerHTML = html;
+            container.querySelectorAll('script').forEach(function(sAntigo) {
+                var sNovo = document.createElement('script');
+                if (sAntigo.src) sNovo.src = sAntigo.src;
+                else sNovo.textContent = sAntigo.textContent;
+                sAntigo.replaceWith(sNovo);
+            });
+        } catch(e) {
+            container.innerHTML = '<div style="padding:20px; color:#b91c1c; font-weight:600;">Falha ao carregar componente: ' + e.message + '</div>';
+        }
+    }
+
+    window.abrirCanaisSubaba = async function(aba) {
+        var abas = ['meta', 'qrcode', 'comparativo'];
+        abas.forEach(function(a) {
+            var view = document.getElementById('view-canal-' + a);
+            var btn = document.getElementById('tab-btn-' + a);
+            if (view) view.style.display = (a === aba) ? 'block' : 'none';
+            if (btn) {
+                if (a === aba) {
+                    btn.style.background = 'var(--p-turquesa-texto, #0b7570)';
+                    btn.style.color = '#ffffff';
+                    btn.style.borderColor = 'var(--p-turquesa-texto, #0b7570)';
+                    btn.style.fontWeight = '700';
+                } else {
+                    btn.style.background = '#ffffff';
+                    btn.style.color = 'var(--p-texto-suave, #5e5563)';
+                    btn.style.borderColor = 'var(--p-borda, #eae3dc)';
+                    btn.style.fontWeight = '600';
+                }
+            }
+        });
+
+        if (aba === 'meta' && !modulosCarregados.meta) {
+            modulosCarregados.meta = true;
+            await injetarModulo('meta_config', 'container-meta-content');
+        } else if (aba === 'qrcode' && !modulosCarregados.qrcode) {
+            modulosCarregados.qrcode = true;
+            await injetarModulo('link_whatsapp', 'container-qrcode-content');
+        }
+    };
+
+    // Inicializa abrindo a sub-aba Meta Oficial
+    window.abrirCanaisSubaba('meta');
+})();
+</script>
