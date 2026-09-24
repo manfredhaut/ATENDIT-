@@ -29,25 +29,27 @@
         .copilot-input-box input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; outline: none; }
         .copilot-input-box button { background: #074f57; color: white; border: none; padding: 0 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
     </style>
+    <link rel="stylesheet" href="/static/brand/tokens.css">
 </head>
 <body>
     <div class="sidebar">
         <div>
-            <div class="sidebar-brand">Painel do ATENDiT</div>
+            <div class="sidebar-brand">PRESENTHIA</div>
             <nav class="menu">
                 <a class="menu-item active" onclick="loadView('faturamento', this)">📊 Painel Principal</a>
-                    <a class="menu-item" onclick="loadView('empresa_cadastro', this)">🏢 Cadastro da Empresa</a>
-
+                <a class="menu-item" onclick="loadView('empresa_cadastro', this)">🏢 Cadastro da Empresa</a>
                 <a class="menu-item" onclick="loadView('ia_config', this)">⚙️ Configurações do Atendente</a>
-                <a class="menu-item" onclick="loadView('link_whatsapp', this)">📲 Conexão WhatsApp</a>
+                <a class="menu-item" onclick="loadView('canais', this)">📡 Canais WhatsApp</a>
                 <a class="menu-item" onclick="loadView('calendar_config', this)">📅 Configuração do Calendário</a>
                 <a class="menu-item" onclick="loadView('rag_management', this)">📁 Gestão de Documentos</a>
-                <a class="menu-item" onclick="loadView('fila_atendimento', this)">💬 Atendimento (Chat)</a>
+                <a class="menu-item" onclick="loadView('fila_atendimento', this)">💬 Atendimento</a>
                 <a class="menu-item" onclick="loadView('gemini_config', this)">🧠 Configuração da IA</a>
+                <a class="menu-item" onclick="loadView('ecommerce_config', this)">🛒 Loja & E-Commerce</a>
+                <a class="menu-item" onclick="loadView('intel_operacional', this)">📊 Inteligência Operacional</a>
             </nav>
         </div>
         <div class="sidebar-footer">
-            <a href="/" class="btn-voltar">← Voltar para Apresentação</a>
+            <a href="/logout" class="btn-voltar" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fbf8f4; text-decoration: none; padding: 10px 16px; border-radius: 8px; display: block; text-align: center; font-size: 0.85rem; font-weight: 600;">← Sair da Conta</a>
         </div>
     </div>
     <div class="main-wrapper">
@@ -100,6 +102,14 @@
         }
 
         async function loadView(viewName, element) {
+            if (viewName === 'link_whatsapp' || viewName === 'meta_config') {
+                const itemCanais = document.querySelector('[onclick*="loadView('canais'"]');
+                await loadView('canais', itemCanais);
+                if (window.abrirCanaisSubaba) {
+                    window.abrirCanaisSubaba(viewName === 'meta_config' ? 'meta' : 'qrcode');
+                }
+                return;
+            }
             if (element) {
                 document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
                 element.classList.add('active');

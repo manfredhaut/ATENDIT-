@@ -1,15 +1,15 @@
 <div style="display: flex; flex-direction: column; gap: 20px;">
     <!-- 1. CARDS DE STATUS -->
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-        <div style="background: #ffffff; padding: 22px; border-radius: 12px; border: 1px solid #e2e8f0; border-top: 3px solid #0da2b6;">
+        <div style="background: #ffffff; padding: 22px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-top: 3px solid var(--p-turquesa-texto, #0b7570);">
             <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Status da Assinatura</div>
-            <div style="font-size: 1.6rem; font-weight: 800; color: #0da2b6; margin-top: 10px;">Assinatura Ativa</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--p-turquesa-texto, #0b7570); margin-top: 10px;">Assinatura Ativa</div>
         </div>
-        <div style="background: #ffffff; padding: 22px; border-radius: 12px; border: 1px solid #e2e8f0; border-top: 3px solid #0da2b6;">
+        <div style="background: #ffffff; padding: 22px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-top: 3px solid var(--p-turquesa-texto, #0b7570);">
             <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Dias de Teste Restantes</div>
-            <div style="font-size: 1.6rem; font-weight: 800; color: #0f172a; margin-top: 10px;">15 Dias</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--p-texto, #231726); margin-top: 10px;">15 Dias</div>
         </div>
-        <div style="background: #ffffff; padding: 22px; border-radius: 12px; border: 1px solid #e2e8f0; border-top: 3px solid #ffb300;">
+        <div style="background: #ffffff; padding: 22px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-top: 3px solid #ffb300;">
             <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Módulo Extra Hardware / IoT</div>
             <div style="margin-top: 10px; font-size: 0.88rem; font-weight: 600; color: #475569;">
                 <div>🖨️ Impressora Térmica: <span style="color:#d97706">Inerte</span></div>
@@ -19,44 +19,44 @@
     </div>
 
     <!-- 2. CADASTRO COMPLETO DO CLIENTE -->
-    <div style="background: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
-        <h4 style="font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+    <div style="background: #ffffff; padding: 25px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc);">
+        <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
             📋 Cadastro Completo do Cliente
         </h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div>
                 <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">Nome da Empresa / Razão Social</label>
-                <input type="text" id="txt-empresa-nome" placeholder="Digite a razão social" style="width: 100%; padding: 11px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                <input type="text" id="txt-empresa-nome" placeholder="Digite a razão social" style="width: 100%; padding: 11px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 6px; font-size: 0.9rem;">
             </div>
             <div>
                 <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">E-mail Administrativo</label>
-                <input type="email" id="txt-empresa-email" placeholder="admin@suaempresa.com" style="width: 100%; padding: 11px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                <input type="email" id="txt-empresa-email" placeholder="admin@suaempresa.com" style="width: 100%; padding: 11px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 6px; font-size: 0.9rem;">
             </div>
             <div>
                 <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">WhatsApp de Contato / Suporte</label>
-                <input type="tel" id="txt-empresa-whats" placeholder="+55 (47) 99999-0000" style="width: 100%; padding: 11px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                <input type="tel" id="txt-empresa-whats" placeholder="+55 (47) 99999-0000" style="width: 100%; padding: 11px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 6px; font-size: 0.9rem;">
             </div>
             <div>
                 <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">Número de WhatsApp do Atendente IA</label>
-                <input type="tel" id="txt-empresa-aiwhats" placeholder="+55 (47) 98888-0000" style="width: 100%; padding: 11px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                <input type="tel" id="txt-empresa-aiwhats" placeholder="+55 (47) 98888-0000" style="width: 100%; padding: 11px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 6px; font-size: 0.9rem;">
             </div>
         </div>
         <div style="text-align: right; margin-top: 20px;">
-            <button id="btn-salvar-cad" onclick="salvarCadastroCompleto()" style="padding: 11px 24px; background: #074f57; color: #ffffff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.9rem;">
+            <button id="btn-salvar-cad" onclick="salvarCadastroCompleto()" style="padding: 11px 24px; background: var(--p-magenta, #d0006f); color: #ffffff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.9rem;">
                 💾 Salvar Cadastro
             </button>
         </div>
     </div>
 
     <!-- 3. FATURAMENTO POR USO / ASSINATURA -->
-    <div style="background: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
-        <h4 style="font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 18px;">
+    <div style="background: #ffffff; padding: 25px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc);">
+        <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 18px;">
             💰 Faturamento por Uso / Assinatura
         </h4>
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">Forma de Pagamento Preferencial</label>
-                <select style="padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                <select style="padding: 10px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 6px; font-size: 0.9rem;">
                     <option>PIX (Imediato)</option>
                     <option>Cartão de Crédito</option>
                     <option>Boleto Bancário</option>
@@ -69,7 +69,7 @@
             </div>
             <div style="text-align: right;">
                 <span style="color: #10b981; font-weight: 700; font-size: 1.1rem;">✓ Pago</span>
-                <div style="margin-top: 8px; font-family: monospace; font-size: 0.78rem; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; color: #64748b;">
+                <div style="margin-top: 8px; font-family: monospace; font-size: 0.78rem; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--p-borda, #eae3dc); color: #64748b;">
                     00020101021226870014br.gov.bcb.pix2573api.smartinovat.com/atendit
                 </div>
             </div>
