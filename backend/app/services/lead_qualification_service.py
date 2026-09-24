@@ -74,6 +74,7 @@ async def qualificar_lead_ia(lead_id: uuid.UUID) -> Optional[dict]:
             resposta_llm = await llm_service.generate_response(
                 system_prompt=SYSTEM_PROMPT_QUALIFICACAO,
                 user_message=mensagem_usuario,
+                model='gemini-flash-latest',
                 temperature=0.2
             )
 
