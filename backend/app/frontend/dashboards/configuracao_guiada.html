@@ -1,0 +1,124 @@
+<div style="display: flex; flex-direction: column; gap: 24px;" class="fade-in">
+    <!-- CABEÇALHO DO ONBOARDING -->
+    <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 8px;">🚀 Configuração Guiada Presenthia</h2>
+        <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5;">Complete os 4 passos abaixo para deixar sua IA pronta para atender e vender no piloto automático em menos de 10 minutos.</p>
+        
+        <!-- PROGRESS BAR -->
+        <div style="margin-top: 20px; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden;">
+            <div id="onboarding-progress" style="background: var(--p-magenta, #D0006F); width: 25%; height: 100%; transition: width 0.3s ease;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: #64748b;">
+            <span id="step-indicator-text">Passo 1 de 4: Conectar Canal</span>
+            <span>25% Concluído</span>
+        </div>
+    </div>
+
+    <!-- CORPO DOS PASSOS -->
+    <div style="background: #ffffff; padding: 32px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        
+        <!-- PASSO 1 -->
+        <div class="onboarding-step" id="step-1">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 12px;">Passo 1: Escolha e Conecte seu Canal de WhatsApp</h3>
+            <p style="font-size: 0.88rem; color: #475569; margin-bottom: 20px;">Selecione como deseja operar o WhatsApp dos seus clientes:</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <div onclick=" selecionarCanal('oficial', this)" class="canal-card selected" style="padding: 20px; border: 2px solid var(--p-magenta, #D0006F); border-radius: 12px; cursor: pointer; background: #fdf2f8;">
+                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--p-texto, #231726);">WhatsApp Oficial (Cloud API)</div>
+                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Recomendado para empresas e alta estabilidade com suporte a anúncios.</div>
+                </div>
+                <div onclick="selecionarCanal('qrcode', this)" class="canal-card" style="padding: 20px; border: 2px solid var(--p-borda, #eae3dc); border-radius: 12px; cursor: pointer;">
+                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--p-texto, #231726);">WhatsApp QR Code (Evolution)</div>
+                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Ativação instantânea por leitura de código QR na tela.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSO 2 -->
+        <div class="onboarding-step" id="step-2" style="display: none;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 12px;">Passo 2: Perona e Tom de Voz do Atendente IA</h3>
+            <p style="font-size: 0.88rem; color: #475569; margin-bottom: 20px;">Diga à IA como ela deve se portar ao atender seus clientes.</p>
+            <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+                <div>
+                    <label style="font-size: 0.82rem; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">Nome do Atendente Virtual</label>
+                    <input type="text" id="ai-name" value="Sofia — Assistente Virtual" style="width: 100%; padding: 11px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; font-size: 0.9rem;">
+                </div>
+                <div>
+                    <label style="font-size: 0.82rem; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">Instruções e Comportamento (Prompt Inicial)</label>
+                    <textarea id="ai-prompt" rows="4" style="width: 100%; padding: 11px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; font-size: 0.9rem;">Você é uma assistente virtual prestativa, simpática e focada em agendar horários e tirar dúvidas comerciais da empresa.</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSO 3 -->
+        <div class="onboarding-step" id="step-3" style="display: none;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 12px;">Passo 3: Importação de Conhecimento e FAQ</h3>
+            <p style="font-size: 0.88rem; color: #475569; margin-bottom: 20px;">Insira as principais perguntas frequentes ou regras do seu negócio.</p>
+            <div style="margin-bottom: 24px;">
+                <textarea rows="5" placeholder="Ex: Qual o horário de funcionamento? Segunda a sexta das 8h às 18h. Qual o valor do atendimento? R$ 150." style="width: 100%; padding: 11px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; font-size: 0.9rem;"></textarea>
+            </div>
+        </div>
+
+        <!-- PASSO 4 -->
+        <div class="onboarding-step" id="step-4" style="display: none;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 12px;">Passo 4: Conclusão & Teste no Simulador</h3>
+            <p style="font-size: 0.88rem; color: #475569; margin-bottom: 20px;">Tudo pronto! Sua IA está configurada e integrada com sucesso ao ecossistema Presenthia.</p>
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 12px; color: #166534; font-weight: 600; margin-bottom: 24px;">
+                ✓ Instância validada e pronta para entrar em produção. Clique em finalizar para começar a operar.
+            </div>
+        </div>
+
+        <!-- BOTÕES DE NAVEGAÇÃO -->
+        <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--p-borda, #eae3dc); pt: 20px; margin-top: 24px;">
+            <button id="btn-voltar-onboard" onclick="mudarPasso(-1)" style="padding: 10px 20px; background: #e2e8f0; color: #475569; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; visibility: hidden;">← Voltar</button>
+            <button id="btn-proximo-onboard" onclick="mudarPasso(1)" style="padding: 10px 24px; background: var(--p-magenta, #D0006F); color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Próximo Passo →</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let currentStep = 1;
+    const totalSteps = 4;
+
+    function selecionarCanal(tipo, el) {
+        document.querySelectorAll('.canal-card').forEach(c => {
+            c.style.borderColor = 'var(--p-borda, #eae3dc)';
+            c.style.background = '#ffffff';
+        });
+        el.style.borderColor = 'var(--p-magenta, #D0006F)';
+        el.style.background = '#fdf2f8';
+    }
+
+    function mudarPasso(direcao) {
+        const next = currentStep + direcao;
+        if (next < 1 || next > totalSteps) {
+            if (next > totalSteps) {
+                alert('Parabéns! Configuração concluída com sucesso.');
+                loadView('faturamento');
+            }
+            return;
+        }
+
+        document.getElementById(`step-${currentStep}`).style.display = 'none';
+        currentStep = next;
+        document.getElementById(`step-${currentStep}`).style.display = 'block';
+
+        // Atualizar barra de progresso
+        const pct = (currentStep / totalSteps) * 100;
+        document.getElementById('onboarding-progress').style.width = pct + '%';
+        document.getElementById('step-indicator-text').innerText = `Passo ${currentStep} de ${totalSteps}: ${getStepTitle(currentStep)}`;
+
+        document.getElementById('btn-voltar-onboard').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+        const btnProx = document.getElementById('btn-proximo-onboard');
+        btnProx.innerText = currentStep === totalSteps ? 'Finalizar Configuração ✓' : 'Próximo Passo →';
+    }
+
+    function getStepTitle(step) {
+        switch(step) {
+            case 1: return 'Conectar Canal';
+            case 2: return 'Persona e Tom';
+            case 3: return 'Base de Conhecimento';
+            case 4: return 'Revisão e Teste';
+        }
+    }
+</script>
