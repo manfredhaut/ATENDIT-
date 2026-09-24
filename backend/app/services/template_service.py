@@ -33,8 +33,10 @@ DEFAULTS: Dict[str, str] = {
         "Se precisar remarcar ou cancelar, é só me avisar por aqui."
     ),
     "reminder": (
-        "Olá, {nome}! Passando para lembrar do seu {servico} em {horario}. "
-        "Até lá!"
+        "Olá, {nome}! Passando para confirmar seu horário de {servico} agendado para {horario}.\n\n"
+        "Por favor, responda:\n"
+        "*1* para *Confirmar presença*\n"
+        "*2* para *Cancelar ou Remarcar*"
     ),
     "waitlist_offer": (
         "Olá, {nome}! Abriu um horário de {servico} em {horario}.\n\n"
@@ -136,9 +138,22 @@ async def listar(tenant_id: uuid.UUID) -> Dict[str, Dict[str, object]]:
     return saida
 
 
-async def salvar(tenant_id: uuid.UUID, template_type: str, body: str) -> Dict[str, object]:
-    """Grava (ou limpa, se body vier vazio) o texto de um tipo."""
-    if template_type not in TIPOS:
+async def salvar(
+    tenant_id: uuid.UUID,
+    template_type: Optional[str] = None,
+    body: Optional[str] = None,
+    templates: Optional[Dict[str, str]] = None,
+) -> Dict[str, object]:
+    """Grava templates individuais ou em lote (dicionário {tipo: texto})."""
+    if templates is not None:
+        resultados = {}
+        for t_tipo, t_corpo in templates.items():
+            if t_tipo in TIPOS:
+                res = await salvar(tenant_id=tenant_id, template_type=t_tipo, body=t_corpo)
+                resultados[t_tipo] = res
+        return {"templates": resultados, "status": "saved"}
+
+    if not template_type or template_type not in TIPOS:
         raise ValueError(f"template_type inválido: '{template_type}'. Válidos: {TIPOS}")
 
     async with AsyncSessionLocal() as sessao:

@@ -1,10 +1,12 @@
+import time
+import json
 import hmac
 import logging
 import uuid
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
@@ -14,6 +16,7 @@ from app.services.llm_service import llm_service
 from app.services.rag_service import rag_service
 from app.services.scheduling_tools import construir_ferramentas, instrucao_de_contexto
 from app.services import waitlist_service
+from app.services.jev_service import jev_service
 
 logger = logging.getLogger("atendit.webhook")
 
@@ -54,10 +57,20 @@ def _formato_jid(remote_jid: str) -> str:
 # falhar justo no caso sensivel a tempo. So dispara se houver oferta pendente
 # DENTRO do prazo para aquele telefone, o que estreita muito o falso positivo.
 CONFIRMACOES = {
-    "sim", "s", "confirmo", "confirmar", "confirmado", "quero", "aceito",
+    "1", "um", "sim", "s", "confirmo", "confirmar", "confirmado", "quero", "aceito",
     "pode", "pode marcar", "pode sim", "ok", "okay", "isso", "fechado",
     "beleza", "claro", "com certeza", "sim quero", "quero sim",
 }
+
+CANCELAMENTOS = {
+    "2", "dois", "nao", "não", "cancelar", "cancela", "cancelado", "desmarcar",
+    "desmarque", "nao poderei", "nao posso", "nao vou", "cancela por favor",
+}
+
+
+def _e_cancelamento(texto: str) -> bool:
+    n = _normalizar(texto)
+    return bool(n) and (n in CANCELAMENTOS or n.startswith("cancelar") or n.startswith("desmarcar"))
 
 
 def _normalizar(texto: str) -> str:
@@ -103,6 +116,8 @@ async def _async_process_incoming_message(
     remote_jid: str,
     user_message: str,
     remote_jid_alt: Optional[str] = None,
+    push_name: Optional[str] = None,
+    msg_id: Optional[str] = None,
 ):
     """
     Processador de segundo plano para RAG, Inferência LLM e Resposta WhatsApp.
@@ -127,21 +142,110 @@ async def _async_process_incoming_message(
                 logger.warning(f"[WEBHOOK ERROR] Tenant {tenant_id} inativo ou inexistente.")
                 return
 
+            # --- PERSISTÊNCIA INICIAL: INSTÂNCIA, CHAT E MENSAGEM DO CLIENTE ---
+            inst_alvo = instance_name or tenant.evolution_instance or f"atendit_{tenant.slug.replace('-', '_')}"
+            inst_res = await session.execute(
+                text('SELECT id FROM "Instance" WHERE name = :name LIMIT 1'),
+                {"name": inst_alvo}
+            )
+            inst_row = inst_res.first()
+            if not inst_row:
+                inst_db_id = str(uuid.uuid4())
+                await session.execute(
+                    text('INSERT INTO "Instance" (id, name, "connectionStatus") VALUES (:id, :name, \'open\')'),
+                    {"id": inst_db_id, "name": inst_alvo}
+                )
+                await session.commit()
+            else:
+                inst_db_id = inst_row[0]
+
+            nome_contato = (push_name or "").strip() or _numero_destino(remote_jid, remote_jid_alt)
+            chat_res = await session.execute(
+                text('SELECT id, labels FROM "Chat" WHERE "instanceId" = :inst_id AND "remoteJid" = :remote_jid LIMIT 1'),
+                {"inst_id": inst_db_id, "remote_jid": remote_jid}
+            )
+            chat_row = chat_res.first()
+            if not chat_row:
+                chat_db_id = str(uuid.uuid4())
+                chat_status = "ia"
+                await session.execute(
+                    text('''
+                        INSERT INTO "Chat" (id, "remoteJid", "instanceId", name, labels, "createdAt", "updatedAt", "unreadMessages")
+                        VALUES (:id, :remote_jid, :inst_id, :name, '{"status": "ia"}'::jsonb, NOW(), NOW(), 1)
+                    '''),
+                    {"id": chat_db_id, "remote_jid": remote_jid, "inst_id": inst_db_id, "name": nome_contato}
+                )
+            else:
+                chat_db_id = chat_row[0]
+                chat_labels = chat_row[1] or {}
+                chat_status = chat_labels.get("status", "ia")
+                await session.execute(
+                    text('''
+                        UPDATE "Chat"
+                        SET "updatedAt" = NOW(),
+                            name = COALESCE(NULLIF(:name, ''), name),
+                            "unreadMessages" = "unreadMessages" + 1
+                        WHERE id = :id
+                    '''),
+                    {"id": chat_db_id, "name": nome_contato}
+                )
+
+            # Grava a mensagem recebida do cliente
+            c_msg_id = msg_id or str(uuid.uuid4())
+            c_key = json.dumps({"remoteJid": remote_jid, "fromMe": False, "id": c_msg_id})
+            c_body = json.dumps({"conversation": user_message})
+            await session.execute(
+                text('''
+                    INSERT INTO "Message" (id, key, "pushName", "messageType", message, source, "messageTimestamp", "instanceId", status)
+                    VALUES (:id, :key::jsonb, :push_name, 'conversation', :msg::jsonb, 'unknown'::"DeviceMessage", :ts, :inst_id, 'RECEIVED')
+                    ON CONFLICT (id) DO NOTHING
+                '''),
+                {
+                    "id": c_msg_id,
+                    "key": c_key,
+                    "push_name": nome_contato,
+                    "msg": c_body,
+                    "ts": int(time.time()),
+                    "inst_id": inst_db_id
+                }
+            )
+            await session.commit()
+
+            # Se o atendimento foi assumido por operador humano, encerra o ciclo da IA
+            if chat_status == "humano":
+                logger.info(f"[WEBHOOK CHAT] Interlocutor {remote_jid} sob atendimento humano. IA preservará silêncio.")
+                return
+
             ai_config: Optional[AIConfig] = tenant.ai_config
 
-            # 2. Parâmetros de IA
+            # 2. Parâmetros de IA e Departamentos Setoriais
             custom_key = ai_config.api_key if (ai_config and ai_config.api_key) else settings.GEMINI_API_KEY
-            system_instruction = (
+            
+            dept_contexto = ""
+            if ai_config and ai_config.meta_data:
+                depts = ai_config.meta_data.get("departments", [])
+                ativos = [d for d in depts if d.get("is_active", True)]
+                if ativos:
+                    dept_contexto = "\n\nDEPARTAMENTOS E RESPONSÁVEIS SETORIAIS CADASTRADOS:\n" + "\n".join(
+                        f"- Setor: {d.get('department')}, Responsável: {d.get('name')}, WhatsApp: {d.get('whatsapp')}, Gatilhos/Assuntos: {d.get('keywords')}"
+                        for d in ativos
+                    ) + "\nSe o cliente solicitar falar com um setor humano ou tratar dos assuntos listados, forneça cordialmente o contato do responsável indicado para transbordo."
+
+            base_instruction = (
                 ai_config.system_instruction
                 if (ai_config and ai_config.system_instruction)
                 else f"Você é o atendente virtual '{ai_config.agent_name if ai_config else 'ManiBot'}' da empresa {tenant.name}. Responda de forma cortês, profissional e concisa."
             )
+            system_instruction = base_instruction + dept_contexto
             model_name = ai_config.model if ai_config else "gemini-2.5-flash"
             temperature = ai_config.temperature if ai_config else 0.7
 
-            # 2b. Atalho da lista de espera: "sim" respondendo a uma oferta.
+            # 2b. Atalho determinístico da lista de espera e réguas ativas (D-1 / D-0)
             numero_cliente = _numero_destino(remote_jid, remote_jid_alt)
+
+            # Caso A: Confirmação recebida (Ex: "1", "Sim", "Confirmo")
             if _e_confirmacao(user_message):
+                # A.1: Oferta pendente na lista de espera
                 pendente = await waitlist_service.oferta_pendente(tenant_id, numero_cliente)
                 if pendente is not None:
                     logger.info(
@@ -172,6 +276,92 @@ async def _async_process_incoming_message(
                     )
                     logger.info(f"[WAITLIST] Fluxo de confirmação concluído: {r.get('confirmado')}")
                     return
+
+                # A.2: Confirmação ativa de agendamento existente (resposta a D-1 / D-0)
+                from app.models.scheduling import Appointment, ServiceType
+                from datetime import datetime, timezone
+                agora_utc = datetime.now(timezone.utc)
+                stmt_apt = (
+                    select(Appointment, ServiceType)
+                    .join(ServiceType, ServiceType.id == Appointment.service_type_id)
+                    .where(
+                        Appointment.tenant_id == tenant_id,
+                        Appointment.customer_phone == numero_cliente,
+                        Appointment.status == "confirmed",
+                        Appointment.start_at >= agora_utc,
+                    )
+                    .order_by(Appointment.start_at.asc())
+                )
+                apt_ativo = (await session.execute(stmt_apt)).first()
+                if apt_ativo:
+                    comp, serv = apt_ativo
+                    fuso_sp = __import__("zoneinfo").ZoneInfo("America/Sao_Paulo")
+                    horario_fmt = comp.start_at.astimezone(fuso_sp).strftime("%d/%m às %H:%M")
+                    nome_cliente = comp.customer_name or "Cliente"
+                    msg_resp = (
+                        f"Perfeito, {nome_cliente}! Sua presença no atendimento de *{serv.name}* "
+                        f"em *{horario_fmt}* está confirmada. Muito obrigado e até breve!"
+                    )
+                    await evolution_service.send_text_message(
+                        instance_name=instance_name or tenant.slug,
+                        recipient_number=numero_cliente,
+                        text=msg_resp,
+                    )
+                    logger.info(f"[CONFIRMAÇÃO ATIVA] Presença confirmada para {numero_cliente} no agendamento {comp.id}")
+                    return
+
+            # Caso B: Cancelamento recebido (Ex: "2", "Cancelar", "Não poderei ir")
+            elif _e_cancelamento(user_message):
+                from app.services import scheduling_service
+                from app.models.scheduling import Appointment
+                from datetime import datetime, timezone
+                agora_utc = datetime.now(timezone.utc)
+                stmt_canc = (
+                    select(Appointment)
+                    .where(
+                        Appointment.tenant_id == tenant_id,
+                        Appointment.customer_phone == numero_cliente,
+                        Appointment.status == "confirmed",
+                        Appointment.start_at >= agora_utc,
+                    )
+                    .order_by(Appointment.start_at.asc())
+                )
+                apt_para_cancelar = (await session.execute(stmt_canc)).scalars().first()
+                if apt_para_cancelar:
+                    fuso_sp = __import__("zoneinfo").ZoneInfo("America/Sao_Paulo")
+                    horario_fmt = apt_para_cancelar.start_at.astimezone(fuso_sp).strftime("%d/%m às %H:%M")
+                    nome_cliente = apt_para_cancelar.customer_name or "Cliente"
+                    
+                    # Executa cancelamento e aciona a lista de espera no worker Celery
+                    await scheduling_service.cancel_appointment(
+                        tenant_id=tenant_id,
+                        customer_phone=numero_cliente,
+                        appointment_id=apt_para_cancelar.id,
+                    )
+                    msg_resp = (
+                        f"Tudo bem, {nome_cliente}. Seu agendamento para *{horario_fmt}* foi cancelado "
+                        f"com sucesso. Caso deseje remarcar futuramente, basta nos mandar uma mensagem por aqui!"
+                    )
+                    await evolution_service.send_text_message(
+                        instance_name=instance_name or tenant.slug,
+                        recipient_number=numero_cliente,
+                        text=msg_resp,
+                    )
+                    logger.info(f"[CANCELAMENTO ATIVO] Agendamento {apt_para_cancelar.id} cancelado via WhatsApp por {numero_cliente}")
+                    return
+
+            # 2c. Avaliação Semântica JEV (Escalamento para Vídeo & Tags de Necessidade)
+            jev_eval = await jev_service.avaliar_escalonamento_video(user_message=user_message)
+            if jev_eval.get("deve_escalar"):
+                logger.info(
+                    f"[WEBHOOK JEV TRIGGER] S_video={jev_eval.get('s_video')} >= 0.75 para {numero_cliente}. "
+                    f"Priorizando ferramenta de vídeo."
+                )
+                system_instruction = (system_instruction or "") + (
+                    f"\n\n[AVISO SISTÊMICO JEV: O cliente possui alta complexidade técnica ou intenção de vídeo "
+                    f"(Score={jev_eval.get('s_video')}). Chame a ferramenta 'iniciar_videoconferencia_tour' "
+                    f"para disponibilizar a sala e o tour guiado agora mesmo.]"
+                )
 
             # 3. Busca semântica de contexto RAG
             context_chunks = await rag_service.search_relevant_context(
@@ -213,6 +403,28 @@ async def _async_process_incoming_message(
                 logger.info(
                     f"[WEBHOOK SUCCESS] Ciclo completo concluído com sucesso para Tenant {tenant_id} -> {recipient_number}"
                 )
+                try:
+                    ai_msg_id = f"AI_{uuid.uuid4().hex[:16]}"
+                    ai_key = json.dumps({"remoteJid": remote_jid, "fromMe": True, "id": ai_msg_id})
+                    ai_body = json.dumps({"conversation": ai_reply})
+                    await session.execute(
+                        text('''
+                            INSERT INTO "Message" (id, key, "pushName", "messageType", message, source, "messageTimestamp", "instanceId", status)
+                            VALUES (:id, :key::jsonb, :push_name, 'conversation', :msg::jsonb, 'web'::"DeviceMessage", :ts, :inst_id, 'DELIVERED')
+                            ON CONFLICT (id) DO NOTHING
+                        '''),
+                        {
+                            "id": ai_msg_id,
+                            "key": ai_key,
+                            "push_name": (ai_config.agent_name if ai_config else "Assistente Virtual"),
+                            "msg": ai_body,
+                            "ts": int(time.time()),
+                            "inst_id": inst_db_id
+                        }
+                    )
+                    await session.commit()
+                except Exception as e_msg:
+                    logger.error(f"[WEBHOOK PERSIST ERROR] Falha ao persistir resposta da IA: {e_msg}")
             else:
                 logger.error(
                     f"[WEBHOOK ERROR] Falha no despacho da resposta via Evolution API para {recipient_number}"
@@ -400,6 +612,9 @@ async def handle_evolution_webhook(
     )
 
     # Despacha o processamento pesado (RAG + LLM + Envio) para BackgroundTasks
+    push_name_cliente = str(data.get("pushName") or "").strip()
+    msg_id_cliente = str(key.get("id") or "")
+
     background_tasks.add_task(
         _async_process_incoming_message,
         tenant_id=tenant_id,
@@ -407,6 +622,8 @@ async def handle_evolution_webhook(
         remote_jid=remote_jid,
         user_message=user_text.strip(),
         remote_jid_alt=remote_jid_alt,
+        push_name=push_name_cliente,
+        msg_id=msg_id_cliente,
     )
 
     return {

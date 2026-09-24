@@ -56,11 +56,20 @@ def _nome_instancia(slug: str) -> str:
 
 
 async def _texto_lembrete(
-    tenant_id: uuid.UUID, nome: Optional[str], servico: str, inicio: datetime
+    tenant_id: uuid.UUID, nome: Optional[str], servico: str, inicio: datetime, offset_minutes: Optional[int] = None
 ) -> str:
-    """Texto do lembrete, vindo do template do inquilino (PARTE 3)."""
+    """Texto do lembrete, diferenciando D-0 (reforço) de D-1 (confirmação ativa)."""
     from app.services import template_service
 
+    # Se for D-0 (antecedência curta <= 180 min, ex: 2 horas antes)
+    if offset_minutes and offset_minutes <= 180:
+        horario_str = inicio.astimezone(FUSO).strftime("%H:%M")
+        return (
+            f"Olá, {(nome or '').strip() or 'Cliente'}! Passando para lembrar que seu atendimento de "
+            f"*{servico}* é HOJE às *{horario_str}*. Estamos te aguardando!"
+        )
+
+    # D-1 (antecedência longa >= 720 min, ex: 24h antes) - Chamada de confirmação ativa
     return await template_service.render(
         tenant_id=tenant_id,
         template_type="reminder",
@@ -172,7 +181,7 @@ async def enviar_lembretes_pendentes() -> Dict[str, Any]:
 
         # 2) Envia.
         texto = await _texto_lembrete(
-            item["tenant_id"], item["nome"], item["servico"], item["inicio"]
+            item["tenant_id"], item["nome"], item["servico"], item["inicio"], offset_minutes=item.get("offset")
         )
         ok = False
         try:
