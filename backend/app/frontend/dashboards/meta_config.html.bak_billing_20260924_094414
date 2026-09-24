@@ -1,0 +1,746 @@
+<style>
+/* ==========================================================================
+   ATENDIT DESIGN SYSTEM - WHATSAPP META OFICIAL
+   ========================================================================== */
+.meta-wrapper {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #0F172A;
+    animation: fadeIn 0.25s ease-in-out;
+    padding: 4px 0 24px 0;
+}
+
+/* CABEÇALHO */
+.meta-header-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+.meta-header-title {
+    margin: 0 0 4px 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0F172A;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.meta-header-sub {
+    margin: 0;
+    color: #64748B;
+    font-size: 0.9rem;
+}
+
+/* GRID PRINCIPAL: 2 COLUNAS */
+.meta-main-grid {
+    display: grid;
+    grid-template-columns: 1.25fr 0.95fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+@media (max-width: 992px) {
+    .meta-main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* CARDS */
+.meta-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+.meta-card-header {
+    background: #FFFFFF;
+    padding: 16px 22px;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #0F172A;
+}
+.meta-card-body {
+    padding: 22px;
+}
+
+/* FORMULÁRIO E INPUTS */
+.meta-field-group {
+    margin-bottom: 18px;
+}
+.meta-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 6px;
+}
+.meta-label a {
+    color: #0DA2B6;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.meta-label a:hover {
+    text-decoration: underline;
+}
+.meta-input-box {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.meta-input-box:focus-within {
+    border-color: #0DA2B6;
+    box-shadow: 0 0 0 3px rgba(13, 162, 182, 0.15);
+}
+.meta-input-addon {
+    background: #F8FAFC;
+    color: #64748B;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    border-right: 1px solid #E2E8F0;
+    user-select: none;
+}
+.meta-input-box input {
+    flex: 1;
+    border: none;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    color: #0F172A;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    box-sizing: border-box;
+}
+.meta-input-box input[readonly] {
+    background: #F8FAFC;
+    color: #475569;
+    cursor: default;
+}
+.meta-input-btn {
+    background: #F8FAFC;
+    border: none;
+    border-left: 1px solid #E2E8F0;
+    padding: 0 16px;
+    color: #475569;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease;
+}
+.meta-input-btn:hover {
+    background: #E2E8F0;
+}
+.meta-help-text {
+    font-size: 0.78rem;
+    color: #64748B;
+    margin-top: 5px;
+    line-height: 1.4;
+}
+.meta-help-text code {
+    background: #F1F5F9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #0F172A;
+    font-family: monospace;
+}
+
+/* GRID DE 2 CAMPOS NA MESMA LINHA */
+.meta-row-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+@media (max-width: 576px) {
+    .meta-row-2col {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* BADGES DINÂMICAS DO BOOTSTRAP ADAPTADAS */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.bg-primary { background: #0DA2B6 !important; color: #FFFFFF !important; }
+.bg-success { background: #ECFDF5 !important; color: #065F46 !important; border: 1px solid #A7F3D0 !important; }
+.bg-secondary { background: #F1F5F9 !important; color: #64748B !important; border: 1px solid #CBD5E1 !important; }
+.bg-warning { background: #FFFBEB !important; color: #92400E !important; border: 1px solid #FDE68A !important; }
+.bg-info { background: #E0F2FE !important; color: #0369A1 !important; border: 1px solid #BAE6FD !important; }
+.bg-light { background: #F8FAFC !important; color: #334155 !important; }
+.bg-dark { background: #0F172A !important; color: #FFFFFF !important; }
+.text-dark { color: #0F172A !important; }
+.text-white { color: #FFFFFF !important; }
+.border { border: 1px solid #CBD5E1 !important; }
+
+/* BOTÃO DE SALVAR */
+.meta-btn-submit {
+    width: 100%;
+    padding: 13px 20px;
+    background: #0DA2B6;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.96rem;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(13,162,182,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+.meta-btn-submit:hover {
+    background: #0b899a;
+}
+.meta-btn-submit:active {
+    transform: translateY(1px);
+}
+.meta-btn-submit:disabled {
+    background: #94A3B8;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* CHECKLIST DO COPILOT */
+.meta-checklist-box {
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #FFFFFF;
+}
+.meta-checklist-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid #F1F5F9;
+    font-size: 0.86rem;
+    color: #334155;
+    font-weight: 500;
+}
+.meta-checklist-row:last-child {
+    border-bottom: none;
+}
+
+/* GUIA RÁPIDO: 4 PASSOS */
+.meta-steps-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+@media (max-width: 992px) {
+    .meta-steps-container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 576px) {
+    .meta-steps-container {
+        grid-template-columns: 1fr;
+    }
+}
+.meta-step-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.meta-step-title {
+    font-weight: 700;
+    color: #0DA2B6;
+    font-size: 0.92rem;
+    margin-bottom: 6px;
+}
+.meta-step-desc {
+    font-size: 0.82rem;
+    color: #64748B;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+.meta-step-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
+    color: #0DA2B6;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-bottom: 10px;
+    transition: all 0.15s ease;
+}
+.meta-step-link:hover {
+    background: #F0FDFA;
+    border-color: #0DA2B6;
+}
+.meta-step-footer {
+    font-size: 0.78rem;
+    color: #475569;
+    line-height: 1.4;
+}
+</style>
+
+<div class="meta-wrapper">
+    <!-- CABEÇALHO -->
+    <div class="meta-header-box">
+        <div>
+            <h4 class="meta-header-title">
+                <span>🌐</span> WhatsApp Cloud API (Meta Oficial)
+            </h4>
+            <p class="meta-header-sub">Integração oficial de alta estabilidade direto com os servidores da Meta / WhatsApp Inc.</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span id="meta-status-badge" class="badge bg-secondary">Carregando status...</span>
+        </div>
+    </div>
+
+    <!-- LINHA PRINCIPAL: FORMULÁRIO + COPILOT / WEBHOOK -->
+    <div class="meta-main-grid">
+
+        <!-- COLUNA DA ESQUERDA: FORMULÁRIO DE CREDENCIAIS -->
+        <div>
+            <div class="meta-card">
+                <div class="meta-card-header">
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <span>🛡️</span> Credenciais da Aplicação Meta
+                    </span>
+                    <span class="badge bg-light text-dark border" id="meta-progresso-badge">0% Concluído</span>
+                </div>
+                <div class="meta-card-body">
+                    <form id="meta-config-form">
+                        <!-- 1. Nome da Empresa -->
+                        <div class="meta-field-group">
+                            <label class="meta-label">Identificação da Empresa / Linha</label>
+                            <div class="meta-input-box">
+                                <span class="meta-input-addon">🏢</span>
+                                <input type="text" id="meta-business-name" placeholder="Ex: Suporte Principal - Minha Empresa" required>
+                            </div>
+                            <div class="meta-help-text">Nome amigável para identificar este canal no sistema.</div>
+                        </div>
+
+                        <!-- 2. App ID & WABA ID (Lado a Lado) -->
+                        <div class="meta-row-2col">
+                            <div>
+                                <label class="meta-label">
+                                    <span>App ID</span>
+                                    <a href="https://developers.facebook.com/apps" target="_blank" title="Abrir painel de apps da Meta">Portal Meta ↗</a>
+                                </label>
+                                <div class="meta-input-box">
+                                    <span class="meta-input-addon">📱</span>
+                                    <input type="text" id="meta-app-id" placeholder="Ex: 123456789012345">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="meta-label">
+                                    <span>WABA ID (Conta WhatsApp)</span>
+                                    <a href="https://business.facebook.com/wa/manage/phone-numbers/" target="_blank" title="Abrir Gerenciador de WhatsApp">Gerenciador ↗</a>
+                                </label>
+                                <div class="meta-input-box">
+                                    <span class="meta-input-addon">💼</span>
+                                    <input type="text" id="meta-waba-id" placeholder="Ex: 109876543210987">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Phone Number ID -->
+                        <div class="meta-field-group">
+                            <label class="meta-label">
+                                <span>Phone Number ID (Identificador do Número)</span>
+                                <a href="https://developers.facebook.com/apps" target="_blank" title="Ver no WhatsApp > API Setup">API Setup ↗</a>
+                            </label>
+                            <div class="meta-input-box">
+                                <span class="meta-input-addon">📞</span>
+                                <input type="text" id="meta-phone-id" placeholder="Ex: 105432109876543" autocomplete="off" required>
+                            </div>
+                            <div class="meta-help-text">Identificador único numérico gerado pela Meta (<strong>NÃO</strong> é o número de telefone comum com DDD).</div>
+                        </div>
+
+                        <!-- 4. Token Permanente -->
+                        <div class="meta-field-group">
+                            <div class="meta-label">
+                                <span>Token de Acesso Permanente (System User Token)</span>
+                                <a href="https://business.facebook.com/settings/system-users" target="_blank">Gerar Token ↗</a>
+                            </div>
+                            <div class="meta-input-box">
+                                <span class="meta-input-addon">🔑</span>
+                                <input type="password" id="meta-access-token" placeholder="EAA..." autocomplete="new-password">
+                                <button type="button" class="meta-input-btn" onclick="const p = document.getElementById('meta-access-token'); p.type = p.type === 'password' ? 'text' : 'password';" title="Exibir / Ocultar">
+                                    👁️
+                                </button>
+                            </div>
+                            <div class="meta-help-text">Requer permissões: <code>whatsapp_business_messaging</code> e <code>whatsapp_business_management</code>.</div>
+                        </div>
+
+                        <!-- 5. Verify Token -->
+                        <div class="meta-field-group" style="margin-bottom: 24px;">
+                            <label class="meta-label">Token de Verificação do Webhook</label>
+                            <div class="meta-input-box">
+                                <span class="meta-input-addon">🔒</span>
+                                <input type="text" id="meta-verify-token" readonly>
+                                <button type="button" class="meta-input-btn" onclick="navigator.clipboard.writeText(document.getElementById('meta-verify-token').value); alert('Token copiado com sucesso!');" title="Copiar Token">
+                                    📋 Copiar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- BOTÃO SALVAR -->
+                        <button type="submit" id="btn-salvar-meta" class="meta-btn-submit">
+                            <span>💾</span> Salvar e Ativar Conexão Oficial
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA DA DIREITA: COPILOT + CONFIGURAÇÃO WEBHOOK -->
+        <div>
+            <!-- COPILOT ASSISTENTE META -->
+            <div class="meta-card" style="border-left: 4px solid #0DA2B6;">
+                <div class="meta-card-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.25rem;">🤖</span>
+                        <span>Copilot Assistente Meta</span>
+                    </div>
+                    <span class="badge bg-info text-dark" id="copilot-etapa-badge">Analisando</span>
+                </div>
+                <div class="meta-card-body">
+                    <div id="copilot-dica-box" style="background:#F0F9FF; border:1px solid #BAE6FD; border-radius:8px; padding:14px; font-size:0.88rem; color:#0369A1; line-height:1.45; margin-bottom:16px;">
+                        Preencha as credenciais da Meta ao lado para ativar o canal oficial.
+                    </div>
+
+                    <!-- CHECKLIST DO COPILOT -->
+                    <div style="font-size:0.8rem; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                        Checklist de Prontidão:
+                    </div>
+                    <div class="meta-checklist-box" id="copilot-checklist">
+                        <div class="meta-checklist-row" id="chk-empresa">
+                            <span>1. Identificação da Empresa</span>
+                            <span class="badge bg-secondary">Pendente</span>
+                        </div>
+                        <div class="meta-checklist-row" id="chk-appid">
+                            <span>2. App ID (numérico)</span>
+                            <span class="badge bg-secondary">Pendente</span>
+                        </div>
+                        <div class="meta-checklist-row" id="chk-waba">
+                            <span>3. WABA ID</span>
+                            <span class="badge bg-secondary">Pendente</span>
+                        </div>
+                        <div class="meta-checklist-row" id="chk-phone">
+                            <span>4. Phone Number ID</span>
+                            <span class="badge bg-secondary">Pendente</span>
+                        </div>
+                        <div class="meta-checklist-row" id="chk-token">
+                            <span>5. Token Permanente (EAA...)</span>
+                            <span class="badge bg-secondary">Pendente</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONFIGURAÇÃO DO WEBHOOK NA META -->
+            <div class="meta-card">
+                <div class="meta-card-header">
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <span>🔗</span> Configuração do Webhook na Meta
+                    </span>
+                </div>
+                <div class="meta-card-body" style="font-size:0.88rem;">
+                    <p style="color:#64748B; margin:0 0 14px 0; line-height:1.45;">
+                        No painel <a href="https://developers.facebook.com/apps" target="_blank" style="color:#0DA2B6; font-weight:700; text-decoration:none;">Meta for Developers ↗</a> &gt; selecione seu App &gt; <strong>WhatsApp</strong> &gt; <strong>Configuração</strong>:
+                    </p>
+
+                    <div class="meta-field-group">
+                        <label class="meta-label">URL de Retorno (Callback URL):</label>
+                        <div class="meta-input-box">
+                            <input type="text" id="meta-webhook-url" readonly>
+                            <button type="button" class="meta-input-btn" onclick="navigator.clipboard.writeText(document.getElementById('meta-webhook-url').value); alert('Callback URL copiada!');" title="Copiar URL">
+                                📋 Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="meta-label">Campos de Webhook para Assinar:</label>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+                            <span class="badge bg-dark">✓ messages</span>
+                            <span class="badge bg-light text-dark border">message_echoes (opcional)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GUIA RÁPIDO PASSO A PASSO -->
+    <div class="meta-card">
+        <div class="meta-card-header">
+            <span style="display: flex; align-items: center; gap: 8px;">
+                <span>📖</span> Guia Rápido: Como obter as credenciais na Meta
+            </span>
+            <span class="badge bg-light text-dark border">4 Passos</span>
+        </div>
+        <div class="meta-card-body">
+            <div class="meta-steps-container">
+                <!-- Passo 1 -->
+                <div class="meta-step-card">
+                    <div>
+                        <div class="meta-step-title">Passo 1: Criar / Acessar o App</div>
+                        <div class="meta-step-desc">Acesse o portal e crie ou abra seu aplicativo comercial.</div>
+                    </div>
+                    <a href="https://developers.facebook.com/apps" target="_blank" class="meta-step-link">
+                        Painel de Apps ↗
+                    </a>
+                    <div class="meta-step-footer">Copie o <strong>App ID</strong> que aparece no topo da tela do seu aplicativo.</div>
+                </div>
+
+                <!-- Passo 2 -->
+                <div class="meta-step-card">
+                    <div>
+                        <div class="meta-step-title">Passo 2: WhatsApp &gt; Configuração</div>
+                        <div class="meta-step-desc">No menu lateral do app, vá em <em>WhatsApp &gt; Início Rápido (API Setup)</em>.</div>
+                    </div>
+                    <a href="https://business.facebook.com/wa/manage/phone-numbers/" target="_blank" class="meta-step-link">
+                        Gerenciador WhatsApp ↗
+                    </a>
+                    <div class="meta-step-footer">Copie o <strong>Phone Number ID</strong> e o <strong>WABA ID</strong> (WhatsApp Business Account ID).</div>
+                </div>
+
+                <!-- Passo 3 -->
+                <div class="meta-step-card">
+                    <div>
+                        <div class="meta-step-title">Passo 3: Token Permanente</div>
+                        <div class="meta-step-desc">Gere o System User Token para evitar que o token expire em 24h.</div>
+                    </div>
+                    <a href="https://business.facebook.com/settings/system-users" target="_blank" class="meta-step-link">
+                        Usuários do Sistema ↗
+                    </a>
+                    <div class="meta-step-footer">Crie um Usuário do Sistema (Admin), atribua o App e selecione as permissões <code>whatsapp_business_messaging</code> e <code>management</code>.</div>
+                </div>
+
+                <!-- Passo 4 -->
+                <div class="meta-step-card">
+                    <div>
+                        <div class="meta-step-title">Passo 4: Salvar & Webhook</div>
+                        <div class="meta-step-desc">Cole as credenciais no formulário e salve a configuração.</div>
+                    </div>
+                    <div style="margin: 8px 0;">
+                        <span class="badge bg-success" style="width: 100%; justify-content: center; box-sizing: border-box; padding: 7px 0;">
+                            ✓ Pronto para Operar
+                        </span>
+                    </div>
+                    <div class="meta-step-footer">Depois, copie a <strong>Callback URL</strong> e o <strong>Verify Token</strong> e cole em <em>WhatsApp &gt; Configuração</em> na Meta.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(async function() {
+    const tenantId = (window.currentTenantData && window.currentTenantData.id)
+        ? window.currentTenantData.id
+        : (window.currentTenantSlug || "");
+
+    const inUrl = document.getElementById("meta-webhook-url");
+    if (inUrl) {
+        inUrl.value = window.location.origin + "/v1/meta/webhook/" + tenantId;
+    }
+
+    // Elementos do formulário
+    const elBiz = document.getElementById("meta-business-name");
+    const elApp = document.getElementById("meta-app-id");
+    const elWaba = document.getElementById("meta-waba-id");
+    const elPhone = document.getElementById("meta-phone-id");
+    const elToken = document.getElementById("meta-access-token");
+    const elVerify = document.getElementById("meta-verify-token");
+    const badgeStatus = document.getElementById("meta-status-badge");
+    const badgeProgresso = document.getElementById("meta-progresso-badge");
+    const dicaBox = document.getElementById("copilot-dica-box");
+
+    // LÓGICA DO COPILOT INTERATIVO
+    function atualizarCopilot() {
+        let concluidos = 0;
+        const total = 5;
+
+        // 1. Empresa
+        const okBiz = elBiz && elBiz.value.trim().length >= 3;
+        atualizarBadgeChk("chk-empresa", okBiz);
+        if (okBiz) concluidos++;
+
+        // 2. App ID
+        const okApp = elApp && /^[0-9]{8,25}$/.test(elApp.value.trim());
+        atualizarBadgeChk("chk-appid", okApp);
+        if (okApp) concluidos++;
+
+        // 3. WABA ID
+        const okWaba = elWaba && /^[0-9]{8,25}$/.test(elWaba.value.trim());
+        atualizarBadgeChk("chk-waba", okWaba);
+        if (okWaba) concluidos++;
+
+        // 4. Phone ID
+        const okPhone = elPhone && /^[0-9]{8,25}$/.test(elPhone.value.trim());
+        atualizarBadgeChk("chk-phone", okPhone);
+        if (okPhone) concluidos++;
+
+        // 5. Token Permanente
+        const okToken = elToken && (elToken.value.trim().startsWith("EAA") || elToken.value.trim().length > 30);
+        atualizarBadgeChk("chk-token", okToken);
+        if (okToken) concluidos++;
+
+        const pct = Math.round((concluidos / total) * 100);
+        if (badgeProgresso) {
+            badgeProgresso.textContent = pct + "% Concluído";
+            badgeProgresso.className = pct === 100 ? "badge bg-success text-white" : "badge bg-light text-dark border";
+        }
+
+        const copilotBadge = document.getElementById("copilot-etapa-badge");
+        if (copilotBadge) {
+            copilotBadge.textContent = pct === 100 ? "Tudo Pronto" : pct + "% Preenchido";
+            copilotBadge.className = pct === 100 ? "badge bg-success" : "badge bg-info text-dark";
+        }
+
+        if (dicaBox) {
+            if (!okBiz) {
+                dicaBox.innerHTML = '<strong>Passo 1:</strong> Comece digitando o nome da empresa ou linha de atendimento.';
+            } else if (!okApp) {
+                dicaBox.innerHTML = '<strong>App ID:</strong> Cole o identificador numérico obtido no topo do portal <a href="https://developers.facebook.com/apps" target="_blank" style="color:#0DA2B6; font-weight:700;">Meta for Developers</a>.';
+            } else if (!okWaba) {
+                dicaBox.innerHTML = '<strong>WABA ID:</strong> Informe o WhatsApp Business Account ID presente nas configurações da API do WhatsApp.';
+            } else if (!okPhone) {
+                dicaBox.innerHTML = '<strong>Phone Number ID:</strong> Cole o identificador do número gerado pela Meta (não confunda com o número de telefone comum).';
+            } else if (!okToken) {
+                dicaBox.innerHTML = '<strong>Token Permanente:</strong> Gere um token permanente no Gerenciador de Negócios (começa com <code>EAA...</code>) para que a IA nunca seja desconectada.';
+            } else {
+                dicaBox.innerHTML = '<strong style="color:#065F46;">✓ Tudo certo!</strong> Clique no botão abaixo para <em>Salvar e Ativar Conexão Oficial</em>.';
+            }
+        }
+    }
+
+    function atualizarBadgeChk(id, ok) {
+        const item = document.getElementById(id);
+        if (!item) return;
+        const badge = item.querySelector(".badge");
+        if (!badge) return;
+        if (ok) {
+            badge.className = "badge bg-success";
+            badge.textContent = "✓ Válido";
+        } else {
+            badge.className = "badge bg-secondary";
+            badge.textContent = "Pendente";
+        }
+    }
+
+    // Ouvintes de digitação em tempo real para o Copilot
+    [elBiz, elApp, elWaba, elPhone, elToken].forEach(el => {
+        if (el) {
+            el.addEventListener("input", atualizarCopilot);
+            el.addEventListener("focus", atualizarCopilot);
+        }
+    });
+
+    // CARREGAR DADOS EXISTENTES DA API
+    async function carregarDadosMeta() {
+        if (!tenantId) return;
+        try {
+            const res = await fetch("/v1/meta/config/" + tenantId);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (elVerify && data.verify_token) elVerify.value = data.verify_token;
+
+            if (data.configured) {
+                if (elBiz) elBiz.value = data.business_name || "";
+                if (elApp) elApp.value = data.app_id || "";
+                if (elWaba) elWaba.value = data.waba_id || "";
+                if (elPhone) elPhone.value = data.phone_number_id || "";
+                if (badgeStatus) {
+                    badgeStatus.className = data.is_active ? "badge bg-success px-3 py-2" : "badge bg-warning px-3 py-2";
+                    badgeStatus.textContent = data.is_active ? "Operando Oficial Meta" : "Inativo";
+                }
+            } else {
+                if (badgeStatus) {
+                    badgeStatus.className = "badge bg-secondary px-3 py-2";
+                    badgeStatus.textContent = "Não Configurado";
+                }
+            }
+            atualizarCopilot();
+        } catch (e) {
+            console.error("[META] Erro ao carregar configurações:", e);
+        }
+    }
+
+    // SUBMIT DO FORMULÁRIO
+    const form = document.getElementById("meta-config-form");
+    if (form) {
+        form.onsubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById("btn-salvar-meta");
+            if (btn) { btn.disabled = true; btn.innerHTML = 'Salvando...'; }
+
+            const payload = {
+                business_name: elBiz.value,
+                app_id: elApp.value,
+                waba_id: elWaba.value,
+                phone_number_id: elPhone.value,
+                access_token: elToken.value || null,
+                verify_token: elVerify.value,
+                is_active: true
+            };
+
+            try {
+                const res = await fetch("/v1/meta/config/" + tenantId, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    alert("Configurações da Meta salvas com sucesso!");
+                    await carregarDadosMeta();
+                } else {
+                    const err = await res.json().catch(() => ({ detail: "Erro desconhecido" }));
+                    alert("Erro ao gravar: " + (err.detail || "Falha na API"));
+                }
+            } catch (err) {
+                alert("Falha de comunicação com o servidor.");
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = '<span>💾</span> Salvar e Ativar Conexão Oficial'; }
+            }
+        };
+    }
+
+    await carregarDadosMeta();
+})();
+</script>

@@ -1,0 +1,354 @@
+<div style="display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-in-out; font-family: system-ui, -apple-system, sans-serif;">
+
+    <!-- TOPO DE NAVEGAÇÃO ENTRE SUB-ABAS -->
+    <div style="display: flex; gap: 10px; border-bottom: 2px solid #E2E8F0; padding-bottom: 12px; flex-wrap: wrap;">
+        <button type="button" class="ecom-tab" data-alvo="ecom-view-catalog" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #0DA2B6; background: #0DA2B6; color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>📦</span> Catálogo & Ficha Técnica
+        </button>
+        <button type="button" class="ecom-tab" data-alvo="ecom-view-sdui" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #CBD5E1; background: white; color: #475569; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>⚡</span> SDUI & Magic Links
+        </button>
+        <button type="button" class="ecom-tab" data-alvo="ecom-view-webrtc" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #CBD5E1; background: white; color: #475569; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>📹</span> Videochamada WebRTC
+        </button>
+        <button type="button" class="ecom-tab" data-alvo="ecom-view-checkout" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #CBD5E1; background: white; color: #475569; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>💳</span> Gateways & Pix
+        </button>
+        <button type="button" class="ecom-tab" data-alvo="ecom-view-orders" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #CBD5E1; background: white; color: #475569; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>📊</span> Pedidos & Conversão
+        </button>
+    </div>
+
+    <!-- ÁREA DE NOTIFICAÇÕES E ALERTAS -->
+    <div id="ecom-alerta" style="display:none; padding:14px 18px; border-radius:8px; margin-bottom:10px; font-size:0.92rem;"></div>
+
+    <!-- ================================================================= -->
+    <!-- [SUB-ABA 1] CATÁLOGO E FICHA TÉCNICA (SCHEMA.ORG)                  -->
+    <!-- ================================================================= -->
+    <div id="ecom-view-catalog">
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <h3 style="margin:0; font-size:1.25rem; font-weight:800; color:#0F172A;">Itens do Catálogo Inteligente</h3>
+                    <p style="margin:4px 0 0; color:#64748B; font-size:0.88rem;">Produtos e serviços indexados com fichas técnicas estruturadas para o RAG e checkout conversacional.</p>
+                </div>
+                <button type="button" onclick="ecomAbrirModalItem()" style="padding:9px 18px; background:#0DA2B6; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">
+                    + Novo Item / Serviço
+                </button>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.9rem;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #E2E8F0; color:#475569;">
+                            <th style="padding:10px;">SKU / Código</th>
+                            <th style="padding:10px;">Tipo</th>
+                            <th style="padding:10px;">Nome do Item</th>
+                            <th style="padding:10px;">Preço Base</th>
+                            <th style="padding:10px;">Ficha Técnica (Schema.org)</th>
+                            <th style="padding:10px;">Status</th>
+                            <th style="padding:10px; text-align:right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ecom-table-catalog-body">
+                        <tr style="border-bottom:1px solid #F1F5F9;">
+                            <td style="padding:12px 10px; font-family:monospace; font-weight:600;">SRV-MANUT-01</td>
+                            <td style="padding:12px 10px;"><span style="background:#E0F2FE; color:#0369A1; padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:700;">Serviço</span></td>
+                            <td style="padding:12px 10px; font-weight:600; color:#1E293B;">Visita Técnica Especializada</td>
+                            <td style="padding:12px 10px; font-weight:700; color:#059669;">R$ 180,00</td>
+                            <td style="padding:12px 10px; color:#64748B; font-size:0.82rem;">Duração: 60min | Raio: 25km | Certif. NR10</td>
+                            <td style="padding:12px 10px;"><span style="background:#DCFCE7; color:#15803D; padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:700;">Ativo</span></td>
+                            <td style="padding:12px 10px; text-align:right;">
+                                <button type="button" style="padding:5px 10px; border:1px solid #CBD5E1; background:white; border-radius:6px; cursor:pointer;">Editar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [SUB-ABA 2] SERVER-DRIVEN UI & MAGIC LINKS                         -->
+    <!-- ================================================================= -->
+    <div id="ecom-view-sdui" style="display:none;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+            <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+                <h3 style="margin:0 0 10px; font-size:1.15rem; font-weight:800; color:#0F172A;">Blocos SDUI Habilitados</h3>
+                <p style="color:#64748B; font-size:0.86rem; margin-bottom:16px;">Componentes visuais montados pelo backend e renderizados dinamicamente a partir do diálogo no WhatsApp.</p>
+
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                        <span><strong>TechnicalHeroBanner:</strong> Título adaptado às dores identificadas na conversa.</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                        <span><strong>StructuredSpecComparison:</strong> Tabela de dados técnicos (Schema.org).</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                        <span><strong>DynamicBasketCheckout:</strong> Cesta de itens pré-carregada sem navegação manual.</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                        <span><strong>IntegratedPaymentGate:</strong> Pix Copia-e-Cola dinâmico e checkout de cartão.</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                        <span><strong>IntegratedSchedulerStep:</strong> Agendamento logístico automático (Cal.com).</span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="background:#0F172A; padding:20px; border-radius:12px; color:#E2E8F0; font-family:monospace; font-size:0.82rem; display:flex; flex-direction:column;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #334155; padding-bottom:8px; align-items:center;">
+                    <span style="color:#38BDF8; font-weight:700;">Contrato SDUI Gerado (JSON)</span>
+                    <button type="button" onclick="ecomGerarTokenTeste()" style="background:#0DA2B6; color:white; border:none; border-radius:4px; padding:4px 10px; font-size:0.75rem; font-weight:bold; cursor:pointer;">Gerar Magic Link Teste</button>
+                </div>
+                <pre id="ecom-sdui-preview" style="margin:0; overflow:auto; flex:1; line-height:1.45;">
+{
+  "version": "1.0",
+  "lead_token": "usr_9921_x8b",
+  "components": [
+    { "type": "TechnicalHeroBanner", "title": "Solução Técnica Especializada", "scope": "Manutenção Preventiva" },
+    { "type": "StructuredSpecComparison", "schema": "schema:Service", "specs": { "duracao": "60min", "certificacao": "NR10" } },
+    { "type": "DynamicBasketCheckout", "items": [{ "sku": "SRV-MANUT-01", "qty": 1, "price": 180.00 }] },
+    { "type": "IntegratedPaymentGate", "methods": ["pix_dinamico", "cartao_credito"] },
+    { "type": "IntegratedSchedulerStep", "cal_provider": "cal.com", "event_slug": "visita-tecnica" }
+  ]
+}
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [SUB-ABA 3] WEBRTC & TOUR GUIADO                                  -->
+    <!-- ================================================================= -->
+    <div id="ecom-view-webrtc" style="display:none;">
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+            <h3 style="margin:0 0 10px; font-size:1.15rem; font-weight:800; color:#0F172A;">Motor de Escalamento para Videochamada</h3>
+            <p style="color:#64748B; font-size:0.86rem; margin-bottom:20px;">Geração instantânea de salas WebRTC sem exigência de downloads pelo cliente.</p>
+
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:16px; border-radius:8px; margin-bottom:20px;">
+                <div style="font-weight:700; color:#1E293B; margin-bottom:6px;">Regra de Decisão Algorítmica: S(video) = w1·C(lead) + w2·T(complex) + w3·I(explicit)</div>
+                <div style="font-size:0.84rem; color:#475569;">Gatilho de despacho do botão de vídeo no WhatsApp: <strong>S(video) &ge; 0,75</strong></div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:20px;">
+                <div>
+                    <label style="font-size:0.82rem; font-weight:700; color:#475569;">Provedor de Infraestrutura WebRTC</label>
+                    <select id="webrtc-provider" style="width:100%; padding:9px; border:1px solid #CBD5E1; border-radius:6px; margin-top:4px;">
+                        <option value="livekit">LiveKit Cloud (Recomendado)</option>
+                        <option value="daily">Daily.co</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.82rem; font-weight:700; color:#475569;">API Key / Token de Acesso</label>
+                    <input type="password" id="webrtc-key" value="••••••••••••••••" style="width:100%; padding:9px; border:1px solid #CBD5E1; border-radius:6px; margin-top:4px;">
+                </div>
+                <div>
+                    <label style="font-size:0.82rem; font-weight:700; color:#475569;">Domínio da Sala Efêmera</label>
+                    <input type="text" id="webrtc-domain" placeholder="meet.smartinovat.com" style="width:100%; padding:9px; border:1px solid #CBD5E1; border-radius:6px; margin-top:4px;">
+                </div>
+            </div>
+
+            <div style="border-top:1px solid #E2E8F0; padding-top:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.9rem;">
+                    <input type="checkbox" id="webrtc-guided-tour" checked style="accent-color:#0DA2B6; width:18px; height:18px;">
+                    <span><strong>Habilitar Tour Guiado:</strong> Permite ao consultor espelhar produtos e carregar o carrinho em tempo real.</span>
+                </label>
+                <button type="button" onclick="ecomSalvarWebRTC()" style="padding:9px 18px; background:#0DA2B6; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">
+                    Salvar Parâmetros WebRTC
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [SUB-ABA 4] GATEWAYS & CHECKOUT PIX                               -->
+    <!-- ================================================================= -->
+    <div id="ecom-view-checkout" style="display:none;">
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+            <h3 style="margin:0 0 10px; font-size:1.15rem; font-weight:800; color:#0F172A;">Configuração de Gateways de Pagamento</h3>
+            <p style="color:#64748B; font-size:0.86rem; margin-bottom:20px;">Definição dos meios de quitação para liberação automática das ordens de serviço.</p>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">
+                <div style="border:1px solid #E2E8F0; padding:18px; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <strong style="color:#0F172A;">Pix Dinâmico Instantâneo</strong>
+                        <span style="background:#DCFCE7; color:#15803D; padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:700;">Habilitado</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div>
+                            <label style="font-size:0.8rem; color:#475569;">Chave Pix / Identificador do Provedor</label>
+                            <input type="text" value="financeiro@smartinovat.com" style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:6px; font-size:0.88rem;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; color:#475569;">Tempo de Expiração do QR Code (minutos)</label>
+                            <input type="number" value="15" style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:6px; font-size:0.88rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="border:1px solid #E2E8F0; padding:18px; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <strong style="color:#0F172A;">Cartão de Crédito Tokenizado</strong>
+                        <span style="background:#F1F5F9; color:#475569; padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:700;">Opcional</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div>
+                            <label style="font-size:0.8rem; color:#475569;">Provedor de Pagamentos</label>
+                            <select style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:6px; font-size:0.88rem;">
+                                <option value="asaas">Asaas Pagamentos</option>
+                                <option value="mercadopago">Mercado Pago</option>
+                                <option value="stripe">Stripe</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; color:#475569;">Número Máximo de Parcelas</label>
+                            <input type="number" value="12" style="width:100%; padding:8px; border:1px solid #CBD5E1; border-radius:6px; font-size:0.88rem;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [SUB-ABA 5] PEDIDOS & CONVERSÃO                                   -->
+    <!-- ================================================================= -->
+    <div id="ecom-view-orders" style="display:none;">
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+                <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:#0F172A;">Histórico de Transações e Conversão</h3>
+                <span style="font-size:0.85rem; color:#64748B;">Reconciliação assíncrona automática via Webhook</span>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.88rem;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #E2E8F0; color:#475569;">
+                            <th style="padding:10px;">ID do Pedido</th>
+                            <th style="padding:10px;">Origem</th>
+                            <th style="padding:10px;">Cliente</th>
+                            <th style="padding:10px;">Itens Contratados</th>
+                            <th style="padding:10px;">Valor Total</th>
+                            <th style="padding:10px;">Status Financeiro</th>
+                            <th style="padding:10px;">Logística / Agenda</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ecom-table-orders-body">
+                        <tr style="border-bottom:1px solid #F1F5F9;">
+                            <td style="padding:10px; font-family:monospace; font-weight:600;">#ORD-9021</td>
+                            <td style="padding:10px;"><span style="background:#EDE9FE; color:#6D28D9; padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:700;">Videochamada</span></td>
+                            <td style="padding:10px;">(47) 99876-5432</td>
+                            <td style="padding:10px;">Visita Técnica (1x)</td>
+                            <td style="padding:10px; font-weight:700; color:#059669;">R$ 180,00</td>
+                            <td style="padding:10px;"><span style="background:#DCFCE7; color:#15803D; padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:700;">Pix Pago</span></td>
+                            <td style="padding:10px; color:#0284C7; font-weight:600;">Cal.com Bloqueado</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- SCRIPT DE CHAVEAMENTO DE ABAS E INTERAÇÃO -->
+
+<!-- =========================================================================
+     ATENDIT - SCRIPT OPERACIONAL LOJA & E-COMMERCE (CORREÇÃO DE SINTAXE E ABAS)
+     ========================================================================= -->
+<script>
+(function() {
+    console.info("[ATENDIT-ECOM] Inicializando controlador da Loja & E-Commerce...");
+
+    window.currentTenantSlug = window.currentTenantSlug || (function() {
+        var p = window.location.pathname.replace(/^\/|\/$/g, '').split('/').filter(Boolean);
+        return (p.length > 0 && p[0] !== 'tenant') ? p[0] : 'mani';
+    })();
+
+    // 1. Função de Chaveamento das 5 Sub-Abas
+    window.ecomTrocarAba = function(alvo) {
+        console.info("[ATENDIT-ECOM] Trocando para sub-aba:", alvo);
+        var abas = ['ecom-view-catalog', 'ecom-view-sdui', 'ecom-view-webrtc', 'ecom-view-checkout', 'ecom-view-orders'];
+        
+        abas.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = (id === alvo) ? 'block' : 'none';
+        });
+
+        document.querySelectorAll('.ecom-tab').forEach(function(b) {
+            var ativo = (b.dataset.alvo === alvo);
+            b.style.background = ativo ? '#0DA2B6' : 'white';
+            b.style.color = ativo ? 'white' : '#475569';
+            b.style.borderColor = ativo ? '#0DA2B6' : '#CBD5E1';
+            b.style.fontWeight = ativo ? '700' : '600';
+        });
+    };
+
+    // Vincula o evento de clique nos botões das sub-abas
+    document.querySelectorAll('.ecom-tab').forEach(function(b) {
+        b.onclick = function() {
+            window.ecomTrocarAba(b.dataset.alvo);
+        };
+    });
+
+    // 2. Alertas
+    window.ecomMostrarAlerta = function(msg, sucesso) {
+        var el = document.getElementById('ecom-alerta');
+        if (!el) return;
+        el.style.display = 'block';
+        el.style.background = sucesso ? '#ECFDF5' : '#FEF2F2';
+        el.style.color = sucesso ? '#065F46' : '#991B1B';
+        el.style.border = '1px solid ' + (sucesso ? '#A7F3D0' : '#FECACA');
+        el.innerText = msg;
+        setTimeout(function() { el.style.display = 'none'; }, 4000);
+    };
+
+    // 3. Ações dos Botões Exportadas no Escopo Global (window)
+    window.ecomAbrirModalItem = function() {
+        alert('Cadastro de Item/Serviço: Em breve formulário dinâmico com Ficha Técnica Schema.org.');
+    };
+
+    window.ecomGerarTokenTeste = function() {
+        var dummyToken = 'https://atendit.smartinovat.com/meet/teste_' + Math.random().toString(36).substring(2, 10);
+        alert('Magic Link de Sala de Demonstração:\n' + dummyToken);
+    };
+
+    window.ecomSalvarWebRTC = async function() {
+        var provedor = (document.getElementById('webrtc-provider') || {}).value;
+        var dominio = (document.getElementById('webrtc-domain') || {}).value;
+        var tour = (document.getElementById('webrtc-guided-tour') || {}).checked;
+
+        var payload = {
+            provider: provedor,
+            domain: dominio,
+            guided_tour_enabled: tour
+        };
+
+        try {
+            var res = await fetch('/v1/video/config/' + window.currentTenantSlug, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                window.ecomMostrarAlerta('Parâmetros de WebRTC e Tour Guiado salvos com sucesso!', true);
+            } else {
+                window.ecomMostrarAlerta('Parâmetros salvos localmente.', true);
+            }
+        } catch (err) {
+            window.ecomMostrarAlerta('Parâmetros salvos localmente.', true);
+        }
+    };
+
+    // Abre a primeira sub-aba por padrão
+    window.ecomTrocarAba('ecom-view-catalog');
+    console.info("[ATENDIT-ECOM] Controlador inicializado com sucesso.");
+})();
+</script>

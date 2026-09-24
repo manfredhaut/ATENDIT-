@@ -1,12 +1,12 @@
 <div style="font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 20px;">
     <!-- 1. PAINEL SUPERIOR: MÉTRICAS E CONTROLES DE FILTRO -->
-    <div style="background: #ffffff; padding: 24px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-top: 4px solid var(--p-turquesa, #3ccbc5); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <div style="background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; border-top: 4px solid #074f57; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
             <div>
-                <h4 style="font-size: 1.15rem; color: var(--p-texto, #231726); margin: 0; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                <h4 style="font-size: 1.15rem; color: #0f172a; margin: 0; font-weight: 800; display: flex; align-items: center; gap: 8px;">
                     💬 Gestão, Resgate e Análise de Conversas
                 </h4>
-                <p style="font-size: 0.85rem; color: var(--p-texto-suave, #5e5563); margin: 4px 0 0 0;">
+                <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">
                     Monitoramento síncrono das conversas no WhatsApp com transcrição de diálogos e transbordo humano.
                 </p>
             </div>
@@ -14,7 +14,7 @@
                 <span id="metric-total" style="background: #F1F5F9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">Total: 0</span>
                 <span id="metric-ia" style="background: #E0F2FE; color: #0284C7; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">🤖 IA: 0</span>
                 <span id="metric-humano" style="background: #FEF3C7; color: #D97706; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">👤 Humano: 0</span>
-                <button onclick="window.carregarFilaAtendimento()" style="background: var(--p-turquesa-texto, #0b7570); color: white; border: none; padding: 7px 18px; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: 0.82rem; transition: all 0.2s;">
+                <button onclick="window.carregarFilaAtendimento()" style="background: #0da2b6; color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.82rem;">
                     🔄 Sincronizar
                 </button>
             </div>
@@ -33,10 +33,10 @@
     </div>
 
     <!-- 2. TABELA PRINCIPAL DE CONVERSAS -->
-    <div style="background: #ffffff; padding: 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto;">
+    <div style="background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
             <thead>
-                <tr style="background: var(--p-marfim, #fbf8f4); border-bottom: 2px solid var(--p-borda, #eae3dc); color: #475569;">
+                <tr style="background: #F8FAFC; border-bottom: 2px solid #E2E8F0; color: #475569;">
                     <th style="padding: 12px 14px; font-weight: 600;">Cliente / WhatsApp</th>
                     <th style="padding: 12px 14px; font-weight: 600;">Última Mensagem Registrada</th>
                     <th style="padding: 12px 14px; font-weight: 600; text-align: center;">Canal / Modo</th>
@@ -57,7 +57,7 @@
     <div id="modal-transcricao" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
         <div style="background: #ffffff; width: 100%; max-width: 680px; max-height: 85vh; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden;">
             <!-- TOPO DO MODAL -->
-            <div style="padding: 16px 20px; background: var(--p-berinjela, #231726); color: white; display: flex; justify-content: space-between; align-items: center;">
+            <div style="padding: 16px 20px; background: #074f57; color: white; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h4 id="modal-chat-title" style="margin: 0; font-size: 1.05rem; font-weight: 800;">Transcrição da Conversa</h4>
                     <span id="modal-chat-subtitle" style="font-size: 0.8rem; opacity: 0.85;">Carregando histórico...</span>
@@ -79,7 +79,7 @@
 
             <!-- RODAPÉ DO MODAL -->
             <div style="padding: 12px 20px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
-                <button onclick="window.fecharModalTranscricao()" style="background: #fff; color: var(--p-texto-suave, #5e5563); border: 1px solid var(--p-borda, #eae3dc); padding: 8px 20px; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: 0.85rem;">
+                <button onclick="window.fecharModalTranscricao()" style="background: #e2e8f0; color: #475569; border: none; padding: 8px 18px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.85rem;">
                     Fechar
                 </button>
             </div>
@@ -154,25 +154,25 @@
                  + '    <strong style="color:#0F172A; display:block; font-size:0.92rem;">' + (chat.client_name || chat.contact) + '</strong>'
                  + '    <span style="font-size:11px; color:#64748B; font-family:monospace;">' + chat.contact + '</span>'
                  + '  </td>'
-                 + '  <td style="padding: 14px 15px; color: var(--p-texto, #231726); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">'
+                 + '  <td style="padding: 14px 15px; color: #334155; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">'
                  + '    <span>' + (chat.last_message || '<em>Sem mensagens</em>') + '</span>'
                  + '    <span style="font-size:10.5px; color:#94A3B8; display:block; margin-top:3px;">' + (chat.updated_at || '') + '</span>'
                  + '  </td>'
                  + '  <td style="padding: 14px 15px; text-align: center;">'
-                 + '    <span style="background:' + badgeBg + '; color:' + badgeColor + '; padding: 4px 10px; border-radius: var(--p-raio, 16px); font-size: 11px; font-weight: 700; display: inline-block;">'
+                 + '    <span style="background:' + badgeBg + '; color:' + badgeColor + '; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-block;">'
                  +        badgeLabel
                  + '    </span>'
                  + '  </td>'
                  + '  <td style="padding: 14px 15px; text-align: center; display: flex; gap: 8px; justify-content: center; align-items: center;">'
-                 + '    <button onclick="window.abrirModalTranscricao(\'' + chat.remoteJid + '\', \'' + (chat.client_name || chat.contact) + '\', \'' + chat.contact + '\')" style="background: var(--p-turquesa-texto, #0b7570); color: white; border: none; padding: 6px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 999px; cursor: pointer;">'
+                 + '    <button onclick="window.abrirModalTranscricao(\'' + chat.remoteJid + '\', \'' + (chat.client_name || chat.contact) + '\', \'' + chat.contact + '\')" style="background: #0da2b6; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer;">'
                  + '      📜 Ver Histórico'
                  + '    </button>'
                  + (isIa ?
-                     '    <button onclick="window.alterarStatusChat(\'' + chat.remoteJid + '\', \'humano\')" style="background: var(--p-berinjela, #231726); color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer;">'
+                     '    <button onclick="window.alterarStatusChat(\'' + chat.remoteJid + '\', \'humano\')" style="background: #074f57; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer;">'
                    + '      Assumir'
                    + '    </button>'
                    :
-                     '    <button onclick="window.alterarStatusChat(\'' + chat.remoteJid + '\', \'ia\')" style="background: var(--p-texto, #231726); color: white; border: none; padding: 6px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 999px; cursor: pointer;">'
+                     '    <button onclick="window.alterarStatusChat(\'' + chat.remoteJid + '\', \'ia\')" style="background: #334155; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer;">'
                    + '      Devolver IA'
                    + '    </button>'
                    )
@@ -233,9 +233,9 @@
             var html = '';
             msgs.forEach(function(m) {
                 var align = m.from_me ? 'flex-end' : 'flex-start';
-                var bg = m.from_me ? '#231726' : '#ffffff';
-                var color = m.from_me ? '#ffffff' : '#231726';
-                var border = m.from_me ? 'none' : '1px solid #eae3dc';
+                var bg = m.from_me ? '#074f57' : '#ffffff';
+                var color = m.from_me ? '#ffffff' : '#0f172a';
+                var border = m.from_me ? 'none' : '1px solid #e2e8f0';
 
                 html += '<div style="display: flex; justify-content: ' + align + '; margin-bottom: 4px;">'
                      + '  <div style="max-width: 78%; background: ' + bg + '; color: ' + color + '; border: ' + border + '; border-radius: 10px; padding: 10px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">'
@@ -264,8 +264,7 @@
         }
         var textoCompleto = mensagensHistoricoAtual.map(function(m) {
             return '[' + (m.time || '') + '] ' + m.sender + ': ' + m.text;
-        }).join('
-');
+        }).join('\n');
 
         navigator.clipboard.writeText(textoCompleto).then(function() {
             alert('✓ Histórico copiado para a área de transferência!');

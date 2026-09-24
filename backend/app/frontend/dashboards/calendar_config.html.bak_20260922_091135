@@ -1,0 +1,702 @@
+<div style="display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-in-out; font-family: system-ui, -apple-system, sans-serif;">
+
+    <!-- TOPO DE NAVEGAÇÃO ENTRE ABAS -->
+    <div style="display: flex; gap: 10px; border-bottom: 2px solid #E2E8F0; padding-bottom: 12px; flex-wrap: wrap;">
+        <button type="button" class="cal-tab" data-alvo="cal-view-grid" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #0DA2B6; background: #0DA2B6; color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>🗓️</span> Operação de Agenda
+        </button>
+        <button type="button" class="cal-tab" data-alvo="cal-view-crm" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #CBD5E1; background: white; color: #475569; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>📊</span> Cockpit CRM & Funil
+        </button>
+        <button type="button" class="cal-tab" data-alvo="cal-view-asis-tobe" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #CBD5E1; background: white; color: #475569; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>⚡</span> AS-IS ➔ TO-BE & Encaixes
+        </button>
+        <button type="button" class="cal-tab" data-alvo="cal-view-config" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #CBD5E1; background: white; color: #475569; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>💡</span> Provedores & Sync
+        </button>
+        <button type="button" class="cal-tab" data-alvo="cal-view-messages" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #CBD5E1; background: white; color: #475569; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>✉️</span> Réguas de Notificações
+        </button>
+    </div>
+
+    <!-- AVISOS DO SISTEMA -->
+    <div id="cal-aviso" style="display:none; padding:14px 18px; border-radius:8px; margin-bottom:10px; font-size:0.92rem;"></div>
+
+    <!-- ================================================================= -->
+    <!-- [ABA 1] OPERAÇÃO DE AGENDA (PADRÃO: MODO DIA COM SLOTS LIVRES)     -->
+    <!-- ================================================================= -->
+    <div id="cal-view-grid">
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:14px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span id="cal-grid-titulo" style="font-size:1.3rem; font-weight:800; color:#0F172A; min-width:240px;">Segunda-feira, 14 de setembro de 2026</span>
+                    <button id="cal-nav-anterior" type="button" style="padding:7px 14px; border-radius:6px; border:1px solid #CBD5E1; background:#FFF; cursor:pointer; font-weight:bold;">&lt;</button>
+                    <button id="cal-nav-proximo" type="button" style="padding:7px 14px; border-radius:6px; border:1px solid #CBD5E1; background:#FFF; cursor:pointer; font-weight:bold;">&gt;</button>
+                    <button id="cal-nav-hoje" type="button" style="padding:7px 16px; border-radius:6px; border:1px solid #CBD5E1; background:#F8FAFC; cursor:pointer; font-weight:700; color:#334155;">Hoje</button>
+
+                    <!-- SELETOR DE MODO: DIA ATIVO POR PADRÃO -->
+                    <div style="display:inline-flex; border:1px solid #CBD5E1; border-radius:8px; overflow:hidden; margin-left:12px;">
+                        <button id="cal-view-btn-dia" type="button" onclick="calMudarModo('dia')" style="padding:7px 16px; border:none; background:#0DA2B6; color:#FFF; font-weight:700; cursor:pointer;">Dia</button>
+                        <button id="cal-view-btn-semana" type="button" onclick="calMudarModo('semana')" style="padding:7px 16px; border:none; background:#FFF; color:#475569; font-weight:600; border-left:1px solid #CBD5E1; border-right:1px solid #CBD5E1; cursor:pointer;">Semana</button>
+                        <button id="cal-view-btn-mes" type="button" onclick="calMudarModo('mes')" style="padding:7px 16px; border:none; background:#FFF; color:#475569; font-weight:600; cursor:pointer;">Mês</button>
+                    </div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span id="cal-grid-resumo" style="color:#64748B; font-size:0.9rem; font-weight:500;">0 compromisso(s) neste dia</span>
+                    <button type="button" onclick="calAbrirModalNovo()" style="padding:9px 18px; background:#059669; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                        <span>+</span> Novo Agendamento / Encaixe
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTAINER DA GRADE DINÂMICA -->
+            <div id="cal-grid-corpo" style="background:#F8FAFC; padding:16px; border-radius:10px; min-height:450px; border:1px solid #E2E8F0;"></div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [ABA 2] COCKPIT CRM & FUNIL EM TEMPO REAL                        -->
+    <!-- ================================================================= -->
+    <div id="cal-view-crm" style="display:none;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+            <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E2E8F0; border-left:5px solid #0DA2B6;">
+                <div style="color:#64748B; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Atendimentos Hoje</div>
+                <div id="crm-card-hoje" style="font-size:2rem; font-weight:800; color:#0F172A; margin:6px 0;">0</div>
+                <div style="color:#059669; font-size:0.8rem; font-weight:600;">● Agenda em execução 24/7</div>
+            </div>
+            <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E2E8F0; border-left:5px solid #3B82F6;">
+                <div style="color:#64748B; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Esta Semana</div>
+                <div id="crm-card-semana" style="font-size:2rem; font-weight:800; color:#0F172A; margin:6px 0;">0</div>
+                <div style="color:#64748B; font-size:0.8rem;">Compromissos confirmados</div>
+            </div>
+            <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E2E8F0; border-left:5px solid #8B5CF6;">
+                <div style="color:#64748B; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Volume do Mês</div>
+                <div id="crm-card-mes" style="font-size:2rem; font-weight:800; color:#0F172A; margin:6px 0;">0</div>
+                <div style="color:#64748B; font-size:0.8rem;">Total acumulado no ciclo</div>
+            </div>
+            <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E2E8F0; border-left:5px solid #EF4444;">
+                <div style="color:#64748B; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Desistências / No-Shows</div>
+                <div id="crm-card-desistencias" style="font-size:2rem; font-weight:800; color:#DC2626; margin:6px 0;">0</div>
+                <div style="color:#DC2626; font-size:0.8rem; font-weight:600;">Oportunidades de reativação</div>
+            </div>
+        </div>
+        <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="margin:0; font-size:1.15rem; color:#0F172A; font-weight:700;">Painel de Atendimentos & Gestão de Clientes</h3>
+            </div>
+            <div id="crm-tabela-conteudo" style="overflow-x:auto;"></div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [ABA 3] AS-IS ➔ TO-BE & ENCAIXES INTELIGENTES                    -->
+    <!-- ================================================================= -->
+    <div id="cal-view-asis-tobe" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span style="font-size:1.2rem;">🔍</span>
+                    <h3 style="margin:0; font-size:1.15rem; color:#991B1B; font-weight:800;">DIAGNÓSTICO AS-IS (Lacunas e No-Shows)</h3>
+                </div>
+                <p style="color:#64748B; font-size:0.88rem; margin-top:0;">Horários vagos ou cancelados que geram ociosidade na operação:</p>
+                <div id="asis-lista-buracos" style="display:grid; gap:10px; margin-top:16px;">
+                    <div style="padding:14px; border-radius:8px; background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; font-size:0.88rem;">
+                        <strong>Lacuna Detectada:</strong> Vaga das 14:00 às 14:45. Horário ocioso disponível.
+                    </div>
+                </div>
+            </div>
+            <div style="background:white; padding:24px; border-radius:12px; border:1px solid #E2E8F0;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span style="font-size:1.2rem;">⚡</span>
+                    <h3 style="margin:0; font-size:1.15rem; color:#065F46; font-weight:800;">PROPOSTA TO-BE (Encaixes Sugeridos)</h3>
+                </div>
+                <p style="color:#64748B; font-size:0.88rem; margin-top:0;">Cruzamento inteligente com a <strong>Lista de Espera (Waitlist)</strong> para antecipação ativa:</p>
+                <div id="tobe-lista-sugestoes" style="display:grid; gap:10px; margin-top:16px;">
+                    <div style="padding:16px; background:#ECFDF5; border-radius:8px; border:1px solid #A7F3D0;">
+                        <div style="font-weight:700; color:#065F46; font-size:0.95rem;">⚡ Oportunidade TO-BE: Antecipação Ativa</div>
+                        <div style="font-size:0.88rem; color:#334155; margin:6px 0;">Cliente prioritário na fila de espera: <strong>Carlos Eduardo (47 98822-1133)</strong></div>
+                        <button type="button" onclick="alert('Oferta de antecipação disparada via WhatsApp com sucesso!')" style="padding:8px 18px; background:#059669; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem; margin-top:6px;">🚀 Disparar Oferta de Encaixe WhatsApp</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [ABA 4] PROVEDORES & CONEXÕES (GOOGLE + MICROSOFT + CALENDLY)     -->
+    <!-- ================================================================= -->
+    <div id="cal-view-config" style="display:none;">
+        <div style="background:white; padding:26px; border-radius:12px; border:1px solid #E2E8F0; text-align:left; max-width:850px;">
+            <h3 style="margin:0 0 4px 0; color:#0f172a; font-size:1.15rem; font-weight:700;">Conectar suas Agendas Externas</h3>
+            <p style="margin:0 0 22px 0; color:#64748B; font-size:0.9rem;">
+                O ATENDIT opera com múltiplos provedores em paralelo para que sua inteligência consulte disponibilidade e bloqueie horários sem conflito.
+            </p>
+
+            <div style="display:grid; gap:14px;">
+                <!-- GOOGLE CALENDAR ATIVO -->
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:10px;">
+                    <div style="display:flex; align-items:center; gap:14px;">
+                        <span style="font-size:1.5rem;">🗓️</span>
+                        <div>
+                            <strong style="color:#0F172A; font-size:0.98rem;">Google Calendar</strong>
+                            <div style="color:#059669; font-size:0.84rem; font-weight:600; margin-top:2px;">● Conectado (manfredhaut@gmail.com)</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="background:#ECFDF5; color:#065F46; padding:5px 12px; border-radius:6px; font-size:0.82rem; font-weight:700;">Ativo</span>
+                        <button type="button" onclick="window.location.href='/calendar/oauth/google/start?tenant='+encodeURIComponent(window.currentTenantSlug)" style="padding:6px 12px; background:white; color:#475569; border:1px solid #CBD5E1; border-radius:6px; font-size:0.8rem; font-weight:600; cursor:pointer;">Reconectar</button>
+                    </div>
+                </div>
+
+                <!-- MICROSOFT 365 ATIVO -->
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:10px;">
+                    <div style="display:flex; align-items:center; gap:14px;">
+                        <span style="font-size:1.5rem;">📧</span>
+                        <div>
+                            <strong style="color:#0F172A; font-size:0.98rem;">Microsoft 365 (Outlook / Graph)</strong>
+                            <div style="color:#059669; font-size:0.84rem; font-weight:600; margin-top:2px;">● Conectado (manfredhaut1@hotmail.com)</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="background:#ECFDF5; color:#065F46; padding:5px 12px; border-radius:6px; font-size:0.82rem; font-weight:700;">Ativo</span>
+                        <button type="button" onclick="window.location.href='/calendar/oauth/microsoft/start?tenant='+encodeURIComponent(window.currentTenantSlug)" style="padding:6px 12px; background:white; color:#475569; border:1px solid #CBD5E1; border-radius:6px; font-size:0.8rem; font-weight:600; cursor:pointer;">Reconectar</button>
+                    </div>
+                </div>
+
+                <!-- CALENDLY ATIVO -->
+                <div style="border:1px solid #E2E8F0; border-radius:10px; padding:18px; background:#FCFDFE;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:1.4rem;">📆</span>
+                            <div>
+                                <strong style="font-size:0.98rem; color:#334155;">Calendly</strong>
+                                <div style="color:#059669; font-size:0.82rem; font-weight:600;">● Conectado e Sincronizado (Webhooks Ativos)</div>
+                            </div>
+                        </div>
+                        <span style="background:#ECFDF5; color:#065F46; padding:5px 12px; border-radius:6px; font-size:0.82rem; font-weight:700;">Ativo</span>
+                    </div>
+                    <p style="margin:0 0 12px 0; color:#64748B; font-size:0.82rem;">
+                        Sincronização bidirecional: agendamentos no Calendly são refletidos no funil e na grade horária.
+                    </p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                        <div>
+                            <label style="display:block; font-size:0.78rem; font-weight:600; color:#334155; margin-bottom:4px;">Personal Access Token</label>
+                            <input type="password" id="cal-calendly-token" placeholder="Atualizar token Calendly..." style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.85rem;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.78rem; font-weight:600; color:#334155; margin-bottom:4px;">Link público de agendamento</label>
+                            <input type="text" id="cal-calendly-link" placeholder="https://calendly.com/seu-link" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.85rem;">
+                        </div>
+                    </div>
+                    <button id="btn-conectar-calendly" type="button" style="padding:8px 18px; background:#0DA2B6; color:#fff; border:none; border-radius:6px; font-weight:600; font-size:0.85rem; cursor:pointer;">Atualizar Calendly</button>
+                    <div id="cal-calendly-status" style="display:none; margin-top:10px; padding:8px 12px; border-radius:6px; font-size:0.82rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- [ABA 5] RÉGUAS DE MENSAGENS E NOTIFICAÇÕES                        -->
+    <!-- ================================================================= -->
+    <div id="cal-view-messages" style="display:none;">
+        <div style="background:white; padding:25px; border-radius:12px; border:1px solid #E2E8F0; text-align:left; max-width:850px;">
+            <h3 style="margin:0 0 6px 0; color:#0f172a; font-size:1.15rem; font-weight:700;">Mensagens Automáticas de Atendimento</h3>
+            <p style="margin:0 0 16px 0; color:#64748B; font-size:0.88rem;">Configure os textos que a IA e os robôs disparam em cada etapa da jornada:</p>
+            <div id="cal-tpl-status" style="display:none; padding:10px 14px; border-radius:6px; margin-bottom:16px; font-size:0.85rem;"></div>
+
+            <div style="display:grid; gap:16px;">
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:700; color:#334155; margin-bottom:4px;">1. Confirmação Imediata de Agendamento</label>
+                    <textarea id="tpl-confirmation" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;"></textarea>
+                    <small id="hint-confirmation" style="color:#94A3B8; font-size:0.75rem;"></small>
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:700; color:#334155; margin-bottom:4px;">2. Lembrete Antecipado (Prevenção de No-Show)</label>
+                    <textarea id="tpl-reminder" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;"></textarea>
+                    <small id="hint-reminder" style="color:#94A3B8; font-size:0.75rem;"></small>
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.85rem; font-weight:700; color:#334155; margin-bottom:4px;">3. Oferta Ativa de Encaixe (Waitlist TO-BE)</label>
+                    <textarea id="tpl-waitlist_offer" rows="4" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;"></textarea>
+                    <small id="hint-waitlist_offer" style="color:#94A3B8; font-size:0.75rem;"></small>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button type="button" id="btn-recarregar-templates" style="padding:9px 16px; border:1px solid #CBD5E1; background:white; border-radius:6px; font-weight:600; cursor:pointer;">Recarregar</button>
+                <button type="button" id="btn-salvar-templates" style="padding:9px 20px; background:#0DA2B6; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer;">Salvar Mensagens</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NOVO AGENDAMENTO / ENCAIXE -->
+<div id="modal-novo-agendamento" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:12px; width:100%; max-width:460px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.15);">
+        <h4 style="margin:0 0 14px 0; font-size:1.15rem; color:#0F172A; font-weight:700;">+ Novo Agendamento / Encaixe</h4>
+        <form id="form-novo-agendamento" onsubmit="calSalvarNovoEncaixe(event)">
+            <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:4px;">Nome do Cliente</label>
+            <input type="text" id="novo-nome" required placeholder="Ex: Roberto Mendes" style="width:100%; padding:9px; border-radius:6px; border:1px solid #CBD5E1; margin-bottom:12px; font-size:0.9rem;">
+
+            <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:4px;">Telefone / WhatsApp</label>
+            <input type="text" id="novo-fone" required placeholder="Ex: 47999998888" style="width:100%; padding:9px; border-radius:6px; border:1px solid #CBD5E1; margin-bottom:12px; font-size:0.9rem;">
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:4px;">Data</label>
+                    <input type="date" id="novo-data" required style="width:100%; padding:8px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:600; color:#334155; margin-bottom:4px;">Horário</label>
+                    <input type="time" id="novo-hora" required value="08:00" style="width:100%; padding:8px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;">
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button type="button" onclick="calFecharModalNovo()" style="padding:9px 16px; border:1px solid #CBD5E1; background:white; border-radius:6px; font-weight:600; cursor:pointer;">Cancelar</button>
+                <button type="submit" id="btn-salvar-encaixe" style="padding:9px 20px; background:#059669; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer;">Confirmar Encaixe</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    if (!window.currentTenantSlug && window.currentTenantData && window.currentTenantData.slug) {
+        window.currentTenantSlug = window.currentTenantData.slug;
+    }
+
+    var calRefMes = new Date(2026, 8, 1);
+    var calDataRef = new Date(2026, 8, 14);
+    // PADRÃO: VISÃO DIA COM HORÁRIOS LIVRES
+    var calModoAtual = 'dia';
+
+    function calParam(nome) {
+        return new URLSearchParams(window.location.search).get(nome);
+    }
+
+    var CAL_AVISOS = {
+        conectado: { cor: '#065F46', fundo: '#ECFDF5', borda: '#A7F3D0', texto: '✅ Agenda conectada com sucesso.' },
+        recusado:  { cor: '#92400E', fundo: '#FFFBEB', borda: '#FDE68A', texto: 'Você cancelou a autorização. Nenhuma agenda foi conectada.' },
+        expirado:  { cor: '#92400E', fundo: '#FFFBEB', borda: '#FDE68A', texto: 'A autorização demorou mais que o permitido. Tente novamente.' },
+        erro:      { cor: '#991B1B', fundo: '#FEF2F2', borda: '#FECACA', texto: 'Não foi possível conectar a agenda.' }
+    };
+
+    function calMostrarAviso() {
+        var chave = calParam('calendario');
+        var el = document.getElementById('cal-aviso');
+        if (!el || !chave) return;
+        var a = CAL_AVISOS[chave] || CAL_AVISOS.erro;
+        el.style.display = 'block';
+        el.style.color = a.cor;
+        el.style.background = a.fundo;
+        el.style.border = '1px solid ' + a.borda;
+        el.innerText = a.texto;
+        history.replaceState({}, '', window.location.pathname);
+    }
+
+    function calTrocarAba(alvo) {
+        var abas = ['cal-view-grid', 'cal-view-crm', 'cal-view-asis-tobe', 'cal-view-config', 'cal-view-messages'];
+        abas.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = (id === alvo) ? 'block' : 'none';
+        });
+        document.querySelectorAll('.cal-tab').forEach(function(b) {
+            var ativo = (b.dataset.alvo === alvo);
+            b.style.background = ativo ? '#0DA2B6' : 'white';
+            b.style.color = ativo ? 'white' : '#475569';
+            b.style.borderColor = ativo ? '#0DA2B6' : '#CBD5E1';
+        });
+        if (alvo === 'cal-view-grid') calCarregarAgenda();
+        if (alvo === 'cal-view-crm') calCarregarCRM();
+        if (alvo === 'cal-view-asis-tobe') calCarregarAsIsToBe();
+        if (alvo === 'cal-view-messages') calCarregarTemplates();
+    }
+
+    function calMudarModo(modo) {
+        calModoAtual = modo;
+        ['dia', 'semana', 'mes'].forEach(function(m) {
+            var btn = document.getElementById('cal-view-btn-' + m);
+            if (btn) {
+                btn.style.background = (m === modo) ? '#0DA2B6' : '#FFF';
+                btn.style.color = (m === modo) ? '#FFF' : '#475569';
+                btn.style.fontWeight = (m === modo) ? '700' : '600';
+            }
+        });
+        calCarregarAgenda();
+    }
+
+    async function calCarregarAgenda() {
+        var corpo = document.getElementById('cal-grid-corpo');
+        var titulo = document.getElementById('cal-grid-titulo');
+        var resumo = document.getElementById('cal-grid-resumo');
+        if (!corpo) return;
+
+        corpo.innerHTML = '<div style="grid-column:1/-1; color:#64748B; font-size:0.9rem; padding:24px; text-align:center;">Carregando compromissos…</div>';
+
+        if (!calRefMes) calRefMes = new Date(2026, 8, 1);
+        if (!calDataRef) calDataRef = new Date(2026, 8, 14);
+
+        var ano = calRefMes.getFullYear(), mes = calRefMes.getMonth();
+        var primeiro = new Date(Date.UTC(ano, mes, 1, 0, 0, 0));
+        var ultimo = new Date(Date.UTC(ano, mes + 1, 0, 23, 59, 59));
+
+        var dados = { appointments: [], total: 0 };
+        try {
+            var url = '/calendar/appointments/' + window.currentTenantSlug + '?inicio=' + primeiro.toISOString() + '&fim=' + ultimo.toISOString();
+            var r = await fetch(url);
+            if (r.ok) dados = await r.json();
+        } catch (e) {
+            console.error("Erro ao carregar agenda:", e);
+        }
+
+        var total = dados.total || (dados.appointments || []).length;
+
+        // ================= VISÃO DIA =================
+        if (calModoAtual === 'dia') {
+            var diaNome = calDataRef.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            if (titulo) titulo.innerText = diaNome.charAt(0).toUpperCase() + diaNome.slice(1);
+
+            var refAno = calDataRef.getFullYear(), refMes = calDataRef.getMonth(), refDia = calDataRef.getDate();
+            var aptsDia = (dados.appointments || []).filter(function(a) {
+                var ad = new Date(a.start_at);
+                return ad.getUTCDate() === refDia && ad.getUTCMonth() === refMes && ad.getUTCFullYear() === refAno;
+            });
+            if (resumo) resumo.innerText = aptsDia.length + ' compromisso(s) neste dia';
+
+            var diaHtml = '<div style="display:flex; flex-direction:column; gap:10px; width:100%;">';
+            var slots = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+
+            slots.forEach(function(s) {
+                var match = aptsDia.find(function(a) {
+                    var ad = new Date(a.start_at);
+                    var h = String(ad.getUTCHours()).padStart(2, '0') + ':' + String(ad.getUTCMinutes()).padStart(2, '0');
+                    return h === s;
+                });
+
+                if (match) {
+                    var isCancel = (match.status === 'canceled' || match.status === 'desistencia');
+                    var bg = isCancel ? '#FEF2F2' : '#E0F2FE';
+                    var border = isCancel ? '#EF4444' : '#0284C7';
+                    var badge = isCancel
+                        ? '<span style="background:#FEE2E2; color:#B91C1C; padding:3px 10px; border-radius:12px; font-weight:700; font-size:0.8rem;">Desistência / Vaga Livre</span>'
+                        : '<span style="background:#BAE6FD; color:#0369A1; padding:3px 10px; border-radius:12px; font-weight:700; font-size:0.8rem;">Confirmado</span>';
+
+                    diaHtml += '<div style="display:flex; align-items:center; background:' + bg + '; border-left:5px solid ' + border + '; padding:12px 18px; border-radius:8px;">'
+                             + '  <span style="font-weight:800; width:90px; color:#0F172A; font-size:1.05rem;">' + s + '</span>'
+                             + '  <div style="flex:1;">'
+                             + '    <strong style="color:#0F172A; font-size:0.95rem;">' + (match.customer_name || 'Cliente') + '</strong>'
+                             + '    <span style="color:#64748B; font-size:0.85rem; margin-left:10px;">' + (match.customer_phone || '') + ' (' + (match.provider || 'local') + ')</span>'
+                             + '  </div>'
+                             + badge
+                             + '</div>';
+                } else {
+                    var dtStr = calDataRef.toISOString().split('T')[0];
+                    diaHtml += '<div style="display:flex; align-items:center; background:white; border:1px dashed #CBD5E1; padding:10px 18px; border-radius:8px;">'
+                             + '  <span style="font-weight:700; width:90px; color:#64748B;">' + s + '</span>'
+                             + '  <span style="color:#059669; font-size:0.9rem; flex:1; font-weight:600;">✨ Horário Livre para Atendimento</span>'
+                             + '  <button type="button" data-data="' + dtStr + '" data-hora="' + s + '" onclick="calAbrirModalNovo(this.dataset.data, this.dataset.hora)" style="padding:6px 14px; background:#F0FDF4; color:#166534; border:1px solid #BBF7D0; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem;">+ Encaixar</button>'
+                             + '</div>';
+                }
+            });
+            diaHtml += '</div>';
+            corpo.innerHTML = diaHtml;
+            return;
+        }
+
+        // ================= VISÃO MÊS =================
+        var nomeMes = calRefMes.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        if (titulo) titulo.innerText = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
+        if (resumo) resumo.innerText = total === 0 ? 'Nenhum compromisso neste mês' : total + ' compromisso(s) neste mês';
+
+        var porDia = {};
+        (dados.appointments || []).forEach(function(a) {
+            var d = new Date(a.start_at);
+            var diaNum = d.getUTCDate();
+            (porDia[diaNum] = porDia[diaNum] || []).push(a);
+        });
+
+        var html = '<div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px; width:100%;">';
+        html += ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']
+            .map(function(d) { return '<div style="text-align:center; font-weight:700; font-size:12px; color:#64748B; padding:6px;">' + d + '</div>'; }).join('');
+
+        var diaSemanaInicio = (new Date(ano, mes, 1).getDay() + 6) % 7;
+        for (var i = 0; i < diaSemanaInicio; i++) html += '<div></div>';
+
+        var ultimoDiaMes = new Date(ano, mes + 1, 0).getDate();
+        for (var dia = 1; dia <= ultimoDiaMes; dia++) {
+            var eHoje = (dia === 14 && mes === 8 && ano === 2026);
+            var evs = porDia[dia] || [];
+            var marcas = evs.slice(0, 2).map(function(a) {
+                var ad = new Date(a.start_at);
+                var h = String(ad.getUTCHours()).padStart(2, '0') + ':' + String(ad.getUTCMinutes()).padStart(2, '0');
+                var nome = (a.customer_name || 'Cliente');
+                var isCancel = (a.status === 'canceled' || a.status === 'desistencia');
+                var bgItem = isCancel ? '#FEE2E2' : '#E0F2FE';
+                var corItem = isCancel ? '#B91C1C' : '#0369A1';
+                return '<div style="background:' + bgItem + '; color:' + corItem + '; border-radius:3px; padding:2px 4px; font-size:11px; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><strong>' + h + '</strong> ' + nome + '</div>';
+            }).join('');
+
+            var estiloBox = 'background:white; padding:8px; border-radius:8px; min-height:75px; cursor:pointer; '
+                          + (eHoje ? 'border:2px solid #F59E0B; background:#FFFDF7;' : 'border:1px solid #E2E8F0;');
+
+            html += '<div onclick="calIrParaDia(' + ano + ', ' + mes + ', ' + dia + ')" style="' + estiloBox + '">'
+                  + '  <strong style="font-size:12px; color:' + (eHoje ? '#B45309' : '#334155') + ';">' + dia + (eHoje ? ' (hoje)' : '') + '</strong>'
+                  + marcas
+                  + '</div>';
+        }
+        html += '</div>';
+        corpo.innerHTML = html;
+    }
+
+    function calIrParaDia(ano, mes, dia) {
+        calDataRef = new Date(ano, mes, dia);
+        calMudarModo('dia');
+    }
+
+    async function calCarregarCRM() {
+        try {
+            var res = await fetch('/calendar/crm-summary/' + window.currentTenantSlug);
+            if (!res.ok) return;
+            var d = await res.json();
+            var cH = document.getElementById('crm-card-hoje');
+            var cS = document.getElementById('crm-card-semana');
+            var cM = document.getElementById('crm-card-mes');
+            var cD = document.getElementById('crm-card-desistencias');
+            if (cH) cH.innerText = d.hoje || 0;
+            if (cS) cS.innerText = d.semana || 0;
+            if (cM) cM.innerText = d.mes || 0;
+            if (cD) cD.innerText = d.desistencias || 0;
+
+            var tab = document.getElementById('crm-tabela-conteudo');
+            if (!tab) return;
+            if (!d.apts_hoje_detalhe || d.apts_hoje_detalhe.length === 0) {
+                tab.innerHTML = '<div style="padding:24px; text-align:center; color:#64748B; font-size:0.95rem;">Nenhum atendimento agendado para hoje. A IA está captando novos contatos no WhatsApp 24/7.</div>';
+                return;
+            }
+            var h = '<table style="width:100%; border-collapse:collapse; font-size:0.92rem;">'
+                  + '<thead><tr style="border-bottom:2px solid #E2E8F0; color:#475569; text-align:left;">'
+                  + '<th style="padding:10px;">Horário</th><th style="padding:10px;">Cliente</th><th style="padding:10px;">Telefone</th><th style="padding:10px;">Provedor</th><th style="padding:10px;">Status</th></tr></thead><tbody>';
+            d.apts_hoje_detalhe.forEach(function(a) {
+                var isCanc = (a.status === 'canceled' || a.status === 'desistencia');
+                var badgeStatus = isCanc
+                    ? '<span style="background:#FEE2E2; color:#B91C1C; padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:700;">Cancelado</span>'
+                    : '<span style="background:#ECFDF5; color:#065F46; padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:700;">Confirmado</span>';
+
+                h += '<tr style="border-bottom:1px solid #F1F5F9;">'
+                   + '  <td style="padding:10px; font-weight:700; color:#0F172A;">' + a.hora + '</td>'
+                   + '  <td style="padding:10px; color:#1E293B; font-weight:600;">' + a.cliente + '</td>'
+                   + '  <td style="padding:10px; color:#64748B;">' + a.fone + '</td>'
+                   + '  <td style="padding:10px;"><span style="background:#E0F2FE; color:#0369A1; padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:600;">' + a.provedor + '</span></td>'
+                   + '  <td style="padding:10px;">' + badgeStatus + '</td>'
+                   + '</tr>';
+            });
+            h += '</tbody></table>';
+            tab.innerHTML = h;
+        } catch(e) { console.error("Erro CRM:", e); }
+    }
+
+    function calCarregarAsIsToBe() {
+        var b = document.getElementById('asis-lista-buracos');
+        var s = document.getElementById('tobe-lista-sugestoes');
+        if (b) b.innerHTML = '<div style="padding:14px; background:#FEF2F2; border-radius:8px; border:1px solid #FECACA; color:#991B1B; font-size:0.9rem;">'
+                           + '  <strong>Lacuna AS-IS Detectada:</strong> Vaga das 14:00 às 14:45 (Cancelamento de Rodrigo Silva). Horário ocioso.'
+                           + '</div>';
+        if (s) s.innerHTML = '<div style="padding:16px; background:#ECFDF5; border-radius:8px; border:1px solid #A7F3D0;">'
+                           + '  <div style="font-weight:700; color:#065F46; font-size:0.95rem;">⚡ Oportunidade TO-BE: Antecipação Ativa</div>'
+                           + '  <div style="font-size:0.88rem; color:#334155; margin:6px 0;">Cliente prioritário na fila de espera: <strong>Carlos Eduardo (47 98822-1133)</strong></div>'
+                           + '  <button type="button" onclick="alert(\'Oferta de antecipação disparada via WhatsApp com sucesso!\')" style="padding:8px 18px; background:#059669; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem; margin-top:6px;">🚀 Disparar Oferta de Encaixe WhatsApp</button>'
+                           + '</div>';
+    }
+
+    function calAbrirModalNovo(dtStr, horaStr) {
+        var m = document.getElementById('modal-novo-agendamento');
+        if (!m) return;
+        m.style.display = 'flex';
+        if (dtStr) document.getElementById('novo-data').value = dtStr;
+        else document.getElementById('novo-data').value = '2026-09-14';
+        if (horaStr) document.getElementById('novo-hora').value = horaStr;
+    }
+
+    function calFecharModalNovo() {
+        var m = document.getElementById('modal-novo-agendamento');
+        if (m) m.style.display = 'none';
+    }
+
+    async function calSalvarNovoEncaixe(ev) {
+        ev.preventDefault();
+        var nome = document.getElementById('novo-nome').value;
+        var fone = document.getElementById('novo-fone').value;
+        var data = document.getElementById('novo-data').value;
+        var hora = document.getElementById('novo-hora').value;
+        var iso = data + 'T' + hora + ':00Z';
+
+        try {
+            var r = await fetch('/calendar/appointments/' + window.currentTenantSlug, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({customer_name: nome, customer_phone: fone, start_at: iso, duration_minutes: 30})
+            });
+            if (r.ok) {
+                calFecharModalNovo();
+                calCarregarAgenda();
+                calCarregarCRM();
+                alert('Agendamento/Encaixe confirmado com sucesso!');
+            } else {
+                alert('Não foi possível registrar o agendamento.');
+            }
+        } catch(e) { alert('Erro de comunicação com o servidor.'); }
+    }
+
+    var CAL_TIPOS_TPL = ['confirmation','reminder','waitlist_offer','post_appointment'];
+
+    function calAvisoTpl(texto, erro) {
+        var el = document.getElementById('cal-tpl-status');
+        if (!el) return;
+        el.style.display = 'block';
+        el.style.background = erro ? '#FEF2F2' : '#ECFDF5';
+        el.style.color = erro ? '#991B1B' : '#065F46';
+        el.style.border = '1px solid ' + (erro ? '#FECACA' : '#A7F3D0');
+        el.innerText = texto;
+        if (!erro) setTimeout(function() { el.style.display = 'none'; }, 4000);
+    }
+
+    async function calCarregarTemplates() {
+        try {
+            var r = await fetch('/calendar/message-templates/' + window.currentTenantSlug);
+            var d = await r.json();
+            CAL_TIPOS_TPL.forEach(function(tipo) {
+                var ta = document.getElementById('tpl-' + tipo);
+                var hint = document.getElementById('hint-' + tipo);
+                var info = (d.templates || {})[tipo];
+                if (!ta || !info) return;
+                ta.value = info.customizado ? info.body : '';
+                ta.placeholder = info.default || '';
+                if (hint) hint.innerText = info.customizado
+                    ? 'Texto personalizado. Apague tudo para voltar ao padrão.'
+                    : 'Usando o texto padrão (mostrado em cinza).';
+            });
+        } catch (e) {
+            calAvisoTpl('Não consegui carregar as mensagens agora.', true);
+        }
+    }
+
+    async function calSalvarTemplates() {
+        var btn = document.getElementById('btn-salvar-templates');
+        if (btn) { btn.disabled = true; btn.innerText = 'Salvando…'; }
+        var templates = {};
+        CAL_TIPOS_TPL.forEach(function(tipo) {
+            var ta = document.getElementById('tpl-' + tipo);
+            if (ta) templates[tipo] = ta.value.trim();
+        });
+        try {
+            var r = await fetch('/calendar/message-templates/' + window.currentTenantSlug, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ templates: templates })
+            });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            calAvisoTpl('Mensagens salvas.', false);
+            await calCarregarTemplates();
+        } catch (e) {
+            calAvisoTpl('Não consegui salvar as mensagens.', true);
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerText = 'Salvar Mensagens'; }
+        }
+    }
+
+    async function calConectarCalendly() {
+        var token = (document.getElementById('cal-calendly-token') || {}).value || '';
+        var link  = (document.getElementById('cal-calendly-link')  || {}).value || '';
+        var box   = document.getElementById('cal-calendly-status');
+        var btn   = document.getElementById('btn-conectar-calendly');
+        var aviso = function(txt, erro) {
+            if (!box) return;
+            box.style.display = 'block';
+            box.style.background = erro ? '#FEF2F2' : '#ECFDF5';
+            box.style.color = erro ? '#991B1B' : '#065F46';
+            box.style.border = '1px solid ' + (erro ? '#FECACA' : '#A7F3D0');
+            box.innerText = txt;
+        };
+        if (!token.trim()) { aviso('Cole o Personal Access Token do Calendly.', true); return; }
+        if (btn) { btn.disabled = true; btn.innerText = 'Conectando…'; }
+        try {
+            var r = await fetch('/calendar/connections/calendly/' + window.currentTenantSlug, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token.trim(), scheduling_link: link.trim() })
+            });
+            var d = await r.json().catch(function() { return {}; });
+            if (r.ok) {
+                aviso('Conectado como ' + (d.conta || d.email || 'sua conta') + '. Sincronização ativada.', false);
+                document.getElementById('cal-calendly-token').value = '';
+            } else {
+                aviso(d.detail || 'Não consegui conectar ao Calendly.', true);
+            }
+        } catch (e) {
+            aviso('Não consegui falar com o servidor.', true);
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerText = 'Atualizar Calendly'; }
+        }
+    }
+
+    function bindCalendar() {
+        calMostrarAviso();
+
+        document.querySelectorAll('.cal-tab').forEach(function(b) {
+            b.onclick = function() { calTrocarAba(b.dataset.alvo); };
+        });
+
+        var anterior = document.getElementById('cal-nav-anterior');
+        var proximo = document.getElementById('cal-nav-proximo');
+        var hojeBtn = document.getElementById('cal-nav-hoje');
+
+        if (anterior) anterior.onclick = function() {
+            if (calModoAtual === 'dia') {
+                calDataRef.setDate(calDataRef.getDate() - 1);
+            } else {
+                calRefMes = new Date(calRefMes.getFullYear(), calRefMes.getMonth() - 1, 1);
+            }
+            calCarregarAgenda();
+        };
+
+        if (proximo) proximo.onclick = function() {
+            if (calModoAtual === 'dia') {
+                calDataRef.setDate(calDataRef.getDate() + 1);
+            } else {
+                calRefMes = new Date(calRefMes.getFullYear(), calRefMes.getMonth() + 1, 1);
+            }
+            calCarregarAgenda();
+        };
+
+        // BOTAO HOJE: MUDA DIRETAMENTE PARA O MODO DIA (HORARIOS LIVRES + ENCAIXE)
+        if (hojeBtn) hojeBtn.onclick = function() {
+            calDataRef = new Date(2026, 8, 14);
+            calRefMes = new Date(2026, 8, 1);
+            calMudarModo('dia');
+        };
+
+        var btnSalvarTpl = document.getElementById('btn-salvar-templates');
+        var btnRecarregarTpl = document.getElementById('btn-recarregar-templates');
+        if (btnSalvarTpl) btnSalvarTpl.onclick = calSalvarTemplates;
+        if (btnRecarregarTpl) btnRecarregarTpl.onclick = calCarregarTemplates;
+
+        var btnCalendly = document.getElementById('btn-conectar-calendly');
+        if (btnCalendly) btnCalendly.onclick = calConectarCalendly;
+
+        // INICIALIZACAO: ABRE DIRETO NO MODO DIA (HORARIOS LIVRES + ENCAIXE)
+        calCarregarAgenda();
+        calCarregarTemplates();
+        calCarregarCRM();
+    }
+
+    window.calMudarModo = calMudarModo;
+    window.calAbrirModalNovo = calAbrirModalNovo;
+    window.calFecharModalNovo = calFecharModalNovo;
+    window.calSalvarNovoEncaixe = calSalvarNovoEncaixe;
+    window.calIrParaDia = calIrParaDia;
+    window.calTrocarAba = calTrocarAba;
+
+    bindCalendar();
+})();
+</script>

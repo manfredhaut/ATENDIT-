@@ -1,0 +1,155 @@
+<div style="display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-in-out;">
+  <div style="background: #ffffff; padding: 28px; border-radius: 12px; border: 1px solid #e3e8ee; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; padding-bottom: 16px; margin-bottom: 22px;">
+      <div>
+        <h2 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">🏢 Dados da Empresa & Ficha Cadastral</h2>
+        <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">Mantenha as informações cadastrais da sua empresa atualizadas para identificação e faturamento.</p>
+      </div>
+      <span id="badge-status-empresa" style="background: #e6f7fa; color: #0a7c8f; border: 1px solid #b9e7f0; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;">
+        Carregando status...
+      </span>
+    </div>
+
+    <form id="form-cadastro-empresa" onsubmit="event.preventDefault(); salvarDadosEmpresa();">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+        <!-- Razão Social -->
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Razão Social / Nome Oficial</label>
+          <input type="text" id="cad-razao-social" required placeholder="Razão social da empresa" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
+        </div>
+
+        <!-- Nome Fantasia -->
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Nome Fantasia / Marca</label>
+          <input type="text" id="cad-nome-fantasia" placeholder="Nome de exibição para clientes" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
+        </div>
+
+        <!-- CNPJ / CPF -->
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">CNPJ ou CPF</label>
+          <input type="text" id="cad-documento" placeholder="00.000.000/0001-00" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
+        </div>
+
+        <!-- E-mail Principal -->
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">E-mail do Administrador</label>
+          <input type="email" id="cad-email" required placeholder="admin@empresa.com" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
+        </div>
+
+        <!-- Telefone / WhatsApp de Contato -->
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">WhatsApp de Contato / Suporte</label>
+          <input type="tel" id="cad-telefone" placeholder="+55 85 99999-0000" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
+        </div>
+
+        <!-- Telefone do Atendente IA -->
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Número Conectado ao Atendente IA</label>
+          <input type="tel" id="cad-ai-numero" placeholder="+55 85 98888-0000" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
+        </div>
+
+        <!-- Nome do Responsável -->
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Responsável Legal / Contato</label>
+          <input type="text" id="cad-responsavel" placeholder="Nome completo do responsável" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
+        </div>
+
+        <!-- Endereço Completo -->
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Endereço / Cidade / UF</label>
+          <input type="text" id="cad-endereco" placeholder="Rua, Número, Bairro, Cidade - UF" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 26px; border-top: 1px solid #edf2f7; padding-top: 18px;">
+        <span id="feedback-salvar-empresa" style="font-size: 0.88rem; font-weight: 600;"></span>
+        <button type="submit" id="btn-gravar-empresa" style="padding: 12px 28px; background: #074f57; color: #ffffff; border: none; border-radius: 7px; font-weight: 700; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(7,79,87,0.15); transition: background 0.2s;">
+          💾 Salvar Dados da Empresa
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(async function inicializarDadosEmpresa() {
+  const slug = window.currentTenantSlug;
+  const feedback = document.getElementById('feedback-salvar-empresa');
+  const badge = document.getElementById('badge-status-empresa');
+
+  try {
+    const res = await fetch('/v1/tenants/' + slug);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    document.getElementById('cad-razao-social').value = data.name || '';
+    document.getElementById('cad-email').value = data.admin_email || data.email || '';
+    document.getElementById('cad-telefone').value = data.phone || '';
+    document.getElementById('cad-ai-numero').value = data.ai_number || '';
+
+    const meta = data.meta_data || {};
+    document.getElementById('cad-nome-fantasia').value = meta.trade_name || '';
+    document.getElementById('cad-documento').value = meta.document || meta.cnpj || '';
+    document.getElementById('cad-responsavel').value = meta.responsible || '';
+    document.getElementById('cad-endereco').value = meta.address || '';
+
+    if (badge) {
+      badge.textContent = '● ' + (data.is_active ? 'Conta Ativa' : 'Conta Inativa');
+      badge.style.color = '#166534';
+      badge.style.background = '#dcfce7';
+      badge.style.borderColor = '#bbf7d0';
+    }
+  } catch (err) {
+    if (feedback) {
+      feedback.style.color = '#b91c1c';
+      feedback.textContent = 'Não foi possível carregar os dados cadastrais da API.';
+    }
+  }
+})();
+
+async function salvarDadosEmpresa() {
+  const btn = document.getElementById('btn-gravar-empresa');
+  const feedback = document.getElementById('feedback-salvar-empresa');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+  feedback.textContent = '';
+
+  const payload = {
+    slug: window.currentTenantSlug,
+    name: document.getElementById('cad-razao-social').value.trim(),
+    email: document.getElementById('cad-email').value.trim(),
+    phone: document.getElementById('cad-telefone').value.trim(),
+    ai_number: document.getElementById('cad-ai-numero').value.trim(),
+    meta_data: {
+      trade_name: document.getElementById('cad-nome-fantasia').value.trim(),
+      document: document.getElementById('cad-documento').value.trim(),
+      responsible: document.getElementById('cad-responsavel').value.trim(),
+      address: document.getElementById('cad-endereco').value.trim()
+    }
+  };
+
+  try {
+    const res = await fetch('/v1/tenants/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (res.ok && (result.status === 'success' || result.id)) {
+      feedback.style.color = '#16a34a';
+      feedback.textContent = '✓ Informações cadastrais atualizadas com sucesso no banco de dados!';
+      const h1 = document.getElementById('titulo');
+      if (h1) h1.textContent = payload.name;
+    } else {
+      feedback.style.color = '#b91c1c';
+      feedback.textContent = 'Erro ao salvar: ' + (result.detail || result.message || 'Falha de validação');
+    }
+  } catch (err) {
+    feedback.style.color = '#b91c1c';
+    feedback.textContent = 'Erro de comunicação com o servidor.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Salvar Dados da Empresa';
+  }
+}
+</script>

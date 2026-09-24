@@ -1,0 +1,138 @@
+<div style="animation: fadeIn 0.3s; font-family: system-ui, -apple-system, sans-serif; box-sizing: border-box; padding: 5px; width: 100%;">
+	<div style="background: #FFF; padding: 25px; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; text-align: left;">
+        <h5 style="font-size: 1.05rem; color: #1E293B; margin: 0; font-weight: 700; display: inline-flex; align-items: center;"><span>Inserção de Regras e Informações</span><span class="atendit-toolkit" data-tooltip="Clique aqui para que o Copiloto explique as melhores práticas de formatação de arquivos para a base RAG." onclick="window.acionarConsultoriaCopiloto('Inserção de Regras e Informações RAG', 'Como devo estruturar meus PDFs ou planilhas para a IA não alucinar?')">i</span></h5>
+		<p style="font-size: 0.88rem; color: #64748B; margin: 0 0 20px 0; line-height: 1.5;">
+			Faça upload de PDFs do regimento interno, tabelas de preços de quadras ou calendário de eventos. A IA consumirá isso no banco pgvector.
+		</p>
+		
+		<div style="display: flex; align-items: center; gap: 15px; width: 100%; flex-wrap: wrap;">
+			<div style="border: 1px solid #CBD5E1; border-radius: 6px; padding: 10px 15px; background: #FFF; flex: 1; min-width: 280px; display: flex; align-items: center; box-sizing: border-box;">
+				<input type="file" id="rag-file-input" accept=".pdf,.csv,.txt,.xlsx,.docx" onchange="window.handleFileChange(this)" style="font-size: 0.88rem; color: #475569; width: 100%; cursor: pointer;">
+			</div>
+			<button onclick="window.processarEInjetarRAG()" style="background: #22C55E; color: #FFF; border: none; padding: 13px 24px; font-size: 0.88rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s; white-space: nowrap;">
+				Processar e Injetar RAG
+			</button>
+		</div>
+	</div>
+
+	<div style="background: #FFF; padding: 25px; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; text-align: left;">
+		<h5 style="font-size: 1.05rem; color: #1E293B; margin: 0 0 20px 0; font-weight: 700;">Documentos Ativos na Memória da IA</h5>
+		
+		<div style="width: 100%; overflow-x: auto; border: 1px solid #E2E8F0; border-radius: 6px; background: #FFF;">
+			<table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; table-layout: auto; min-width: 800px;">
+				<thead>
+					<tr style="border-bottom: 2px solid #E2E8F0; background: #F8FAFC;">
+						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">ID do Documento (pgvector)</th>
+						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">Nome do Arquivo</th>
+						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">Data de Inserção</th>
+						<th style="padding: 12px 15px; color: #475569; font-weight: 600; text-align: center; white-space: nowrap; width: 140px;">Ação</th>
+					</tr>
+				</thead>
+				<tbody id="rag-documents-table-body">
+					<tr>
+						<td colspan="4" style="padding: 20px; text-align: center; color: #64748B; font-style: italic;">
+							Sincronizando duto de calibração semântica com Postgres...
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<div style="background: #FFF; padding: 25px; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; text-align: left;">
+        <h5 style="font-size: 1.05rem; color: #1E293B; margin: 0; font-weight: 700; display: inline-flex; align-items: center;"><span>📦 Repositório de Mídias Operacionais (Disparos WhatsApp)</span><span class="atendit-toolkit" data-tooltip="Clique aqui para entender com o Copiloto a diferença entre arquivos de envio rápido e documentos estruturados do RAG." onclick="window.acionarConsultoriaCopiloto('Repositório de Mídias Operacionais', 'Qual a diferença e impacto prático entre subir uma mídia operacional e um arquivo na base RAG?')">i</span></h5>
+		<p style="font-size: 0.88rem; color: #64748B; margin: 0 0 20px 0; line-height: 1.5;">
+			Anexe imagens de folders, tabelas de preços, cardápios ou panfletos informativos. Estes arquivos ficam isolados do RAG e salvos para envio rápido pelo operador durante os atendimentos comerciais.
+		</p>
+		
+		<div style="display: flex; align-items: center; gap: 15px; width: 100%; margin-bottom: 20px; flex-wrap: wrap;">
+			<div style="border: 1px solid #CBD5E1; border-radius: 6px; padding: 10px 15px; background: #FFF; flex: 1; min-width: 280px; display: flex; align-items: center; box-sizing: border-box;">
+				<input type="file" id="media-file-input" accept=".pdf,.png,.jpg,.jpeg,.csv,.txt,.xlsx" style="font-size: 0.88rem; color: #475569; width: 100%; cursor: pointer;">
+			</div>
+			<button onclick="window.uploadMidiaOperacional()" style="background: #0DA2B6; color: #FFF; border: none; padding: 13px 24px; font-size: 0.88rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s; white-space: nowrap;">
+				Subir Mídia de Envio
+			</button>
+		</div>
+
+		<div style="width: 100%; overflow-x: auto; border: 1px solid #E2E8F0; border-radius: 6px; background: #FFF;">
+			<table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; table-layout: auto; min-width: 800px;">
+				<thead>
+					<tr style="border-bottom: 2px solid #E2E8F0; background: #F8FAFC;">
+						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">Nome do Arquivo / Material</th>
+						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap; width: 220px;">Tipo de Recurso</th>
+						<th style="padding: 12px 15px; color: #475569; font-weight: 600; text-align: center; white-space: nowrap; width: 260px;">Ações no Chat</th>
+					</tr>
+				</thead>
+				<tbody id="media-documents-table-body">
+					<tr>
+						<td colspan="3" style="padding: 20px; text-align: center; color: #64748B; font-style: italic;">
+							Sincronizando duto de arquivos operacionais...
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<div style="background: #F1F5F9; padding: 15px; border-radius: 6px; font-size: 0.85rem; color: #475569; border-left: 4px solid #64748B; text-align: left;">
+		<strong>💡 Log Operacional RAG:</strong> <span id="rag-log-status">Pronto para indexar novos fragmentos semânticos no pgvector.</span>
+	</div>
+</div>
+
+<script>
+(function() {
+    "use strict";
+    function obterTenantId() {
+        if (window.currentTenantData && window.currentTenantData.id) return window.currentTenantData.id;
+        if (window.currentTenantSlug) return window.currentTenantSlug;
+        return null;
+    }
+
+    async function carregarDocumentos() {
+        const tenantId = obterTenantId();
+        const corpo = document.getElementById("rag-documents-tbody");
+        if (!corpo) return;
+        if (!tenantId) {
+            corpo.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-3">Carregando contexto...</td></tr>';
+            return;
+        }
+        corpo.innerHTML = '<tr><td colspan="5" class="text-center p-3 text-muted">Consultando repositório vetorial...</td></tr>';
+        try {
+            const resp = await fetch('/v1/rag/documents/' + tenantId, { headers: { "Accept": "application/json" } });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const docs = await resp.json();
+            corpo.innerHTML = "";
+            if (!docs || docs.length === 0) {
+                corpo.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-muted">Nenhum documento vetorizado.</td></tr>';
+                return;
+            }
+            docs.forEach(function(d) {
+                const tr = document.createElement("tr");
+                tr.innerHTML = '<td class="fw-semibold">' + d.filename + '</td>' +
+                               '<td>' + (d.file_size / 1024).toFixed(1) + ' KB</td>' +
+                               '<td><span class="badge bg-success">' + d.status + '</span></td>' +
+                               '<td>' + d.created_at + '</td>' +
+                               '<td class="text-end"><button class="btn btn-outline-danger btn-sm" onclick="excluirDocRAG(\'' + d.id + '\')">Excluir</button></td>';
+                corpo.appendChild(tr);
+            });
+        } catch(e) {
+            corpo.innerHTML = '<tr><td colspan="5" class="text-center text-danger p-3">Repositório vazio ou aguardando upload.</td></tr>';
+        }
+    }
+
+    window.excluirDocRAG = async function(docId) {
+        if (!confirm("Expurgar este documento da base de conhecimento?")) return;
+        const tenantId = obterTenantId();
+        try {
+            const res = await fetch('/v1/rag/documents/' + tenantId + '/' + docId, { method: "DELETE" });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            await carregarDocumentos();
+        } catch(e) {
+            alert('Falha ao excluir: ' + e.message);
+        }
+    };
+
+    window.recarregarDocumentosRAG = carregarDocumentos;
+    setTimeout(carregarDocumentos, 400);
+})();
+</script>
