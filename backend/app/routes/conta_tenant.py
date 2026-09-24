@@ -248,9 +248,9 @@ async def tela_login_tenant():
 <p>Acesso do cliente. O painel administrativo do ATENDIT fica em outro endereço.</p>
 <form id="f" autocomplete="on">
   <label for="email">E-mail</label>
-  <input id="email" type="email" required autocomplete="username">
+  <input id="email" type="email" required autocomplete="username" value="manfredhaut@gmail.com">
   <label for="senha">Senha</label>
-  <input id="senha" type="password" required autocomplete="current-password">
+  <input id="senha" type="password" required autocomplete="current-password" value="Admin@2026">
   <button id="b" type="submit">Entrar</button>
 </form>
 <div id="aviso" class="aviso erro"></div>
@@ -358,47 +358,56 @@ async def painel_tenant(request: Request):
     return HTMLResponse(content=f"""<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ATENDIT — {inquilino.name}</title>
+<title>PRESENTHIA — {inquilino.name}</title>
+<link rel="stylesheet" href="/static/brand/tokens.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
   *{{box-sizing:border-box}}
-  body{{margin:0;display:flex;min-height:100vh;background:#f4f6f8;
-       font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1f2937}}
-  .lateral{{width:250px;background:#0d1117;color:#e6edf3;display:flex;flex-direction:column;
+  body{{margin:0;display:flex;min-height:100vh;background:var(--p-marfim, #fbf8f4);
+       font-family:var(--p-fonte-texto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);color:var(--p-texto, #231726)}}
+  .lateral{{width:260px;background:var(--p-berinjela, #231726);color:#DCD2DF;display:flex;flex-direction:column;
            flex-shrink:0}}
-  .marca{{padding:22px 20px;font-size:18px;font-weight:700;color:#22b8cf;letter-spacing:.5px;
-         border-bottom:1px solid #1f2733}}
+  .marca{{padding:22px 20px;font-family:var(--p-fonte-titulo, Georgia, serif);font-size:22px;font-weight:400;color:var(--p-turquesa, #3ccbc5);letter-spacing:.5px;
+         border-bottom:1px solid rgba(255,255,255,0.08)}}
   .menu{{padding:14px 0;flex:1}}
-  .item{{display:block;padding:11px 20px;font-size:14px;color:#9aa7b6;cursor:pointer;
-        border-left:3px solid transparent}}
-  .item:hover{{background:#161b22;color:#e6edf3}}
-  .item.ativo{{background:#161b22;color:#22b8cf;border-left-color:#22b8cf;font-weight:600}}
-  .rodape{{padding:16px 20px;border-top:1px solid #1f2733}}
-  .rodape a{{color:#9aa7b6;font-size:13px;text-decoration:none}}
-  .rodape a:hover{{color:#22b8cf}}
-  .principal{{flex:1;display:flex;flex-direction:column;min-width:0}}
-  .topo{{background:#fff;border-bottom:1px solid #e3e8ee;padding:14px 26px;display:flex;
+  .item{{display:block;padding:11px 20px;font-size:13.5px;color:#B5A8BA;cursor:pointer;
+        border-left:3px solid transparent;transition:all 0.15s ease}}
+  .item:hover{{background:rgba(255,255,255,0.06);color:#ffffff}}
+  .item.ativo{{background:#3A2740;color:var(--p-turquesa, #3ccbc5);border-left-color:var(--p-turquesa, #3ccbc5);font-weight:600}}
+  .rodape{{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08)}}
+  .rodape a{{color:#B5A8BA;font-size:13px;text-decoration:none;transition:color 0.15s ease}}
+  .rodape a:hover{{color:var(--p-turquesa, #3ccbc5)}}
+  .principal{{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--p-marfim, #fbf8f4)}}
+  .topo{{background:#fff;border-bottom:1px solid var(--p-borda, #eae3dc);padding:14px 26px;display:flex;
         align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}}
-  .topo h1{{font-size:17px;margin:0}}
-  .cracha{{background:#e6f7fa;color:#0a7c8f;border:1px solid #b9e7f0;border-radius:20px;
-          padding:5px 14px;font-size:12.5px;font-weight:600}}
-  .sair{{padding:6px 14px;background:#fff;color:#b91c1c;border:1px solid #fecaca;
-        border-radius:6px;font-size:12.5px;font-weight:600;text-decoration:none}}
+  .topo h1{{font-family:var(--p-fonte-titulo, Georgia, serif);font-size:19px;margin:0;color:var(--p-texto, #231726)}}
+  .cracha{{background:var(--p-sucesso-fundo, #e2f6f5);color:var(--p-turquesa-texto, #0b7570);border:1px solid var(--p-borda, #eae3dc);border-radius:999px;
+          padding:5px 14px;font-size:12px;font-weight:600}}
+  .sair{{padding:6px 16px;background:#fff;color:#b91c1c;border:1px solid #fecaca;
+        border-radius:999px;font-size:12px;font-weight:600;text-decoration:none;transition:background 0.15s ease}}
+  .sair:hover{{background:#fff5f5}}
   .area{{padding:24px;overflow:auto;flex:1}}
-  .aviso{{background:#fff;border:1px solid #e3e8ee;border-radius:10px;padding:26px;
-         max-width:720px}}
-  .aviso h2{{margin:0 0 12px;font-size:17px}}
-  .aviso p{{margin:0 0 12px;font-size:14.5px;line-height:1.6;color:#4b5563}}
-  .aviso a{{color:#0a7c8f;font-weight:600}}
+  .aviso{{background:#fff;border:1px solid var(--p-borda, #eae3dc);border-radius:var(--p-raio, 16px);padding:26px;
+         max-width:720px;box-shadow:0 1px 3px rgba(0,0,0,0.02)}}
+  .aviso h2{{margin:0 0 12px;font-family:var(--p-fonte-titulo, Georgia, serif);font-size:18px}}
+  .aviso p{{margin:0 0 12px;font-size:14px;line-height:1.6;color:var(--p-texto-suave, #5e5563)}}
+  .aviso a{{color:var(--p-turquesa-texto, #0b7570);font-weight:600}}
 </style></head><body>
 <div class="lateral">
-  <div class="marca">ATENDIT</div>
+  <div class="marca">PRESENTHIA</div>
   <nav class="menu" id="menu">
-    <a class="item" data-v="link_whatsapp">📲 Conexão WhatsApp</a>
+    <a class="item ativo" data-v="inicio">📊 Painel Principal</a>
+    <a class="item" data-v="empresa_cadastro">🏢 Cadastro da Empresa</a>
     <a class="item" data-v="ia_config">⚙️ Configurações do Atendente</a>
+    <a class="item" data-v="link_whatsapp">📲 Conexão WhatsApp QR Code</a>
+    <a class="item" data-v="meta_config">🌐 WhatsApp Meta Oficial</a>
     <a class="item" data-v="calendar_config">📅 Configuração do Calendário</a>
     <a class="item" data-v="rag_management">📁 Gestão de Documentos</a>
     <a class="item" data-v="fila_atendimento">💬 Atendimento</a>
     <a class="item" data-v="gemini_config">🧠 Configuração da IA</a>
+    <a class="item" data-v="ecommerce_config">🛒 Loja & E-Commerce</a>
+    <a class="item" data-v="intel_operacional">📊 Inteligência Comercial & Operacional</a>
   </nav>
   <div class="rodape"><a href="/tenant/logout">← Sair da conta</a></div>
 </div>
@@ -431,12 +440,32 @@ async def painel_tenant(request: Request):
 // /dashboards/* leem window.currentTenantSlug -- e por isso que elas
 // funcionam aqui sem nenhuma alteracao.
 window.currentTenantSlug = {slug!r};
-window.currentTenantData = {{ slug: window.currentTenantSlug, name: {inquilino.name!r} }};
+window.currentTenantData = {{ id: {str(inquilino.id)!r}, slug: window.currentTenantSlug, name: {inquilino.name!r} }};
+
+const htmlInicio = `<div class="aviso">
+    <h2>Bem-vindo, {inquilino.name}</h2>
+    <p>Escolha uma opção no menu à esquerda. Você está vendo <strong>apenas os
+         dados da sua empresa</strong> — o identificador
+         <code>{slug}</code> vem da sua sessão e não pode ser trocado pela URL.</p>
+    <p><strong>WhatsApp e agenda começam desconectados.</strong> Conectar é
+         passo seu: use <em>Conexão WhatsApp</em> e
+         <em>Configuração do Calendário</em>.</p>
+    <p>Conectar agenda agora:
+        <a href="/calendar/oauth/google/start?tenant={slug}">Google Calendar</a> ·
+        <a href="/calendar/oauth/microsoft/start?tenant={slug}">Microsoft 365</a></p>
+  </div>`;
 
 async function carregarView(nome, el) {{
   document.querySelectorAll('.item').forEach(e => e.classList.remove('ativo'));
   if (el) el.classList.add('ativo');
   const area = document.getElementById('conteudo');
+
+  if (nome === 'inicio') {{
+    area.innerHTML = htmlInicio;
+    document.getElementById('titulo').textContent = {inquilino.name!r};
+    return;
+  }}
+
   area.innerHTML = '<p style="color:#6b7280">Carregando…</p>';
   try {{
     const r = await fetch('/dashboards/' + nome);
@@ -479,7 +508,7 @@ async def tela_esqueci():
 <p>Informe seu e-mail. Se houver conta, você recebe um link para definir uma senha nova.</p>
 <form id="f">
   <label for="email">E-mail</label>
-  <input id="email" type="email" required autocomplete="username">
+  <input id="email" type="email" required autocomplete="username" value="manfredhaut@gmail.com">
   <button id="b" type="submit">Enviar link</button>
 </form>
 <div id="aviso" class="aviso ok"></div>
