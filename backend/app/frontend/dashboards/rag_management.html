@@ -1,7 +1,7 @@
 <div style="animation: fadeIn 0.3s; font-family: system-ui, -apple-system, sans-serif; box-sizing: border-box; padding: 5px; width: 100%;">
-	<div style="background: #FFF; padding: 25px; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; text-align: left;">
-        <h5 style="font-size: 1.05rem; color: #1E293B; margin: 0; font-weight: 700; display: inline-flex; align-items: center;"><span>Inserção de Regras e Informações</span><span class="atendit-toolkit" data-tooltip="Clique aqui para que o Copiloto explique as melhores práticas de formatação de arquivos para a base RAG." onclick="window.acionarConsultoriaCopiloto('Inserção de Regras e Informações RAG', 'Como devo estruturar meus PDFs ou planilhas para a IA não alucinar?')">i</span></h5>
-		<p style="font-size: 0.88rem; color: #64748B; margin: 0 0 20px 0; line-height: 1.5;">
+	<div style="background: #FFF; padding: 25px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; text-align: left;">
+        <h5 style="font-size: 1.05rem; color: var(--p-texto, #231726); margin: 0; font-weight: 700; display: inline-flex; align-items: center;"><span>Inserção de Regras e Informações</span><span class="atendit-toolkit" data-tooltip="Clique aqui para que o Copiloto explique as melhores práticas de formatação de arquivos para a base RAG." onclick="window.acionarConsultoriaCopiloto('Inserção de Regras e Informações RAG', 'Como devo estruturar meus PDFs ou planilhas para a IA não alucinar?')">i</span></h5>
+		<p style="font-size: 0.88rem; color: var(--p-texto-suave, #5e5563); margin: 0 0 20px 0; line-height: 1.5;">
 			Faça upload de PDFs do regimento interno, tabelas de preços de quadras ou calendário de eventos. A IA consumirá isso no banco pgvector.
 		</p>
 		
@@ -9,19 +9,19 @@
 			<div style="border: 1px solid #CBD5E1; border-radius: 6px; padding: 10px 15px; background: #FFF; flex: 1; min-width: 280px; display: flex; align-items: center; box-sizing: border-box;">
 				<input type="file" id="rag-file-input" accept=".pdf,.csv,.txt,.xlsx,.docx" onchange="window.handleFileChange(this)" style="font-size: 0.88rem; color: #475569; width: 100%; cursor: pointer;">
 			</div>
-			<button onclick="window.processarEInjetarRAG()" style="background: #22C55E; color: #FFF; border: none; padding: 13px 24px; font-size: 0.88rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s; white-space: nowrap;">
+			<button onclick="window.processarEInjetarRAG()" style="background: var(--p-turquesa-texto, #0b7570); color: #FFF; border: none; padding: 13px 26px; font-size: 0.88rem; font-weight: 700; border-radius: 999px; cursor: pointer; transition: all 0.2s; white-space: nowrap; box-shadow: 0 2px 5px rgba(11,117,112,0.18);">
 				Processar e Injetar RAG
 			</button>
 		</div>
 	</div>
 
-	<div style="background: #FFF; padding: 25px; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; text-align: left;">
-		<h5 style="font-size: 1.05rem; color: #1E293B; margin: 0 0 20px 0; font-weight: 700;">Documentos Ativos na Memória da IA</h5>
+	<div style="background: #FFF; padding: 25px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; text-align: left;">
+		<h5 style="font-size: 1.05rem; color: var(--p-texto, #231726); margin: 0 0 20px 0; font-weight: 700;">Documentos Ativos na Memória da IA</h5>
 		
-		<div style="width: 100%; overflow-x: auto; border: 1px solid #E2E8F0; border-radius: 6px; background: #FFF;">
+		<div style="width: 100%; overflow-x: auto; border: 1px solid var(--p-borda, #eae3dc); border-radius: 6px; background: #FFF;">
 			<table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; table-layout: auto; min-width: 800px;">
 				<thead>
-					<tr style="border-bottom: 2px solid #E2E8F0; background: #F8FAFC;">
+					<tr style="border-bottom: 2px solid var(--p-borda, #eae3dc); background: var(--p-marfim, #fbf8f4);">
 						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">ID do Documento (pgvector)</th>
 						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">Nome do Arquivo</th>
 						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">Data de Inserção</th>
@@ -30,7 +30,7 @@
 				</thead>
 				<tbody id="rag-documents-table-body">
 					<tr>
-						<td colspan="4" style="padding: 20px; text-align: center; color: #64748B; font-style: italic;">
+						<td colspan="4" style="padding: 20px; text-align: center; color: var(--p-texto-suave, #5e5563); font-style: italic;">
 							Sincronizando duto de calibração semântica com Postgres...
 						</td>
 					</tr>
@@ -39,9 +39,9 @@
 		</div>
 	</div>
 
-	<div style="background: #FFF; padding: 25px; border-radius: 8px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; text-align: left;">
-        <h5 style="font-size: 1.05rem; color: #1E293B; margin: 0; font-weight: 700; display: inline-flex; align-items: center;"><span>📦 Repositório de Mídias Operacionais (Disparos WhatsApp)</span><span class="atendit-toolkit" data-tooltip="Clique aqui para entender com o Copiloto a diferença entre arquivos de envio rápido e documentos estruturados do RAG." onclick="window.acionarConsultoriaCopiloto('Repositório de Mídias Operacionais', 'Qual a diferença e impacto prático entre subir uma mídia operacional e um arquivo na base RAG?')">i</span></h5>
-		<p style="font-size: 0.88rem; color: #64748B; margin: 0 0 20px 0; line-height: 1.5;">
+	<div style="background: #FFF; padding: 25px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; text-align: left;">
+        <h5 style="font-size: 1.05rem; color: var(--p-texto, #231726); margin: 0; font-weight: 700; display: inline-flex; align-items: center;"><span>📦 Repositório de Mídias Operacionais (Disparos WhatsApp)</span><span class="atendit-toolkit" data-tooltip="Clique aqui para entender com o Copiloto a diferença entre arquivos de envio rápido e documentos estruturados do RAG." onclick="window.acionarConsultoriaCopiloto('Repositório de Mídias Operacionais', 'Qual a diferença e impacto prático entre subir uma mídia operacional e um arquivo na base RAG?')">i</span></h5>
+		<p style="font-size: 0.88rem; color: var(--p-texto-suave, #5e5563); margin: 0 0 20px 0; line-height: 1.5;">
 			Anexe imagens de folders, tabelas de preços, cardápios ou panfletos informativos. Estes arquivos ficam isolados do RAG e salvos para envio rápido pelo operador durante os atendimentos comerciais.
 		</p>
 		
@@ -49,15 +49,15 @@
 			<div style="border: 1px solid #CBD5E1; border-radius: 6px; padding: 10px 15px; background: #FFF; flex: 1; min-width: 280px; display: flex; align-items: center; box-sizing: border-box;">
 				<input type="file" id="media-file-input" accept=".pdf,.png,.jpg,.jpeg,.csv,.txt,.xlsx" style="font-size: 0.88rem; color: #475569; width: 100%; cursor: pointer;">
 			</div>
-			<button onclick="window.uploadMidiaOperacional()" style="background: #0DA2B6; color: #FFF; border: none; padding: 13px 24px; font-size: 0.88rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s; white-space: nowrap;">
+			<button onclick="window.uploadMidiaOperacional()" style="background: var(--p-turquesa-texto, #0b7570); color: #FFF; border: none; padding: 13px 26px; font-size: 0.88rem; font-weight: 700; border-radius: 999px; cursor: pointer; transition: all 0.2s; white-space: nowrap; box-shadow: 0 2px 5px rgba(11,117,112,0.18);">
 				Subir Mídia de Envio
 			</button>
 		</div>
 
-		<div style="width: 100%; overflow-x: auto; border: 1px solid #E2E8F0; border-radius: 6px; background: #FFF;">
+		<div style="width: 100%; overflow-x: auto; border: 1px solid var(--p-borda, #eae3dc); border-radius: 6px; background: #FFF;">
 			<table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; table-layout: auto; min-width: 800px;">
 				<thead>
-					<tr style="border-bottom: 2px solid #E2E8F0; background: #F8FAFC;">
+					<tr style="border-bottom: 2px solid var(--p-borda, #eae3dc); background: var(--p-marfim, #fbf8f4);">
 						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">Nome do Arquivo / Material</th>
 						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap; width: 220px;">Tipo de Recurso</th>
 						<th style="padding: 12px 15px; color: #475569; font-weight: 600; text-align: center; white-space: nowrap; width: 260px;">Ações no Chat</th>
@@ -65,7 +65,7 @@
 				</thead>
 				<tbody id="media-documents-table-body">
 					<tr>
-						<td colspan="3" style="padding: 20px; text-align: center; color: #64748B; font-style: italic;">
+						<td colspan="3" style="padding: 20px; text-align: center; color: var(--p-texto-suave, #5e5563); font-style: italic;">
 							Sincronizando duto de arquivos operacionais...
 						</td>
 					</tr>
@@ -74,7 +74,7 @@
 		</div>
 	</div>
 
-	<div style="background: #F1F5F9; padding: 15px; border-radius: 6px; font-size: 0.85rem; color: #475569; border-left: 4px solid #64748B; text-align: left;">
+	<div style="background: var(--p-marfim, #fbf8f4); padding: 16px 20px; border-radius: 12px; font-size: 0.85rem; color: var(--p-texto, #231726); border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-turquesa, #3ccbc5); text-align: left;">
 		<strong>💡 Log Operacional RAG:</strong> <span id="rag-log-status">Pronto para indexar novos fragmentos semânticos no pgvector.</span>
 	</div>
 </div>
