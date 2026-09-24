@@ -969,7 +969,8 @@ async def get_dashboard_view(view_name: str, request: Request):
     if not str(target_file).startswith(str(DASHBOARDS_DIR.resolve())) or not target_file.is_file():
         return JSONResponse(status_code=404, content={"error": f"Dashboard '{view_name}' not found"})
     with open(target_file, "r", encoding="utf-8") as f:
-        return JSONResponse(content=f.read())
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=f.read(), media_type="text/html")
 
 @app.post("/v1/ai/copilot")
 async def copilot_chat(request: Request):
