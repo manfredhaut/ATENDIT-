@@ -752,7 +752,6 @@ async def api_listar_templates_segmentos():
 async def api_aplicar_template_segmento(request: Request):
     from app.services.segment_templates import obter_template
     from app.core.database import AsyncSessionLocal
-from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import text
     import json
     
@@ -825,7 +824,6 @@ async def api_busca_global(q: str = "", slug: str = "conta"):
     # 2. Busca de Contatos / Clientes no PostgreSQL
     try:
         from app.core.database import AsyncSessionLocal
-from app.core.feature_flags import is_flag_enabled
         from sqlalchemy import text
         async with AsyncSessionLocal() as session:
             query = await session.execute(text("""
@@ -868,7 +866,6 @@ async def api_listar_equipe(request: Request):
         return JSONResponse(status_code=403, content={"ok": False, "mensagem": "Acesso restrito a Donos e Gestores."})
 
     from app.core.database import AsyncSessionLocal
-from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.tenant_user import TenantUser
 
@@ -917,7 +914,6 @@ async def api_convidar_membro(request: Request):
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Papel inválido."})
 
     from app.core.database import AsyncSessionLocal
-from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.tenant_user import TenantUser
     from app.models.tenant import Tenant
@@ -968,7 +964,6 @@ async def api_alterar_role_membro(usuario_id: str, request: Request):
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Papel inválido."})
 
     from app.core.database import AsyncSessionLocal
-from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.tenant_user import TenantUser
 
@@ -996,7 +991,6 @@ async def api_remover_membro(usuario_id: str, request: Request):
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de usuário inválido."})
 
     from app.core.database import AsyncSessionLocal
-from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.tenant_user import TenantUser
 
@@ -1028,7 +1022,6 @@ async def api_public_captura_lead(slug: str, request: Request, tarefas: Backgrou
     """
     from fastapi.responses import JSONResponse
     from app.core.database import AsyncSessionLocal
-from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.tenant import Tenant
     from app.models.scheduling import Lead
@@ -1100,7 +1093,6 @@ async def api_listar_leads_tenant(request: Request, status_filtro: Optional[str]
     from fastapi.responses import JSONResponse
     from app.core import autorizacao as _autz
     from app.core.database import AsyncSessionLocal
-from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select, desc
     from app.models.scheduling import Lead
 
@@ -1155,7 +1147,6 @@ async def api_atualizar_status_lead(lead_id: str, request: Request):
     from fastapi.responses import JSONResponse
     from app.core import autorizacao as _autz
     from app.core.database import AsyncSessionLocal
-from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.scheduling import Lead
     import uuid
