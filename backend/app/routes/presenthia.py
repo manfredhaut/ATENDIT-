@@ -1,3 +1,21 @@
+from collections import deque
+import logging
+
+class InMemoryLogBuffer(logging.Handler):
+    def __init__(self, capacity=100):
+        super().__init__()
+        self.buffer = deque(maxlen=capacity)
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            self.buffer.append(msg)
+        except Exception:
+            pass
+
+log_buffer_handler = InMemoryLogBuffer(capacity=100)
+log_buffer_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
+logging.getLogger().addHandler(log_buffer_handler)
+
 """Roteador de Governanca e Telemetria Presenthia Master Console."""
 import logging
 import uuid
@@ -266,3 +284,68 @@ async def list_subscriptions(db: AsyncSession = Depends(get_db)):
     except Exception as exc:
         logger.error(f"[PRESENTHIA SUBS ERROR] Falha: {exc}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro ao listar assinaturas.")
+
+@router.get("/pulso")
+async def get_operation_pulse():
+    """Retorna telemetria do Celery, Redis e Sistema Operacional via /proc nativo do Linux."""
+    import os
+    from app.core.celery_app import celery_app
+
+    # Coleta de Memória nativa via /proc/meminfo
+    ram_percent = 0.0
+    try:
+        meminfo = {}
+        with open("/proc/meminfo", "r") as f:
+            for line in f:
+                parts = line.split(":")
+                if len(parts) == 2:
+                    meminfo[parts[0].strip()] = int(parts[1].split()[0])
+        total = meminfo.get("MemTotal", 1)
+        avail = meminfo.get("MemAvailable", total)
+        ram_percent = round(((total - avail) / total) * 100, 1)
+    except Exception:
+        pass
+
+    # Coleta de Carga da CPU (loadavg 1 min)
+    cpu_percent = 0.0
+    try:
+        load1, _, _ = os.getloadavg()
+        cpu_count = os.cpu_count() or 1
+        cpu_percent = round(min(100.0, (load1 / cpu_count) * 100), 1)
+    except Exception:
+        pass
+
+    pulse_data = {
+        "cpu_percent": cpu_percent,
+        "ram_percent": ram_percent,
+        "workers_online": 0,
+        "tasks_active": 0,
+        "tasks_registered": 0,
+        "broker_status": "Desconectado"
+    }
+
+    try:
+        insp = celery_app.control.inspect(timeout=1.5)
+        stats = insp.stats()
+        if stats:
+            pulse_data["broker_status"] = "Conectado"
+            pulse_data["workers_online"] = len(stats.keys())
+            active = insp.active()
+            if active:
+                pulse_data["tasks_active"] = sum(len(tasks) for tasks in active.values())
+            registered = insp.registered()
+            if registered:
+                pulse_data["tasks_registered"] = sum(len(tasks) for tasks in registered.values())
+    except Exception as e:
+        logger.warning(f"[PULSO] Falha na telemetria Celery: {e}")
+
+    return pulse_data
+
+
+@router.get("/auditoria")
+async def get_audit_logs():
+    """Retorna os eventos mais recentes do buffer de logs da aplicação."""
+    logs = list(log_buffer_handler.buffer)
+    if not logs:
+        logs = [f"{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} [INFO] presenthia.audit: Buffer ativo. Aguardando novos eventos..."]
+    return {"api_logs": logs[-30:]}

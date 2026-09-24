@@ -509,6 +509,39 @@
             </div>
 
 <!-- PAINEL 2: FEATURE FLAGS -->
+            
+            <!-- PAINEL 9: PULSO DA OPERAÇÃO -->
+            <div class="panel p-card" id="pulso">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title p-titulo">Pulso da Operação (Infraestrutura)</h2>
+                        <p style="font-size: 13px; color: var(--p-texto-suave); margin-top: 4px;">
+                            Telemetria do Broker Redis, processamento assíncrono Celery e carga do servidor
+                        </p>
+                    </div>
+                    <span id="badge-broker" class="chip p-chip-ok" style="font-size: 11px;">Carregando...</span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
+                    <div class="p-card" style="padding: 16px; background: rgba(0,0,0,0.02); border: 1px solid var(--p-borda);">
+                        <div style="font-size: 12px; color: var(--p-texto-suave); font-weight: 600;">CARGA DA CPU</div>
+                        <div id="pulso-cpu" style="font-size: 24px; font-weight: 700; color: var(--p-texto); margin-top: 6px;">--%</div>
+                    </div>
+                    <div class="p-card" style="padding: 16px; background: rgba(0,0,0,0.02); border: 1px solid var(--p-borda);">
+                        <div style="font-size: 12px; color: var(--p-texto-suave); font-weight: 600;">MEMÓRIA RAM USADA</div>
+                        <div id="pulso-ram" style="font-size: 24px; font-weight: 700; color: var(--p-texto); margin-top: 6px;">--%</div>
+                    </div>
+                    <div class="p-card" style="padding: 16px; background: rgba(0,0,0,0.02); border: 1px solid var(--p-borda);">
+                        <div style="font-size: 12px; color: var(--p-texto-suave); font-weight: 600;">WORKERS CELERY</div>
+                        <div id="pulso-workers" style="font-size: 24px; font-weight: 700; color: var(--p-turquesa-texto); margin-top: 6px;">--</div>
+                    </div>
+                    <div class="p-card" style="padding: 16px; background: rgba(0,0,0,0.02); border: 1px solid var(--p-borda);">
+                        <div style="font-size: 12px; color: var(--p-texto-suave); font-weight: 600;">TAREFAS ATIVAS</div>
+                        <div id="pulso-tasks" style="font-size: 24px; font-weight: 700; color: var(--p-ambar); margin-top: 6px;">--</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="panel p-card" id="flags">
                 <div class="panel-header">
                     <div>
@@ -538,6 +571,24 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+        
+            <!-- PAINEL 12: AUDITORIA & LOGS -->
+            <div class="panel p-card" id="auditoria">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title p-titulo">Auditoria & Logs Operacionais</h2>
+                        <p style="font-size: 13px; color: var(--p-texto-suave); margin-top: 4px;">
+                            Buffer contínuo de eventos do sistema, conexões e segurança operacional
+                        </p>
+                    </div>
+                    <span class="chip p-chip-ok" style="font-size: 11px;">Buffer Ativo</span>
+                </div>
+                
+                <div style="background: #1c1822; color: #e2e8f0; padding: 18px; border-radius: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.6; max-height: 280px; overflow-y: auto; border: 1px solid var(--p-borda);">
+                    <pre id="terminal-logs" style="margin: 0; white-space: pre-wrap;">Conectando ao buffer de auditoria...</pre>
                 </div>
             </div>
 
@@ -704,6 +755,42 @@
                                 tbody.appendChild(tr);
                             });
                         }
+                    }
+                }
+
+            
+                // 6. Pulso da Operação
+                const resPulso = await fetch('/api/v1/presenthia/pulso');
+                if (resPulso.ok) {
+                    const pulso = await resPulso.json();
+                    document.getElementById('pulso-cpu').innerText = `${pulso.cpu_percent}%`;
+                    document.getElementById('pulso-ram').innerText = `${pulso.ram_percent}%`;
+                    document.getElementById('pulso-workers').innerText = `${pulso.workers_online} ativo(s)`;
+                    document.getElementById('pulso-tasks').innerText = `${pulso.tasks_active} em fila`;
+                    
+                    const badgeBroker = document.getElementById('badge-broker');
+                    if (pulso.broker_status === "Conectado") {
+                        badgeBroker.className = "chip p-chip-ok";
+                        badgeBroker.innerText = "Broker Redis Operacional";
+                    } else {
+                        badgeBroker.className = "chip p-chip-atencao";
+                        badgeBroker.innerText = "Broker Desconectado";
+                    }
+                }
+
+                // 7. Auditoria & Logs
+                const resLogs = await fetch('/api/v1/presenthia/auditoria');
+                if (resLogs.ok) {
+                    const auditoria = await resLogs.json();
+                    const pre = document.getElementById('terminal-logs');
+                    if (pre && auditoria.api_logs) {
+                        pre.innerHTML = auditoria.api_logs.map(l => {
+                            if (l.includes('ERROR') || l.includes('Falha')) return `<span style="color: #f87171;">${l}</span>`;
+                            if (l.includes('INFO')) return `<span style="color: #34d399;">${l}</span>`;
+                            if (l.includes('WARNING')) return `<span style="color: #fbbf24;">${l}</span>`;
+                            return l;
+                        }).join('\n');
+                        pre.scrollTop = pre.scrollHeight;
                     }
                 }
 
