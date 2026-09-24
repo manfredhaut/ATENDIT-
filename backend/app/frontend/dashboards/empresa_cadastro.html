@@ -1,11 +1,11 @@
 <div style="display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-in-out;">
-  <div style="background: #ffffff; padding: 28px; border-radius: 12px; border: 1px solid #e3e8ee; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; padding-bottom: 16px; margin-bottom: 22px;">
+  <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--p-borda, #eae3dc); padding-bottom: 16px; margin-bottom: 22px;">
       <div>
-        <h2 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">🏢 Dados da Empresa & Ficha Cadastral</h2>
-        <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">Mantenha as informações cadastrais da sua empresa atualizadas para identificação e faturamento.</p>
+        <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--p-texto, #231726); margin: 0;">🏢 Dados da Empresa & Ficha Cadastral</h2>
+        <p style="font-size: 0.85rem; color: var(--p-texto-suave, #5e5563); margin: 4px 0 0 0;">Mantenha as informações cadastrais da sua empresa atualizadas para identificação e faturamento.</p>
       </div>
-      <span id="badge-status-empresa" style="background: #e6f7fa; color: #0a7c8f; border: 1px solid #b9e7f0; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;">
+      <span id="badge-status-empresa" style="background: var(--p-sucesso-fundo, #e2f6f5); color: var(--p-turquesa-texto, #0b7570); border: 1px solid var(--p-borda, #eae3dc); padding: 6px 14px; border-radius: 999px; font-size: 0.82rem; font-weight: 600;">
         Carregando status...
       </span>
     </div>
@@ -14,56 +14,56 @@
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
         <!-- Razão Social -->
         <div>
-          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Razão Social / Nome Oficial</label>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 6px;">Razão Social / Nome Oficial</label>
           <input type="text" id="cad-razao-social" required placeholder="Razão social da empresa" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
         </div>
 
         <!-- Nome Fantasia -->
         <div>
-          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Nome Fantasia / Marca</label>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 6px;">Nome Fantasia / Marca</label>
           <input type="text" id="cad-nome-fantasia" placeholder="Nome de exibição para clientes" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
         </div>
 
         <!-- CNPJ / CPF -->
         <div>
-          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">CNPJ ou CPF</label>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 6px;">CNPJ ou CPF</label>
           <input type="text" id="cad-documento" placeholder="00.000.000/0001-00" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
         </div>
 
         <!-- E-mail Principal -->
         <div>
-          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">E-mail do Administrador</label>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 6px;">E-mail do Administrador</label>
           <input type="email" id="cad-email" required placeholder="admin@empresa.com" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
         </div>
 
         <!-- Telefone / WhatsApp de Contato -->
         <div>
-          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">WhatsApp de Contato / Suporte</label>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 6px;">WhatsApp de Contato / Suporte</label>
           <input type="tel" id="cad-telefone" placeholder="+55 85 99999-0000" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
         </div>
 
         <!-- Telefone do Atendente IA -->
         <div>
-          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Número Conectado ao Atendente IA</label>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 6px;">Número Conectado ao Atendente IA</label>
           <input type="tel" id="cad-ai-numero" placeholder="+55 85 98888-0000" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
         </div>
 
         <!-- Nome do Responsável -->
         <div>
-          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Responsável Legal / Contato</label>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 6px;">Responsável Legal / Contato</label>
           <input type="text" id="cad-responsavel" placeholder="Nome completo do responsável" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
         </div>
 
         <!-- Endereço Completo -->
         <div>
-          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Endereço / Cidade / UF</label>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 6px;">Endereço / Cidade / UF</label>
           <input type="text" id="cad-endereco" placeholder="Rua, Número, Bairro, Cidade - UF" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.9rem; outline: none; background: #fff;">
         </div>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 26px; border-top: 1px solid #edf2f7; padding-top: 18px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 26px; border-top: 1px solid var(--p-borda, #eae3dc); padding-top: 18px;">
         <span id="feedback-salvar-empresa" style="font-size: 0.88rem; font-weight: 600;"></span>
-        <button type="submit" id="btn-gravar-empresa" style="padding: 12px 28px; background: #074f57; color: #ffffff; border: none; border-radius: 7px; font-weight: 700; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(7,79,87,0.15); transition: background 0.2s;">
+        <button type="submit" id="btn-gravar-empresa" style="padding: 12px 28px; background: var(--p-turquesa-texto, #0b7570); color: #ffffff; border: none; border-radius: 999px; font-weight: 700; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(11,117,112,0.18); transition: all 0.2s;">
           💾 Salvar Dados da Empresa
         </button>
       </div>

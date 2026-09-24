@@ -1,22 +1,23 @@
-<div style="display: flex; flex-direction: column; gap: 25px;">
-    <div style="background: #ffffff; padding: 28px; border-radius: 14px; border: 1px solid #e2e8f0; border-top: 4px solid #0da2b6;">
-        <h4 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 22px; display: flex; align-items: center; gap: 8px;">
+<div style="display: flex; flex-direction: column; gap: 25px; font-family: system-ui, -apple-system, sans-serif;">
+    <!-- 1. PARÂMETROS DO AGENTE IA -->
+    <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-top: 4px solid var(--p-turquesa, #3ccbc5); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 22px; display: flex; align-items: center; gap: 8px;">
             ⚙️ Parametrização da IA & Triagem
         </h4>
-        
+
         <div style="display: flex; flex-direction: column; gap: 18px;">
             <div>
-                <label style="font-size: 0.88rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 6px;">
+                <label style="font-size: 0.88rem; font-weight: 700; color: var(--p-texto, #231726); display: block; margin-bottom: 6px;">
                     Nome do Atendente Virtual
                 </label>
-                <input type="text" id="cfg-agent-name" placeholder="Ex: Assistente Virtual" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: #0f172a; outline: none;">
+                <input type="text" id="cfg-agent-name" placeholder="Ex: Assistente Virtual" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: var(--p-texto, #231726); outline: none; box-sizing: border-box;">
             </div>
 
             <div>
-                <label style="font-size: 0.88rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 6px;">
+                <label style="font-size: 0.88rem; font-weight: 700; color: var(--p-texto, #231726); display: block; margin-bottom: 6px;">
                     Tom de Voz do Agente
                 </label>
-                <select id="cfg-agent-tone" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: #0f172a; outline: none; background: #fff;">
+                <select id="cfg-agent-tone" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: var(--p-texto, #231726); outline: none; background: #fff; box-sizing: border-box;">
                     <option value="Objetivo e Claro">Objetivo e Claro</option>
                     <option value="Empático e Acolhedor">Empático e Acolhedor</option>
                     <option value="Formal e Corporativo">Formal e Corporativo</option>
@@ -25,21 +26,256 @@
             </div>
 
             <div>
-                <label style="font-size: 0.88rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 6px;">
+                <label style="font-size: 0.88rem; font-weight: 700; color: var(--p-texto, #231726); display: block; margin-bottom: 6px;">
                     Editor de Perguntas Obrigatórias Iniciais (Array JSONB)
                 </label>
-                <textarea id="cfg-agent-questions" rows="4" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.92rem; font-family: monospace; color: #0f172a; outline: none; resize: vertical;">["Qual seu nome?", "Qual o assunto do contato?", "Você já é associado?"]</textarea>
-                <span style="font-size: 0.78rem; color: #64748b; margin-top: 4px; display: block;">
-                    Insira um formato estruturado válido de array JSON para o pipeline de triagem.
+                <textarea id="cfg-agent-questions" rows="3" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.92rem; font-family: monospace; color: var(--p-texto, #231726); outline: none; resize: vertical; box-sizing: border-box;">["Qual seu nome?", "Qual o assunto do contato?"]</textarea>
+                <span style="font-size: 0.78rem; color: var(--p-texto-suave, #5e5563); margin-top: 4px; display: block;">
+                    Insira um formato de array JSON válido para a triagem primária.
                 </span>
             </div>
         </div>
+    </div>
 
-        <div style="text-align: left; margin-top: 25px;">
-            <button id="btn-save-agent" onclick="salvarConfigIA()" style="padding: 13px 26px; background: #074f57; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;">
+    <!-- 2. RECEBEDORES RESPONSÁVEIS & ENCAMINHAMENTO SETORIAL -->
+    <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-top: 4px solid var(--p-magenta, #d0006f); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--p-texto, #231726); margin: 0; display: flex; align-items: center; gap: 8px;">
+                    👥 Recebedores Responsáveis & Encaminhamento Setorial
+                </h4>
+                <p style="font-size: 0.85rem; color: var(--p-texto-suave, #5e5563); margin: 4px 0 0 0;">
+                    Cadastre responsáveis e números de WhatsApp por departamento para transbordo inteligente da IA.
+                </p>
+            </div>
+            <button type="button" onclick="deptAbrirFormNovo()" style="padding: 9px 18px; background: var(--p-turquesa-texto, #0b7570); color: white; border: none; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: background 0.2s;">
+                + Adicionar Responsável
+            </button>
+        </div>
+
+        <!-- FORMULÁRIO DE NOVO RESPONSÁVEL (INLINE EXPANSÍVEL) -->
+        <div id="dept-form-container" style="display: none; background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 8px; padding: 18px; margin-bottom: 20px;">
+            <div style="font-weight: 700; color: #0F172A; margin-bottom: 12px; font-size: 0.95rem;">Novo Responsável Setorial</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Nome do Atendente / Responsável</label>
+                    <input type="text" id="dept-new-name" placeholder="Ex: Mariana Costa" style="width: 100%; padding: 8px 12px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Setor / Atividade</label>
+                    <input type="text" id="dept-new-dept" placeholder="Ex: Financeiro / Cobrança" style="width: 100%; padding: 8px 12px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box;">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">WhatsApp (com DDD e DDI)</label>
+                    <input type="text" id="dept-new-whatsapp" placeholder="Ex: 5547999991234" style="width: 100%; padding: 8px 12px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Palavras-chave / Assuntos (separadas por vírgula)</label>
+                    <input type="text" id="dept-new-keywords" placeholder="Ex: boleto, segunda via, pagamento, nota" style="width: 100%; padding: 8px 12px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="deptFecharFormNovo()" style="padding: 7px 16px; background: #fff; color: var(--p-texto-suave, #5e5563); border: 1px solid var(--p-borda, #eae3dc); border-radius: 999px; font-weight: 600; cursor: pointer; font-size: 0.85rem;">Cancelar</button>
+                <button type="button" onclick="deptAdicionarResponsavel()" style="padding: 7px 20px; background: var(--p-turquesa-texto, #0b7570); color: white; border: none; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: 0.85rem;">Salvar Responsável</button>
+            </div>
+        </div>
+
+        <!-- TABELA DE RESPONSÁVEIS CADASTRADOS -->
+        <div style="overflow-x: auto; border: 1px solid #E2E8F0; border-radius: 8px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+                <thead>
+                    <tr style="background: #F8FAFC; border-bottom: 2px solid #E2E8F0; color: #475569;">
+                        <th style="padding: 10px 14px; font-weight: 600;">Responsável</th>
+                        <th style="padding: 10px 14px; font-weight: 600;">Setor / Atividade</th>
+                        <th style="padding: 10px 14px; font-weight: 600;">WhatsApp</th>
+                        <th style="padding: 10px 14px; font-weight: 600;">Gatilhos / Palavras-chave</th>
+                        <th style="padding: 10px 14px; font-weight: 600; text-align: center;">Status</th>
+                        <th style="padding: 10px 14px; font-weight: 600; text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="dept-table-body">
+                    <tr>
+                        <td colspan="6" style="padding: 24px; text-align: center; color: #94A3B8; font-style: italic;">
+                            Nenhum recebedor setorial cadastrado. Clique no botão acima para adicionar.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- BOTÃO DE SALVAR NO MOTOR -->
+        <div style="text-align: left; margin-top: 25px; display: flex; align-items: center; gap: 15px;">
+            <button id="btn-save-agent" onclick="salvarConfigIA()" style="padding: 13px 28px; background: var(--p-magenta, #d0006f); color: #ffffff; border: none; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: 0.95rem; box-shadow: 0 2px 6px rgba(208,0,111,0.2); transition: all 0.2s;">
                 💾 Salvar Parâmetros no Motor
             </button>
-            <span id="msg-status-agent" style="margin-left: 15px; font-size: 0.88rem; font-weight: 600;"></span>
+            <span id="msg-status-agent" style="font-size: 0.88rem; font-weight: 600;"></span>
         </div>
     </div>
 </div>
+
+<script>
+(function() {
+    var listaDepartamentos = [];
+
+    window.deptAbrirFormNovo = function() {
+        var box = document.getElementById('dept-form-container');
+        if (box) box.style.display = 'block';
+    };
+
+    window.deptFecharFormNovo = function() {
+        var box = document.getElementById('dept-form-container');
+        if (box) box.style.display = 'none';
+        document.getElementById('dept-new-name').value = '';
+        document.getElementById('dept-new-dept').value = '';
+        document.getElementById('dept-new-whatsapp').value = '';
+        document.getElementById('dept-new-keywords').value = '';
+    };
+
+    window.deptAdicionarResponsavel = function() {
+        var nome = (document.getElementById('dept-new-name').value || '').trim();
+        var setor = (document.getElementById('dept-new-dept').value || '').trim();
+        var zap = (document.getElementById('dept-new-whatsapp').value || '').replace(/[^0-9]/g, '');
+        var kw = (document.getElementById('dept-new-keywords').value || '').trim();
+
+        if (!nome || !setor || !zap) {
+            alert('Por favor, preencha Nome, Setor e WhatsApp do responsável.');
+            return;
+        }
+
+        listaDepartamentos.push({
+            id: 'dept_' + Date.now(),
+            name: nome,
+            department: setor,
+            whatsapp: zap,
+            keywords: kw,
+            is_active: true
+        });
+
+        deptRenderTabela();
+        deptFecharFormNovo();
+    };
+
+    window.deptRemover = function(idx) {
+        if (confirm('Deseja remover este responsável setorial?')) {
+            listaDepartamentos.splice(idx, 1);
+            deptRenderTabela();
+        }
+    };
+
+    window.deptAlternarStatus = function(idx) {
+        if (listaDepartamentos[idx]) {
+            listaDepartamentos[idx].is_active = !listaDepartamentos[idx].is_active;
+            deptRenderTabela();
+        }
+    };
+
+    function deptRenderTabela() {
+        var tbody = document.getElementById('dept-table-body');
+        if (!tbody) return;
+
+        if (listaDepartamentos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding: 24px; text-align: center; color: #94A3B8; font-style: italic;">Nenhum recebedor setorial cadastrado. Clique no botão acima para adicionar.</td></tr>';
+            return;
+        }
+
+        var html = '';
+        listaDepartamentos.forEach(function(d, idx) {
+            var badgeStatus = d.is_active
+                ? '<span style="background:#DCFCE7; color:#166534; padding:3px 10px; border-radius:12px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="deptAlternarStatus(' + idx + ')">Ativo</span>'
+                : '<span style="background:#F1F5F9; color:#64748B; padding:3px 10px; border-radius:12px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="deptAlternarStatus(' + idx + ')">Inativo</span>';
+
+            html += '<tr style="border-bottom: 1px solid #E2E8F0;">'
+                 + '  <td style="padding: 10px 14px; font-weight: 700; color: #1E293B;">' + (d.name || '') + '</td>'
+                 + '  <td style="padding: 10px 14px; color: #0284C7; font-weight: 600;">' + (d.department || '') + '</td>'
+                 + '  <td style="padding: 10px 14px; font-family: monospace; color: #334155;">' + (d.whatsapp || '') + '</td>'
+                 + '  <td style="padding: 10px 14px; color: #64748B; font-size:0.82rem;">' + (d.keywords || '-') + '</td>'
+                 + '  <td style="padding: 10px 14px; text-align: center;">' + badgeStatus + '</td>'
+                 + '  <td style="padding: 10px 14px; text-align: center;">'
+                 + '    <button type="button" onclick="deptRemover(' + idx + ')" style="background:#FEE2E2; color:#B91C1C; border:none; padding:4px 8px; border-radius:4px; font-weight:700; font-size:0.75rem; cursor:pointer;">Excluir</button>'
+                 + '  </td>'
+                 + '</tr>';
+        });
+        tbody.innerHTML = html;
+    }
+
+    // CARREGAR DADOS DO SERVIDOR
+    async function carregarDadosIA() {
+        var slug = window.currentTenantSlug;
+        if (!slug) return;
+
+        try {
+            var r = await fetch('/v1/tenants/' + slug);
+            if (!r.ok) return;
+            var t = await r.json();
+            var ac = t.agent_config || {};
+
+            var inName = document.getElementById('cfg-agent-name');
+            var inTone = document.getElementById('cfg-agent-tone');
+            var inQuestions = document.getElementById('cfg-agent-questions');
+
+            if (inName) inName.value = ac.name || t.name || 'Assistente Virtual';
+            if (inTone && ac.tone) inTone.value = ac.tone;
+            if (inQuestions && ac.questions) {
+                inQuestions.value = typeof ac.questions === 'string' ? ac.questions : JSON.stringify(ac.questions, null, 2);
+            }
+
+            listaDepartamentos = Array.isArray(ac.departments) ? ac.departments : [];
+            deptRenderTabela();
+        } catch (e) {
+            console.error("Erro ao carregar dados do atendente:", e);
+        }
+    }
+
+    // SALVAR DADOS
+    window.salvarConfigIA = async function() {
+        var btn = document.getElementById('btn-save-agent');
+        var msg = document.getElementById('msg-status-agent');
+        var inName = document.getElementById('cfg-agent-name');
+        var inTone = document.getElementById('cfg-agent-tone');
+        var inQuestions = document.getElementById('cfg-agent-questions');
+
+        var qRaw = inQuestions.value.trim();
+        try {
+            JSON.parse(qRaw);
+        } catch (e) {
+            alert('Erro: O campo de perguntas obrigatórias deve ser um JSON válido. Ex: ["Pergunta 1", "Pergunta 2"]');
+            return;
+        }
+
+        if (btn) { btn.disabled = true; btn.innerText = "Salvando no motor..."; }
+        if (msg) { msg.style.color = '#0284C7'; msg.innerText = "Persistindo alterações..."; }
+
+        var payload = {
+            slug: window.currentTenantSlug,
+            agent_name: inName.value.trim(),
+            tone: inTone.value,
+            questions: qRaw,
+            departments: listaDepartamentos
+        };
+
+        try {
+            var res = await fetch('/v1/agent/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            var data = await res.json();
+            if (data.status === 'success') {
+                if (data.tenant) window.currentTenantData = data.tenant;
+                if (msg) { msg.style.color = '#166534'; msg.innerText = "✓ Configurações e setores gravados com sucesso!"; }
+                setTimeout(function() { if (msg) msg.innerText = ""; }, 4000);
+            } else {
+                if (msg) { msg.style.color = '#DC2626'; msg.innerText = "Erro ao gravar parâmetros."; }
+            }
+        } catch (err) {
+            if (msg) { msg.style.color = '#DC2626'; msg.innerText = "Falha de conexão com o servidor."; }
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerText = "💾 Salvar Parâmetros no Motor"; }
+        }
+    };
+
+    carregarDadosIA();
+})();
+</script>

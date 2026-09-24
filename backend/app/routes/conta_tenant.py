@@ -442,17 +442,42 @@ async def painel_tenant(request: Request):
 window.currentTenantSlug = {slug!r};
 window.currentTenantData = {{ id: {str(inquilino.id)!r}, slug: window.currentTenantSlug, name: {inquilino.name!r} }};
 
-const htmlInicio = `<div class="aviso">
-    <h2>Bem-vindo, {inquilino.name}</h2>
-    <p>Escolha uma opção no menu à esquerda. Você está vendo <strong>apenas os
-         dados da sua empresa</strong> — o identificador
-         <code>{slug}</code> vem da sua sessão e não pode ser trocado pela URL.</p>
-    <p><strong>WhatsApp e agenda começam desconectados.</strong> Conectar é
-         passo seu: use <em>Conexão WhatsApp</em> e
-         <em>Configuração do Calendário</em>.</p>
-    <p>Conectar agenda agora:
-        <a href="/calendar/oauth/google/start?tenant={slug}">Google Calendar</a> ·
-        <a href="/calendar/oauth/microsoft/start?tenant={slug}">Microsoft 365</a></p>
+const htmlInicio = `<div class="p-card" style="padding: 32px; max-width: 820px; background: #ffffff; border: 1px solid var(--p-borda, #eae3dc); border-radius: var(--p-raio, 16px); box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--p-borda, #eae3dc); padding-bottom: 18px; margin-bottom: 22px;">
+      <div>
+        <h2 class="p-titulo" style="font-size: 1.6rem; color: var(--p-texto, #231726); margin: 0 0 4px 0;">Bem-vindo, {inquilino.name}</h2>
+        <p style="font-size: 0.9rem; color: var(--p-texto-suave, #5e5563); margin: 0;">Painel de controle unificado Presenthia para atendimento inteligente e gestão multicanal.</p>
+      </div>
+      <span class="chip p-chip-ok" style="font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 999px;">
+        ID: {slug}
+      </span>
+    </div>
+
+    <div style="font-size: 0.92rem; line-height: 1.65; color: var(--p-texto, #231726); display: flex; flex-direction: column; gap: 16px;">
+      <p style="margin: 0;">
+        Você está gerenciando o ambiente exclusivo da sua empresa. Todas as mensagens, atendimentos, regras de inteligência e históricos estão restritos à sua conta com isolamento estrito de dados.
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 8px 0;">
+        <div style="padding: 18px; background: var(--p-marfim, #fbf8f4); border: 1px solid var(--p-borda, #eae3dc); border-radius: 12px;">
+          <div style="font-weight: 700; font-size: 0.92rem; color: var(--p-texto, #231726); margin-bottom: 6px;">📱 Canais de WhatsApp</div>
+          <p style="font-size: 0.82rem; color: var(--p-texto-suave, #5e5563); margin: 0 0 12px 0;">Conecte via Evolution API (QR Code) ou configure a API Oficial da Meta com faturamento direto.</p>
+          <div style="display: flex; gap: 10px;">
+            <a href="javascript:void(0)" onclick="document.querySelector('[data-v=link_whatsapp]').click()" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Conectar QR Code ↗</a>
+            <a href="javascript:void(0)" onclick="document.querySelector('[data-v=meta_config]').click()" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Configurar Meta ↗</a>
+          </div>
+        </div>
+
+        <div style="padding: 18px; background: var(--p-marfim, #fbf8f4); border: 1px solid var(--p-borda, #eae3dc); border-radius: 12px;">
+          <div style="font-weight: 700; font-size: 0.92rem; color: var(--p-texto, #231726); margin-bottom: 6px;">📅 Agendamento Integrado</div>
+          <p style="font-size: 0.82rem; color: var(--p-texto-suave, #5e5563); margin: 0 0 12px 0;">Sincronize com agendas para que o atendente IA consulte horários livres e marque compromissos.</p>
+          <div style="display: flex; gap: 12px;">
+            <a href="/calendar/oauth/google/start?tenant={slug}" target="_blank" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Google Calendar ↗</a>
+            <a href="/calendar/oauth/microsoft/start?tenant={slug}" target="_blank" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Microsoft 365 ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>`;
 
 async function carregarView(nome, el) {{
