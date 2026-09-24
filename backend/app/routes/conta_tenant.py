@@ -820,3 +820,165 @@ async def api_busca_global(q: str = "", slug: str = "conta"):
         pass
 
     return JSONResponse(content={"ok": True, "resultados": resultados[:10]})
+
+
+
+# ---------------------------------------------------------------------------
+# F1.7 - Endpoints de Equipe e Permissões
+# ---------------------------------------------------------------------------
+@router.get("/api/meu-perfil")
+async def api_meu_perfil(request: Request):
+    from app.core import autorizacao as _autz
+    perfil = await _autz.obter_perfil_sessao(request)
+    return JSONResponse(content={"ok": True, "perfil": perfil})
+
+@router.get("/api/equipe")
+async def api_listar_equipe(request: Request):
+    from app.core import autorizacao as _autz
+    perfil = await _autz.obter_perfil_sessao(request)
+    if perfil["role"] not in ("dono", "gestor") and perfil["tipo"] != "admin":
+        return JSONResponse(status_code=403, content={"ok": False, "mensagem": "Acesso restrito a Donos e Gestores."})
+
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select
+    from app.models.tenant_user import TenantUser
+
+    async with AsyncSessionLocal() as session:
+        # Pega membros do tenant
+        sessao_t = _autz.sessao_tenant(request)
+        tenant_id = sessao_t["tenant_id"] if sessao_t else None
+
+        query = select(TenantUser)
+        if tenant_id:
+            query = query.where(TenantUser.tenant_id == tenant_id)
+        query = query.order_by(TenantUser.created_at.asc())
+
+        res = await session.execute(query)
+        usuarios = res.scalars().all()
+
+        membros = []
+        for u in usuarios:
+            membros.append({
+                "id": str(u.id),
+                "email": u.email,
+                "role": u.role or "dono",
+                "is_active": u.is_active,
+                "criado_em": u.created_at.strftime("%d/%m/%Y") if u.created_at else "—",
+                "ultimo_acesso": u.last_login_at.strftime("%d/%m/%Y %H:%M") if u.last_login_at else "Nunca"
+            })
+
+        return JSONResponse(content={"ok": True, "membros": membros, "meu_papel": perfil["role"]})
+
+@router.post("/api/equipe/convidar")
+async def api_convidar_membro(request: Request):
+    from app.core import autorizacao as _autz
+    perfil = await _autz.obter_perfil_sessao(request)
+    if perfil["role"] not in ("dono", "gestor") and perfil["tipo"] != "admin":
+        return JSONResponse(status_code=403, content={"ok": False, "mensagem": "Apenas Donos ou Gestores podem convidar membros."})
+
+    corpo = await request.json()
+    email = (corpo.get("email") or "").strip().lower()
+    senha = corpo.get("senha") or "Mudar@1234"
+    role = corpo.get("role") or "operador"
+
+    if not email or "@" not in email:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "E-mail inválido."})
+
+    if role not in _autz.PAPEIS_VALIDOS:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Papel inválido."})
+
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select
+    from app.models.tenant_user import TenantUser
+    from app.models.tenant import Tenant
+    from app.core.panel_auth import gerar_hash
+
+    async with AsyncSessionLocal() as session:
+        # Verificar se já existe o e-mail
+        res_exist = await session.execute(select(TenantUser).where(TenantUser.email == email))
+        if res_exist.scalar_one_or_none():
+            return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Este e-mail já está cadastrado."})
+
+        # Obter tenant_id
+        sessao_t = _autz.sessao_tenant(request)
+        tenant_id = sessao_t["tenant_id"] if sessao_t else None
+        if not tenant_id:
+            res_t = await session.execute(select(Tenant.id).limit(1))
+            tenant_id = res_t.scalar_one()
+
+        novo_usuario = TenantUser(
+            tenant_id=tenant_id,
+            email=email,
+            password_hash=gerar_hash(senha),
+            role=role,
+            is_active=True,
+            email_verificado=True
+        )
+        session.add(novo_usuario)
+        await session.commit()
+
+        return JSONResponse(content={"ok": True, "mensagem": f"Membro {email} cadastrado com sucesso como {role.capitalize()}!"})
+
+@router.put("/api/equipe/{usuario_id}/role")
+async def api_alterar_role_membro(usuario_id: str, request: Request):
+    from app.core import autorizacao as _autz
+    perfil = await _autz.obter_perfil_sessao(request)
+    if perfil["role"] != "dono" and perfil["tipo"] != "admin":
+        return JSONResponse(status_code=403, content={"ok": False, "mensagem": "Apenas o Dono pode alterar papéis."})
+
+    import uuid
+    try:
+        uid = uuid.UUID(usuario_id)
+    except ValueError:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de usuário inválido."})
+
+    corpo = await request.json()
+    novo_role = corpo.get("role")
+    if novo_role not in _autz.PAPEIS_VALIDOS:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Papel inválido."})
+
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select
+    from app.models.tenant_user import TenantUser
+
+    async with AsyncSessionLocal() as session:
+        res = await session.execute(select(TenantUser).where(TenantUser.id == uid))
+        usuario = res.scalar_one_or_none()
+        if not usuario:
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Membro não encontrado."})
+
+        usuario.role = novo_role
+        await session.commit()
+        return JSONResponse(content={"ok": True, "mensagem": f"Papel atualizado para {novo_role.capitalize()} com sucesso!"})
+
+@router.delete("/api/equipe/{usuario_id}")
+async def api_remover_membro(usuario_id: str, request: Request):
+    from app.core import autorizacao as _autz
+    perfil = await _autz.obter_perfil_sessao(request)
+    if perfil["role"] != "dono" and perfil["tipo"] != "admin":
+        return JSONResponse(status_code=403, content={"ok": False, "mensagem": "Apenas o Dono pode remover membros."})
+
+    import uuid
+    try:
+        uid = uuid.UUID(usuario_id)
+    except ValueError:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de usuário inválido."})
+
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select
+    from app.models.tenant_user import TenantUser
+
+    async with AsyncSessionLocal() as session:
+        res = await session.execute(select(TenantUser).where(TenantUser.id == uid))
+        usuario = res.scalar_one_or_none()
+        if not usuario:
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Membro não encontrado."})
+
+        sessao_t = _autz.sessao_tenant(request)
+        if sessao_t and sessao_t.get("usuario_id") == uid:
+            return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Você não pode excluir seu próprio usuário."})
+
+        await session.delete(usuario)
+        await session.commit()
+        return JSONResponse(content={"ok": True, "mensagem": "Membro removido da equipe com sucesso."})
+

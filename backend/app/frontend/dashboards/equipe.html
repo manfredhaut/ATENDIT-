@@ -1,0 +1,178 @@
+<div style="display: flex; flex-direction: column; gap: 24px;" class="fade-in">
+    <!-- CABEÇALHO -->
+    <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 6px;">👥 Gestão de Equipe e Permissões (F1.7)</h2>
+            <p style="font-size: 0.88rem; color: #64748b; line-height: 1.4;">
+                Controle de acesso granular em 5 níveis: <strong>Dono, Gestor, Operador, Financeiro e Leitura</strong>.
+            </p>
+        </div>
+        <button onclick="abrirModalConvidar()" style="background: var(--p-magenta, #D0006F); color: #fff; border: none; padding: 11px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(208, 0, 111, 0.2);">
+            <span>+</span> Convidar Membro
+        </button>
+    </div>
+
+    <!-- TABELA DE MEMBROS -->
+    <div style="background: #ffffff; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+            <thead>
+                <tr style="background: var(--p-marfim, #FBF8F4); border-bottom: 1px solid var(--p-borda, #eae3dc); color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase;">
+                    <th style="padding: 16px 24px;">Membro / E-mail</th>
+                    <th style="padding: 16px 24px;">Papel & Acesso</th>
+                    <th style="padding: 16px 24px;">Status</th>
+                    <th style="padding: 16px 24px;">Último Acesso</th>
+                    <th style="padding: 16px 24px; text-align: right;">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-membros-corpo">
+                <tr>
+                    <td colspan="5" style="padding: 32px; text-align: center; color: #94a3b8;">Carregando equipe...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL CONVIDAR MEMBRO -->
+<div id="modal-convidar-membro" style="display: none; position: fixed; inset: 0; background: rgba(35, 23, 38, 0.55); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: #ffffff; width: 100%; max-width: 460px; border-radius: 16px; border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); overflow: hidden; padding: 28px;">
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 6px;">Convidar Novo Membro</h3>
+        <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 20px;">Defina o e-mail, a senha de acesso inicial e o nível de autorização.</p>
+
+        <form id="form-novo-membro" onsubmit="salvarNovoMembro(event)">
+            <label style="font-size: 0.76rem; font-weight: 700; color: var(--p-texto, #231726); text-transform: uppercase; display: block; margin-bottom: 6px;">E-mail do Membro</label>
+            <input type="email" id="novo-membro-email" required placeholder="ex: operador@empresa.com" style="width: 100%; padding: 11px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; margin-bottom: 14px; font-size: 0.9rem;">
+
+            <label style="font-size: 0.76rem; font-weight: 700; color: var(--p-texto, #231726); text-transform: uppercase; display: block; margin-bottom: 6px;">Senha Provisória</label>
+            <input type="password" id="novo-membro-senha" required placeholder="••••••••" value="Presenthia@2026" style="width: 100%; padding: 11px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; margin-bottom: 14px; font-size: 0.9rem;">
+
+            <label style="font-size: 0.76rem; font-weight: 700; color: var(--p-texto, #231726); text-transform: uppercase; display: block; margin-bottom: 6px;">Papel de Acesso</label>
+            <select id="novo-membro-role" style="width: 100%; padding: 11px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; margin-bottom: 22px; font-size: 0.9rem; background: #fff;">
+                <option value="operador">Operador (Atendimentos e Agenda)</option>
+                <option value="gestor">Gestor (Operações, Canais, IA e Equipe)</option>
+                <option value="financeiro">Financeiro (Faturamento e Métricas)</option>
+                <option value="leitura">Leitura (Apenas Visualização de Relatórios)</option>
+                <option value="dono">Dono (Acesso Completo e Irrestrito)</option>
+            </select>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="fecharModalConvidar()" style="background: transparent; border: 1px solid var(--p-borda, #eae3dc); padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; color: #64748b;">Cancelar</button>
+                <button type="submit" id="btn-salvar-membro" style="background: var(--p-magenta, #D0006F); border: none; color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">Cadastrar Membro</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    async function carregarEquipe() {
+        const tbody = document.getElementById('tabela-membros-corpo');
+        try {
+            const res = await fetch('/api/equipe');
+            const data = await res.json();
+            if (!data.ok) {
+                tbody.innerHTML = `<tr><td colspan="5" style="padding: 24px; text-align: center; color: #ef4444;">${data.mensagem || 'Sem permissão para visualizar a equipe.'}</td></tr>`;
+                return;
+            }
+
+            const badges = {
+                'dono': { bg: '#fdf2f8', cor: '#D0006F', borda: '#fbcfe8', label: '👑 Dono' },
+                'gestor': { bg: '#f3e8ff', cor: '#6b21a8', borda: '#e9d5ff', label: '⚡ Gestor' },
+                'operador': { bg: '#f0fdfa', cor: '#0B7570', borda: '#ccfbf1', label: '🎧 Operador' },
+                'financeiro': { bg: '#fffbeb', cor: '#b45309', borda: '#fef3c7', label: '💳 Financeiro' },
+                'leitura': { bg: '#f8fafc', cor: '#475569', borda: '#e2e8f0', label: '👁️ Leitura' }
+            };
+
+            if (data.membros.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #94a3b8;">Nenhum membro cadastrado além do administrador.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.membros.map(m => {
+                const b = badges[m.role] || badges['operador'];
+                return `
+                    <tr style="border-bottom: 1px solid var(--p-borda, #eae3dc);">
+                        <td style="padding: 16px 24px; font-weight: 600; color: var(--p-texto, #231726);">
+                            ${m.email}
+                            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">Criado em ${m.criado_em}</div>
+                        </td>
+                        <td style="padding: 16px 24px;">
+                            <span style="background: ${b.bg}; color: ${b.cor}; border: 1px solid ${b.borda}; padding: 4px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 700;">
+                                ${b.label}
+                            </span>
+                        </td>
+                        <td style="padding: 16px 24px;">
+                            <span style="color: ${m.is_active ? '#059669' : '#94a3b8'}; font-weight: 600;">
+                                ${m.is_active ? '● Ativo' : '○ Inativo'}
+                            </span>
+                        </td>
+                        <td style="padding: 16px 24px; color: #64748b;">${m.ultimo_acesso}</td>
+                        <td style="padding: 16px 24px; text-align: right;">
+                            <button onclick="removerMembro('${m.id}', '${m.email}')" style="background: transparent; border: none; color: #ef4444; font-weight: 600; cursor: pointer; font-size: 0.8rem;">Excluir</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (err) {
+            tbody.innerHTML = '<tr><td colspan="5" style="padding: 24px; text-align: center; color: #ef4444;">Erro ao carregar equipe.</td></tr>';
+        }
+    }
+
+    function abrirModalConvidar() {
+        document.getElementById('modal-convidar-membro').style.display = 'flex';
+    }
+
+    function fecharModalConvidar() {
+        document.getElementById('modal-convidar-membro').style.display = 'none';
+    }
+
+    async function salvarNovoMembro(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-salvar-membro');
+        btn.disabled = true;
+        btn.innerText = 'Cadastrando...';
+
+        try {
+            const res = await fetch('/api/equipe/convidar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: document.getElementById('novo-membro-email').value,
+                    senha: document.getElementById('novo-membro-senha').value,
+                    role: document.getElementById('novo-membro-role').value
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                alert(data.mensagem);
+                fecharModalConvidar();
+                document.getElementById('form-novo-membro').reset();
+                carregarEquipe();
+            } else {
+                alert('Erro: ' + (data.mensagem || 'Falha ao cadastrar.'));
+            }
+        } catch (err) {
+            alert('Falha de comunicação com o servidor.');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Cadastrar Membro';
+        }
+    }
+
+    async function removerMembro(userId, email) {
+        if (!confirm(`Tem certeza que deseja remover o acesso do membro "${email}"?`)) return;
+        try {
+            const res = await fetch(`/api/equipe/${userId}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.ok) {
+                alert(data.mensagem);
+                carregarEquipe();
+            } else {
+                alert('Erro: ' + (data.mensagem || 'Não foi possível remover.'));
+            }
+        } catch (err) {
+            alert('Falha de conexão com o servidor.');
+        }
+    }
+
+    carregarEquipe();
+</script>

@@ -44,6 +44,7 @@ class TenantUser(Base):
 
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     email_verificado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    role: Mapped[str] = mapped_column(String(50), nullable=False, default="dono")
 
     # Tokens em coluna, nao assinados sem estado: o requisito e poder
     # INVALIDAR o token depois do uso, e token stateless so morre no

@@ -139,3 +139,84 @@ async def exigir_acesso_ao_tenant(
     # valida basta. Rota que MANIPULA dado tem de passar slug ou tenant_id --
     # chamar sem alvo seria abrir mao da conferencia.
     return "tenant"
+
+
+
+# ---------------------------------------------------------------------------
+# F1.7 - Matriz de Papéis e Permissões (Dono, Gestor, Operador, Financeiro, Leitura)
+# ---------------------------------------------------------------------------
+PAPEIS_VALIDOS = ("dono", "gestor", "operador", "financeiro", "leitura")
+
+PAPEIS_PERMISSOES = {
+    "dono": {
+        "nome": "Dono",
+        "descricao": "Acesso total à conta, faturamento, equipe e exclusões",
+        "views": ["*"]
+    },
+    "gestor": {
+        "nome": "Gestor",
+        "descricao": "Acesso a operações, atendimentos, modelos, canais, IA e equipe (sem financeiro)",
+        "views": [
+            "faturamento", "configuracao_guiada", "modelos_segmento", "empresa_cadastro", 
+            "canais", "ia_config", "gemini_config", "calendar_config", "rag_management", 
+            "fila_atendimento", "ecommerce_config", "intel_operacional", "equipe"
+        ]
+    },
+    "operador": {
+        "nome": "Operador",
+        "descricao": "Acesso à fila de chat e agendamentos",
+        "views": ["fila_atendimento", "calendar_config"]
+    },
+    "financeiro": {
+        "nome": "Financeiro",
+        "descricao": "Acesso exclusivo ao painel de faturamento e extratos",
+        "views": ["faturamento", "intel_operacional"]
+    },
+    "leitura": {
+        "nome": "Leitura",
+        "descricao": "Visualização de relatórios e métricas, sem permissão de disparo ou edição",
+        "views": ["faturamento", "intel_operacional"]
+    }
+}
+
+async def obter_perfil_sessao(request) -> dict:
+    """Devolve o perfil e papel da sessão atual (admin ou tenant_user)."""
+    if sessao_admin(request):
+        return {"tipo": "admin", "role": "dono", "email": "admin", "views": ["*"]}
+
+    dados = sessao_tenant(request)
+    if not dados:
+        return {"tipo": "anonimo", "role": "nenhum", "email": None, "views": []}
+
+    usuario_id = dados.get("usuario_id")
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select
+    from app.models.tenant_user import TenantUser
+
+    async with AsyncSessionLocal() as session:
+        res = await session.execute(
+            select(TenantUser.email, TenantUser.role).where(TenantUser.id == usuario_id)
+        )
+        usr = res.first()
+        if not usr:
+            return {"tipo": "tenant", "role": "leitura", "email": None, "views": PAPEIS_PERMISSOES["leitura"]["views"]}
+        
+        email, role = usr[0], usr[1] or "dono"
+        if role not in PAPEIS_PERMISSOES:
+            role = "leitura"
+            
+        return {
+            "tipo": "tenant",
+            "role": role,
+            "nome_role": PAPEIS_PERMISSOES[role]["nome"],
+            "email": email,
+            "views": PAPEIS_PERMISSOES[role]["views"]
+        }
+
+def usuario_pode_acessar_view(perfil: dict, view_name: str) -> bool:
+    """Valida se o perfil logado tem permissão para carregar a view solicitada."""
+    views = perfil.get("views", [])
+    if "*" in views:
+        return True
+    return view_name in views
+
