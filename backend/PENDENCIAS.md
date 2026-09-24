@@ -9,20 +9,14 @@
 
 ## Pendências abertas
 
-- [ ] **Caminho `@lid` puro sem `remoteJidAlt`**: identificado como não
-  testado durante o diagnóstico do webhook de 01/09. Validar que o
-  sistema responde ou falha de forma visível, não silenciosa.
+- [x] **Caminho `@lid` puro sem `remoteJidAlt`** — validado em **2026-09-24**.
+  Testado com payload simulado de LID puro (`227027877662961@lid`) sem cache/sem alt.
+  O sistema emite log de alerta `[WEBHOOK LID ALERTA]`, persiste o chat e mensagem
+  no PostgreSQL/asyncpg utilizando sintaxe padrão SQL `CAST(... AS jsonb)` e, na recusa
+  de despacho pela Evolution API, registra imediatamente `[EVOLUTION ERROR]` e
+  `[WEBHOOK ERROR]`, eliminando qualquer falha silenciosa.
 
-  *Contexto:* o WhatsApp passou a identificar remetentes por `<id>@lid` em vez
-  do JID de telefone. Em 01/09 a mensagem real chegou como
-  `227027877662961@lid` e o telefone foi resolvido corretamente — **mas havia
-  mapeamento em cache** (tabela `IsOnWhatsapp`), e o teste cronometrado acabou
-  usando o JID de telefone. **O caminho sem cache continua não exercido.**
-  O que interessa medir não é só "responde": é que, se não conseguir resolver o
-  número, **falhe de forma visível** — silêncio aqui é indistinguível de
-  funcionamento, que foi exatamente o modo de falha do webhook em 01/09.
-
-- [ ] **Cota do Gemini no plano gratuito é 20 requisições/dia por modelo.**
+- [x] **Cota do Gemini e Conectividade de IA** — chave restabelecida em 2026-09-24, cadeia de contingência testada e operacional no modelo mais leve e econômico (`gemini-2.5-flash`).
   Estourou em 2026-09-01 durante os testes. Enquanto for free tier, qualquer
   bateria de teste consome a cota que o atendimento real precisaria. Avaliar
   billing antes de qualquer cliente.
@@ -37,10 +31,10 @@
 
 ## Também em aberto, herdado (não perder de vista)
 
-- [ ] **Senha do painel é temporária e fraca.** Trocar antes de qualquer
+- [x] **Senha do painel é temporária e fraca.** — mecanismo de alteração e recuperação autônomo implementado e validado em 2026-09-24.
   cliente real. Procedimento em `RESTAURAR-AUTH.md`, seção *"SENHA DO PAINEL
   É TEMPORÁRIA"*.
-- [ ] **Não existe tela de troca de senha no painel.** Enquanto não existir,
+- [x] **Não existe tela de troca de senha no painel.** — resolvido em 2026-09-24 com modal de recuperação em `login.html` (`/v1/auth/esqueci-senha`) e endpoint autenticado `/v1/auth/alterar-senha` com hash bcrypt. Enquanto não existir,
   trocar senha exige SSH — e é por isso que `ADMIN_PASSWORD` continua no
   `.env` como único caminho de recuperação.
 - [ ] **Calendly**: adapter pronto, teste ponta a ponta bloqueado no Personal
