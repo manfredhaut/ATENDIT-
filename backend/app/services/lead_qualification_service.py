@@ -8,7 +8,7 @@ from sqlalchemy import select
 from app.core.database import AsyncSessionLocal
 from app.models.scheduling import Lead
 from app.models.tenant import Tenant
-from app.services.llm_service import llm_service
+from app.services.llm_service import llm_service, TodosModelosIndisponiveis
 
 logger = logging.getLogger("atendit.lead_qualification")
 
@@ -27,24 +27,67 @@ Critérios de Classificação:
    - 0 a 39: Baixa propensão (frio).
 
 3. Prioridade:
-   - "alta": Leads quentes que exigem contato em menos de 10 minutos.
+   - "alta": Leads quentes que exigem contato imediato (<10 min).
    - "media": Leads mornos com atendimento no fluxo normal.
    - "baixa": Leads frios ou dados parciais.
 
-Sua resposta DEVE ser EXCLUSIVAMENTE um objeto JSON válido no seguinte formato, sem nenhum texto antes ou depois:
+Sua resposta DEVE ser EXCLUSIVAMENTE um objeto JSON válido no seguinte formato:
 {
   "temperatura": "quente" | "morno" | "frio",
   "score": 85,
   "intencao": "síntese da necessidade em até 6 palavras",
   "prioridade": "alta" | "media" | "baixa",
-  "resumo_ia": "análise concisa de 1 a 2 frases justificando a nota e recomendando o próximo passo comercial"
+  "resumo_ia": "análise concisa de 1 a 2 frases justificando a nota"
 }
 """
 
+def _classificacao_heuristica_resiliente(lead: Lead) -> dict:
+    """Motor de regras heurísticas caso o provedor de LLM esteja sob sobrecarga ou indisponível."""
+    texto = f"{lead.comentario or ''} {lead.origem or ''} {lead.utm_campaign or ''}".lower()
+    
+    termos_quentes = ["urgente", "fechar", "contratar", "preco", "preço", "valor", "comprar", "imediato", "fechamento", "atendimento"]
+    termos_mornos = ["duvida", "dúvida", "como funciona", "integrar", "api", "orcamento", "orçamento", "informacao", "informação", "documentacao", "documentação", "erp"]
+    
+    score = 50
+    temperatura = "morno"
+    prioridade = "media"
+    intencao = "Interesse geral no serviço"
+
+    pontos_quentes = sum(1 for t in termos_quentes if t in texto)
+    pontos_mornos = sum(1 for t in termos_mornos if t in texto)
+
+    if pontos_quentes > 0:
+        temperatura = "quente"
+        score = min(95, 80 + (pontos_quentes * 5))
+        prioridade = "alta"
+        intencao = "Demanda urgente de contratação"
+        resumo = "Lead com indicativo claro de urgência e contratação (classificação heurística de alta disponibilidade)."
+    elif pontos_mornos > 0:
+        temperatura = "morno"
+        score = 65
+        prioridade = "media"
+        intencao = "Consulta técnica ou comercial"
+        resumo = "Lead interessado em detalhes de funcionalidade e escopo técnico."
+    else:
+        temperatura = "frio"
+        score = 35
+        prioridade = "baixa"
+        intencao = "Contato preliminar"
+        resumo = "Lead com pouca informação descritiva fornecida."
+
+    if lead.whatsapp:
+        score = min(100, score + 5)
+
+    return {
+        "temperatura": temperatura,
+        "score": score,
+        "prioridade": prioridade,
+        "intencao": intencao,
+        "resumo_ia": resumo
+    }
+
 async def qualificar_lead_ia(lead_id: uuid.UUID) -> Optional[dict]:
-    """
-    Executa a qualificação do lead via LLM em segundo plano e persiste o resultado.
-    """
+    """Qualifica o lead utilizando LLM com fallback automático para regras heurísticas resilientes."""
     try:
         async with AsyncSessionLocal() as session:
             res = await session.execute(select(Lead).where(Lead.id == lead_id))
@@ -53,7 +96,6 @@ async def qualificar_lead_ia(lead_id: uuid.UUID) -> Optional[dict]:
                 logger.warning(f"[QUALIFICADOR IA] Lead {lead_id} não encontrado.")
                 return None
 
-            # Obter nome da empresa / segmento se vinculado a um tenant
             nome_empresa = "Empresa"
             if lead.tenant_id:
                 res_t = await session.execute(select(Tenant.name).where(Tenant.id == lead.tenant_id))
@@ -61,68 +103,44 @@ async def qualificar_lead_ia(lead_id: uuid.UUID) -> Optional[dict]:
                 if t_nome:
                     nome_empresa = t_nome
 
-            mensagem_usuario = f"""Avalie este novo contato recebido para a empresa '{nome_empresa}':
+            mensagem_usuario = f"""Avalie este lead para '{nome_empresa}':
 - Nome: {lead.nome}
-- Telefone/WhatsApp: {lead.whatsapp or 'Não informado'}
-- E-mail: {lead.email or 'Não informado'}
-- Mensagem/Comentário: {lead.comentario or 'Sem comentário preenchido'}
-- Origem: {lead.origem}
-- Campanha (UTM): {lead.utm_campaign or 'Orgânico'} (Source: {lead.utm_source or 'Direto'})
+- Telefone: {lead.whatsapp or 'Não informado'}
+- Email: {lead.email or 'Não informado'}
+- Mensagem: {lead.comentario or 'Sem comentário'}
+- Origem: {lead.origem} | Campanha: {lead.utm_campaign or 'Orgânico'}
 """
-
-            logger.info(f"[QUALIFICADOR IA] Iniciando análise do Lead {lead_id}...")
-            resposta_llm = await llm_service.generate_response(
-                system_prompt=SYSTEM_PROMPT_QUALIFICACAO,
-                user_message=mensagem_usuario,
-                model='gemini-flash-latest',
-                temperature=0.2
-            )
-
-            # Extração segura de JSON da resposta
             dados = None
             try:
-                # Remove potenciais blocos markdown ```json ... ```
+                # Tenta modelos rápidos e resilientes
+                resposta_llm = await llm_service.generate_response(
+                    system_prompt=SYSTEM_PROMPT_QUALIFICACAO,
+                    user_message=mensagem_usuario,
+                    model="gemini-flash-lite-latest",
+                    temperature=0.2
+                )
                 json_str = re.sub(r"^```json\s*", "", resposta_llm.strip())
                 json_str = re.sub(r"\s*```$", "", json_str).strip()
                 dados = json.loads(json_str)
-            except Exception as parse_err:
-                logger.warning(f"[QUALIFICADOR IA] Falha no parse JSON direto: {parse_err}. Tentando regex...")
-                match = re.search(r"\{.*\}", resposta_llm, re.DOTALL)
-                if match:
-                    dados = json.loads(match.group(0))
+            except Exception as llm_err:
+                logger.warning(f"[QUALIFICADOR IA] LLM indisponível ({llm_err}). Acionando fallback heurístico resiliente...")
+                dados = _classificacao_heuristica_resiliente(lead)
 
             if not dados or not isinstance(dados, dict):
-                logger.error(f"[QUALIFICADOR IA] Não foi possível extrair JSON válido do Lead {lead_id}: {resposta_llm}")
-                return None
-
-            # Validação e sanitização dos campos
-            temperatura = str(dados.get("temperatura", "morno")).lower()
-            if temperatura not in ("quente", "morno", "frio"):
-                temperatura = "morno"
-
-            score = int(dados.get("score", 50))
-            score = max(0, min(100, score))
-
-            prioridade = str(dados.get("prioridade", "media")).lower()
-            if prioridade not in ("alta", "media", "baixa"):
-                prioridade = "media"
-
-            intencao = str(dados.get("intencao", "Interesse geral"))[:100]
-            resumo_ia = str(dados.get("resumo_ia", "Lead qualificado automaticamente."))
+                dados = _classificacao_heuristica_resiliente(lead)
 
             # Persistência
-            lead.temperatura = temperatura
-            lead.score = score
-            lead.prioridade = prioridade
-            lead.intencao = intencao
-            lead.resumo_ia = resumo_ia
-            
-            # Se for qualificado com alto score, avança o status
-            if temperatura == "quente" and lead.status == "novo":
+            lead.temperatura = str(dados.get("temperatura", "morno")).lower()
+            lead.score = int(dados.get("score", 50))
+            lead.prioridade = str(dados.get("prioridade", "media")).lower()
+            lead.intencao = str(dados.get("intencao", "Interesse geral"))[:100]
+            lead.resumo_ia = str(dados.get("resumo_ia", "Lead qualificado com sucesso."))
+
+            if lead.temperatura == "quente" and lead.status == "novo":
                 lead.status = "qualificado"
 
             await session.commit()
-            logger.info(f"[QUALIFICADOR IA] Lead {lead_id} qualificado com sucesso! Temp: {temperatura}, Score: {score}, Prioridade: {prioridade}")
+            logger.info(f"[QUALIFICADOR IA] Lead {lead_id} qualificado com sucesso! Temp: {lead.temperatura}, Score: {lead.score}")
             return dados
 
     except Exception as exc:
