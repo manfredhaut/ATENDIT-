@@ -1047,6 +1047,10 @@ async def api_public_captura_lead(slug: str, request: Request, tarefas: Backgrou
         await session.refresh(novo_lead)
         lead_id = str(novo_lead.id)
 
+    # Dispara a qualificação por IA em background sem reter a resposta HTTP
+    from app.services.lead_qualification_service import qualificar_lead_ia
+    tarefas.add_task(qualificar_lead_ia, novo_lead.id)
+
     return JSONResponse(status_code=201, content={
         "ok": True,
         "mensagem": "Lead capturado com sucesso!",
@@ -1090,6 +1094,11 @@ async def api_listar_leads_tenant(request: Request, status_filtro: Optional[str]
                 "comentario": l.comentario or "—",
                 "origem": l.origem,
                 "status": l.status or "novo",
+                "temperatura": getattr(l, "temperatura", "morno"),
+                "score": getattr(l, "score", 50),
+                "intencao": getattr(l, "intencao", None) or "—",
+                "resumo_ia": getattr(l, "resumo_ia", None) or "Sem análise de IA",
+                "prioridade": getattr(l, "prioridade", "media"),
                 "utm_source": l.utm_source or "—",
                 "utm_medium": l.utm_medium or "—",
                 "utm_campaign": l.utm_campaign or "—",
@@ -1130,4 +1139,29 @@ async def api_atualizar_status_lead(lead_id: str, request: Request):
         lead.status = novo_status
         await session.commit()
         return JSONResponse(content={"ok": True, "mensagem": f"Status atualizado para {novo_status}!"})
+
+
+
+
+@router.post("/api/tenant/leads/{lead_id}/qualificar")
+async def api_requalificar_lead(lead_id: str, request: Request, tarefas: BackgroundTasks):
+    """Aciona re-qualificação imediata com IA."""
+    from fastapi.responses import JSONResponse
+    from app.core import autorizacao as _autz
+    from app.services.lead_qualification_service import qualificar_lead_ia
+    import uuid
+
+    if not _autz.tem_alguma_sessao(request):
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Não autenticado."})
+
+    try:
+        lid = uuid.UUID(lead_id)
+    except ValueError:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de lead inválido."})
+
+    # Executa a análise de IA
+    resultado = await qualificar_lead_ia(lid)
+    if resultado:
+        return JSONResponse(content={"ok": True, "mensagem": "Lead qualificado pela IA com sucesso!", "dados": resultado})
+    return JSONResponse(status_code=500, content={"ok": False, "mensagem": "Falha na análise da IA."})
 
