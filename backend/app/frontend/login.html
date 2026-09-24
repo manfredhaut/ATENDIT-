@@ -152,11 +152,14 @@
 
         <form id="form-login" autocomplete="off">
             <label for="usuario">Usuário</label>
-            <input type="text" id="usuario" name="usuario" required autofocus autocomplete="username" value="admin">
+            <input type="text" id="usuario" name="usuario" required autofocus autocomplete="username" placeholder="Seu usuário ou e-mail">
 
             <label for="senha" style="margin-top: 16px; display: block;">Senha</label>
-            <input type="password" id="senha" name="senha" required autocomplete="current-password" value="Admin@2026">
+            <input type="password" id="senha" name="senha" required autocomplete="current-password" placeholder="Sua senha secreta">
             
+            <div style="display: flex; justify-content: flex-end; margin: 10px 0 16px 0;">
+                <a href="javascript:void(0)" onclick="abrirModalReset()" style="font-size: 0.82rem; color: var(--p-ouro, #B45309); text-decoration: none; font-weight: 600;">Esqueci minha senha</a>
+            </div>
             <button type="submit" id="btn">Entrar na Plataforma</button>
         </form>
 
@@ -212,5 +215,67 @@
             }
         });
     </script>
+
+    <!-- Modal de Recuperação de Senha -->
+    <div id="modal-reset" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 999; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: white; border-radius: 12px; max-width: 400px; width: 100%; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);">
+            <h3 style="font-size: 1.15rem; color: #1E293B; margin-top: 0; font-weight: 700;">Recuperar Acesso</h3>
+            <p style="font-size: 0.85rem; color: #64748B; margin: 8px 0 16px 0; line-height: 1.4;">Informe seu e-mail cadastrado. Enviaremos um link seguro para você redefinir sua senha.</p>
+            <form id="form-reset" onsubmit="enviarPedidoReset(event)">
+                <label for="email-reset" style="display: block; font-size: 0.8rem; font-weight: 600; color: #334155; margin-bottom: 4px;">E-mail Cadastrado</label>
+                <input type="email" id="email-reset" required placeholder="seu@email.com" style="width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; margin-bottom: 16px;">
+                <div id="msg-reset" style="display: none; font-size: 0.85rem; padding: 10px; border-radius: 6px; margin-bottom: 14px;"></div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="fecharModalReset()" style="padding: 8px 14px; background: #F1F5F9; color: #475569; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cancelar</button>
+                    <button type="submit" id="btn-reset" style="padding: 8px 16px; background: #2563EB; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Enviar Link</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalReset() {
+            document.getElementById('modal-reset').style.display = 'flex';
+            document.getElementById('email-reset').focus();
+        }
+        function fecharModalReset() {
+            document.getElementById('modal-reset').style.display = 'none';
+            document.getElementById('msg-reset').style.display = 'none';
+        }
+        async function enviarPedidoReset(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-reset');
+            const msg = document.getElementById('msg-reset');
+            const email = document.getElementById('email-reset').value.trim();
+            btn.disabled = true;
+            btn.innerText = 'Enviando...';
+            msg.style.display = 'none';
+
+            try {
+                const r = await fetch('/v1/auth/esqueci-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                const d = await r.json();
+                msg.style.display = 'block';
+                msg.style.background = '#ECFDF5';
+                msg.style.color = '#065F46';
+                msg.style.border = '1px solid #A7F3D0';
+                msg.innerText = d.message || 'Se este e-mail estiver cadastrado, as instruções foram enviadas.';
+                setTimeout(() => { fecharModalReset(); }, 4000);
+            } catch(err) {
+                msg.style.display = 'block';
+                msg.style.background = '#FEF2F2';
+                msg.style.color = '#991B1B';
+                msg.style.border = '1px solid #FECACA';
+                msg.innerText = 'Falha ao solicitar recuperação. Tente novamente.';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Enviar Link';
+            }
+        }
+    </script>
+
 </body>
 </html>

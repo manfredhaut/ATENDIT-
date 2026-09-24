@@ -22,7 +22,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Request, Response
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy import select
 
@@ -1222,3 +1222,59 @@ async def api_disparar_alerta_equipe(lead_id: str, request: Request):
         return JSONResponse(content={"ok": True, "mensagem": "Alerta interno entregue ao WhatsApp da equipe!"})
     return JSONResponse(status_code=500, content={"ok": False, "mensagem": "Não foi possível entregar o alerta à equipe (verifique conexão ou dados do lead)."})
 
+
+
+# ---------------------------------------------------------------------------
+# ALTERAÇÃO DE SENHA POR USUÁRIO AUTENTICADO NO PAINEL
+# ---------------------------------------------------------------------------
+from pydantic import BaseModel
+
+class AlterarSenhaRequest(BaseModel):
+    senha_atual: str
+    nova_senha: str
+
+
+@router.post("/v1/auth/alterar-senha", include_in_schema=False)
+async def alterar_senha_autenticado(request: Request, payload: AlterarSenhaRequest):
+    """Permite que o usuário autenticado altere sua própria senha."""
+    from app.core import panel_auth, tenant_auth
+    from app.models.admin import AdminUser
+
+    # 1. Verifica se é sessão Admin
+    if panel_auth.sessao_ativa(request):
+        if len(payload.nova_senha) < 8:
+            raise HTTPException(status_code=400, detail="A nova senha deve ter pelo menos 8 caracteres.")
+        
+        async with AsyncSessionLocal() as sessao:
+            admin = (await sessao.execute(select(AdminUser).where(AdminUser.username == "admin"))).scalar_one_or_none()
+            if not admin:
+                raise HTTPException(status_code=404, detail="Administrador não encontrado.")
+            
+            if not panel_auth.conferir_hash(payload.senha_atual, admin.password_hash):
+                raise HTTPException(status_code=401, detail="Senha atual incorreta.")
+            
+            admin.password_hash = panel_auth.gerar_hash(payload.nova_senha)
+            await sessao.commit()
+            logger.info("[AUTH] Senha do administrador alterada com sucesso via painel.")
+            return {"status": "ok", "message": "Senha de administrador alterada com sucesso."}
+
+    # 2. Verifica se é sessão de Tenant
+    sessao_t = tenant_auth.sessao_do_tenant(request)
+    if sessao_t:
+        if len(payload.nova_senha) < 8:
+            raise HTTPException(status_code=400, detail="A nova senha deve ter pelo menos 8 caracteres.")
+        
+        async with AsyncSessionLocal() as sessao:
+            user = await sessao.get(TenantUser, uuid.UUID(sessao_t["usuario_id"]))
+            if not user:
+                raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+            
+            if not panel_auth.conferir_hash(payload.senha_atual, user.password_hash):
+                raise HTTPException(status_code=401, detail="Senha atual incorreta.")
+            
+            user.password_hash = panel_auth.gerar_hash(payload.nova_senha)
+            await sessao.commit()
+            logger.info(f"[AUTH] Senha do usuário '{user.email}' alterada com sucesso via painel.")
+            return {"status": "ok", "message": "Sua senha foi alterada com sucesso."}
+
+    raise HTTPException(status_code=401, detail="Sessão não autenticada.")

@@ -127,10 +127,15 @@ services:
         condition: service_healthy
     labels:
     - traefik.enable=true
-    - traefik.http.routers.api.rule=Host(`atendit.smartinovat.com`)
-    - traefik.http.routers.api.entrypoints=websecure
-    - traefik.http.routers.api.tls.certresolver=le
     - traefik.http.services.api.loadbalancer.server.port=8000
+    - traefik.http.routers.presenthia.rule=Host(`presenthia-console.smartinovat.com`)
+    - traefik.http.routers.presenthia.entrypoints=websecure
+    - traefik.http.routers.presenthia.tls.certresolver=le
+    - traefik.http.routers.presenthia.service=api
+    - traefik.http.routers.legacy-api.rule=Host(`atendit.smartinovat.com`)
+    - traefik.http.routers.legacy-api.entrypoints=websecure
+    - traefik.http.routers.legacy-api.tls.certresolver=le
+    - traefik.http.routers.legacy-api.service=api
     networks:
     - atendit_network
   celery_worker:
