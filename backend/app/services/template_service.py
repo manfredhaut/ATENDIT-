@@ -25,7 +25,7 @@ from app.models.scheduling import MessageTemplate
 
 logger = logging.getLogger("atendit.templates")
 
-TIPOS = ("confirmation", "reminder", "waitlist_offer", "post_appointment")
+TIPOS = ("confirmation", "reminder", "waitlist_offer", "post_appointment", "lead_welcome")
 
 DEFAULTS: Dict[str, str] = {
     "confirmation": (
@@ -45,6 +45,11 @@ DEFAULTS: Dict[str, str] = {
     "post_appointment": (
         "Olá, {nome}! Obrigado por comparecer ao seu {servico}. "
         "Se quiser marcar o próximo, é só me chamar."
+    ),
+    "lead_welcome": (
+        "Olá, {primeiro_nome}! 👋 Recebemos seu contato com sucesso.\n\n"
+        "Nossa equipe da *{empresa}* já está avaliando sua solicitação e responderemos em breve por aqui. "
+        "Se tiver algum detalhe adicional ou urgência, basta nos responder nesta mensagem!"
     ),
 }
 

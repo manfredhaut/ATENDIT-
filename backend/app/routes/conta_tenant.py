@@ -1051,6 +1051,10 @@ async def api_public_captura_lead(slug: str, request: Request, tarefas: Backgrou
     from app.services.lead_qualification_service import qualificar_lead_ia
     tarefas.add_task(qualificar_lead_ia, novo_lead.id)
 
+    # Dispara mensagem automática de boas-vindas no WhatsApp do lead (F2.3)
+    from app.services.lead_welcome_service import enviar_boas_vindas_lead
+    tarefas.add_task(enviar_boas_vindas_lead, novo_lead.id)
+
     return JSONResponse(status_code=201, content={
         "ok": True,
         "mensagem": "Lead capturado com sucesso!",
@@ -1099,6 +1103,8 @@ async def api_listar_leads_tenant(request: Request, status_filtro: Optional[str]
                 "intencao": getattr(l, "intencao", None) or "—",
                 "resumo_ia": getattr(l, "resumo_ia", None) or "Sem análise de IA",
                 "prioridade": getattr(l, "prioridade", "media"),
+                "boas_vindas_enviada": getattr(l, "boas_vindas_enviada", False),
+                "boas_vindas_enviada_em": l.boas_vindas_enviada_em.strftime("%d/%m/%Y %H:%M") if getattr(l, "boas_vindas_enviada_em", None) else None,
                 "utm_source": l.utm_source or "—",
                 "utm_medium": l.utm_medium or "—",
                 "utm_campaign": l.utm_campaign or "—",
@@ -1164,4 +1170,29 @@ async def api_requalificar_lead(lead_id: str, request: Request, tarefas: Backgro
     if resultado:
         return JSONResponse(content={"ok": True, "mensagem": "Lead qualificado pela IA com sucesso!", "dados": resultado})
     return JSONResponse(status_code=500, content={"ok": False, "mensagem": "Falha na análise da IA."})
+
+
+
+
+@router.post("/api/tenant/leads/{lead_id}/boas-vindas")
+async def api_reenviar_boas_vindas(lead_id: str, request: Request, tarefas: BackgroundTasks):
+    """Dispara ou reenvia mensagem de boas-vindas no WhatsApp do lead."""
+    from fastapi.responses import JSONResponse
+    from app.core import autorizacao as _autz
+    from app.services.lead_welcome_service import enviar_boas_vindas_lead
+    import uuid
+
+    if not _autz.tem_alguma_sessao(request):
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Não autenticado."})
+
+    try:
+        lid = uuid.UUID(lead_id)
+    except ValueError:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de lead inválido."})
+
+    # Força envio imediato
+    enviado = await enviar_boas_vindas_lead(lid)
+    if enviado:
+        return JSONResponse(content={"ok": True, "mensagem": "Mensagem de boas-vindas entregue ao WhatsApp!"})
+    return JSONResponse(status_code=500, content={"ok": False, "mensagem": "Não foi possível entregar a mensagem (verifique se a instância está conectada)."})
 
