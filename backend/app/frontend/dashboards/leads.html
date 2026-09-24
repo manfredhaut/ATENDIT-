@@ -2,9 +2,9 @@
     <!-- CABEÇALHO -->
     <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
-            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 6px;">📥 Leads & Automação Omnichannel (F2.3)</h2>
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 6px;">📥 Leads & Conversão Omnichannel (Fase 2 Completa)</h2>
             <p style="font-size: 0.88rem; color: #64748b; line-height: 1.4;">
-                Captação, triagem por IA e mensagens automáticas de boas-vindas via WhatsApp.
+                Captação pública, triagem inteligente por IA, boas-vindas automáticas e alertas internos em tempo real.
             </p>
         </div>
         <div style="display: flex; gap: 10px;">
@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <!-- SEÇÃO 1: TABELA E FUNIL DE LEADS COM IA & WHATSAPP -->
+    <!-- SEÇÃO 1: TABELA E FUNIL DE LEADS COM IA, WHATSAPP & ALERTAS -->
     <div id="secao-leads-lista" style="display: flex; flex-direction: column; gap: 16px;">
         <div style="background: #ffffff; padding: 14px 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
             <span style="font-size: 0.82rem; font-weight: 700; color: var(--p-texto, #231726);">Filtrar por Status:</span>
@@ -33,14 +33,14 @@
         </div>
 
         <div style="background: #ffffff; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; min-width: 960px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; min-width: 1000px;">
                 <thead>
                     <tr style="background: var(--p-marfim, #FBF8F4); border-bottom: 1px solid var(--p-borda, #eae3dc); color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase;">
                         <th style="padding: 16px 20px;">Contato / Nome</th>
                         <th style="padding: 16px 20px;">Classificação IA</th>
-                        <th style="padding: 16px 20px;">Boas-Vindas (F2.3)</th>
+                        <th style="padding: 16px 20px;">Comunicação & Alertas</th>
                         <th style="padding: 16px 20px;">Status</th>
-                        <th style="padding: 16px 20px;">Data de Entrada</th>
+                        <th style="padding: 16px 20px;">Entrada</th>
                         <th style="padding: 16px 20px; text-align: right;">Ações</th>
                     </tr>
                 </thead>
@@ -58,7 +58,7 @@
         <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc);">
             <h3 style="font-size: 1.12rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 8px;">Código de Integração do Formulário</h3>
             <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 18px; line-height: 1.4;">
-                Cole este código no seu site ou landing page. O envio aciona automaticamente a qualificação por IA e o disparo imediato de boas-vindas no WhatsApp do lead.
+                Cole este código no seu site ou landing page. O envio aciona automaticamente a qualificação por IA, disparo de boas-vindas no WhatsApp do lead e alerta interno para a equipe.
             </p>
 
             <div style="background: #1e1b2e; padding: 18px; border-radius: 12px; position: relative;">
@@ -125,8 +125,12 @@
                 const sb = statusBadges[l.status] || statusBadges['novo'];
                 
                 const bvBadge = l.boas_vindas_enviada
-                    ? `<span style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 3px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 700;">✓ Enviada (${l.boas_vindas_enviada_em || 'OK'})</span>`
-                    : `<span style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 3px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 600;">⏳ Pendente</span>`;
+                    ? `<span title="${l.boas_vindas_enviada_em || ''}" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 2px 7px; border-radius: 8px; font-size: 0.70rem; font-weight: 700;">✓ Boas-Vindas</span>`
+                    : `<span style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 2px 7px; border-radius: 8px; font-size: 0.70rem;">⏳ Boas-Vindas</span>`;
+
+                const alertBadge = l.alerta_equipe_enviado
+                    ? `<span title="${l.alerta_equipe_enviado_em || ''}" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 2px 7px; border-radius: 8px; font-size: 0.70rem; font-weight: 700;">🔔 Equipe Alertada</span>`
+                    : (l.temperatura === 'quente' ? `<span style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 2px 7px; border-radius: 8px; font-size: 0.70rem; font-weight: 700;">⚠️ Alerta Pendente</span>` : '');
 
                 return `
                     <tr style="border-bottom: 1px solid var(--p-borda, #eae3dc);">
@@ -145,7 +149,10 @@
                             <div style="font-size: 0.72rem; color: #0B7570; font-weight: 600;">${l.intencao}</div>
                         </td>
                         <td style="padding: 14px 20px;">
-                            ${bvBadge}
+                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                ${bvBadge}
+                                ${alertBadge}
+                            </div>
                         </td>
                         <td style="padding: 14px 20px;">
                             <select onchange="atualizarStatusLead('${l.id}', this.value)" style="background: ${sb.bg}; color: ${sb.cor}; border: none; font-weight: 700; padding: 5px 8px; border-radius: 10px; font-size: 0.74rem; cursor: pointer;">
@@ -158,9 +165,10 @@
                         </td>
                         <td style="padding: 14px 20px; font-size: 0.78rem; color: #64748b;">${l.criado_em}</td>
                         <td style="padding: 14px 20px; text-align: right;">
-                            <div style="display: flex; gap: 6px; justify-content: flex-end;">
-                                <button onclick="dispararBoasVindas('${l.id}')" title="Disparar Boas-Vindas WhatsApp" style="background: #0B7570; color: #fff; border: none; border-radius: 6px; padding: 5px 9px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">📩 Boas-Vindas</button>
-                                <button onclick="iniciarAtendimentoLead('${l.whatsapp}', '${l.nome}')" style="background: var(--p-magenta, #D0006F); color: #fff; border: none; border-radius: 6px; padding: 5px 9px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">Chamar</button>
+                            <div style="display: flex; gap: 5px; justify-content: flex-end; flex-wrap: wrap;">
+                                ${l.temperatura === 'quente' ? `<button onclick="dispararAlertaEquipe('${l.id}')" title="Alertar Equipe no WhatsApp" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 6px; padding: 4px 7px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">🚨 Alertar</button>` : ''}
+                                <button onclick="dispararBoasVindas('${l.id}')" title="Reenviar Boas-Vindas" style="background: #0B7570; color: #fff; border: none; border-radius: 6px; padding: 4px 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">📩 Boas-Vindas</button>
+                                <button onclick="iniciarAtendimentoLead('${l.whatsapp}', '${l.nome}')" style="background: var(--p-magenta, #D0006F); color: #fff; border: none; border-radius: 6px; padding: 4px 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">Chamar</button>
                             </div>
                         </td>
                     </tr>
@@ -168,6 +176,17 @@
             }).join('');
         } catch (e) {
             tbody.innerHTML = '<tr><td colspan="6" style="padding: 24px; text-align: center; color: #ef4444;">Erro ao carregar leads.</td></tr>';
+        }
+    }
+
+    async function dispararAlertaEquipe(id) {
+        try {
+            const res = await fetch(`/api/tenant/leads/${id}/alerta-equipe`, { method: 'POST' });
+            const data = await res.json();
+            alert(data.mensagem || (data.ok ? 'Alerta entregue à equipe!' : 'Falha no alerta.'));
+            carregarLeads();
+        } catch (e) {
+            alert('Falha de conexão com o servidor.');
         }
     }
 
@@ -205,7 +224,7 @@
 
     function gerarCodigoEmbed() {
         const urlOrigem = window.location.origin;
-        const snippet = `<!-- FORMULÁRIO PRESENTHIA COM IA & WHATSAPP IMEDIATO -->
+        const snippet = `<!-- FORMULÁRIO PRESENTHIA COM IA, WHATSAPP & ALERTA INTERNO -->
 <form id="presenthia-lead-form" style="max-width: 420px; font-family: sans-serif; display: flex; flex-direction: column; gap: 12px;">
     <input type="text" id="p-nome" placeholder="Seu Nome Completo" required style="padding: 11px; border: 1px solid #ccc; border-radius: 8px;">
     <input type="tel" id="p-whatsapp" placeholder="Seu WhatsApp com DDD" required style="padding: 11px; border: 1px solid #ccc; border-radius: 8px;">

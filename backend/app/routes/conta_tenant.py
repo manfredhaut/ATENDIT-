@@ -1104,6 +1104,8 @@ async def api_listar_leads_tenant(request: Request, status_filtro: Optional[str]
                 "resumo_ia": getattr(l, "resumo_ia", None) or "Sem análise de IA",
                 "prioridade": getattr(l, "prioridade", "media"),
                 "boas_vindas_enviada": getattr(l, "boas_vindas_enviada", False),
+                "alerta_equipe_enviado": getattr(l, "alerta_equipe_enviado", False),
+                "alerta_equipe_enviado_em": l.alerta_equipe_enviado_em.strftime("%d/%m/%Y %H:%M") if getattr(l, "alerta_equipe_enviado_em", None) else None,
                 "boas_vindas_enviada_em": l.boas_vindas_enviada_em.strftime("%d/%m/%Y %H:%M") if getattr(l, "boas_vindas_enviada_em", None) else None,
                 "utm_source": l.utm_source or "—",
                 "utm_medium": l.utm_medium or "—",
@@ -1195,4 +1197,28 @@ async def api_reenviar_boas_vindas(lead_id: str, request: Request, tarefas: Back
     if enviado:
         return JSONResponse(content={"ok": True, "mensagem": "Mensagem de boas-vindas entregue ao WhatsApp!"})
     return JSONResponse(status_code=500, content={"ok": False, "mensagem": "Não foi possível entregar a mensagem (verifique se a instância está conectada)."})
+
+
+
+
+@router.post("/api/tenant/leads/{lead_id}/alerta-equipe")
+async def api_disparar_alerta_equipe(lead_id: str, request: Request):
+    """Dispara ou reenvia notificação interna para o WhatsApp da equipe sobre o lead."""
+    from fastapi.responses import JSONResponse
+    from app.core import autorizacao as _autz
+    from app.services.lead_alert_service import enviar_alerta_lead_quente
+    import uuid
+
+    if not _autz.tem_alguma_sessao(request):
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Não autenticado."})
+
+    try:
+        lid = uuid.UUID(lead_id)
+    except ValueError:
+        return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de lead inválido."})
+
+    enviado = await enviar_alerta_lead_quente(lid)
+    if enviado:
+        return JSONResponse(content={"ok": True, "mensagem": "Alerta interno entregue ao WhatsApp da equipe!"})
+    return JSONResponse(status_code=500, content={"ok": False, "mensagem": "Não foi possível entregar o alerta à equipe (verifique conexão ou dados do lead)."})
 

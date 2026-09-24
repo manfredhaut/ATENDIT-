@@ -46,6 +46,7 @@ class Tenant(Base):
         String(50), index=True, nullable=True
     )
     whatsapp_number_e164: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    whatsapp_notificacoes: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
     profile_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
     meta_data: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)

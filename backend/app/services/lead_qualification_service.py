@@ -141,6 +141,15 @@ async def qualificar_lead_ia(lead_id: uuid.UUID) -> Optional[dict]:
 
             await session.commit()
             logger.info(f"[QUALIFICADOR IA] Lead {lead_id} qualificado com sucesso! Temp: {lead.temperatura}, Score: {lead.score}")
+
+            # Disparo imediato de alerta interno para equipe se for Lead Quente (F2.4)
+            if lead.temperatura == "quente" or lead.score >= 80 or lead.prioridade == "alta":
+                try:
+                    from app.services.lead_alert_service import enviar_alerta_lead_quente
+                    import asyncio
+                    asyncio.create_task(enviar_alerta_lead_quente(lead.id))
+                except Exception as alert_err:
+                    logger.warning(f"[QUALIFICADOR IA] Falha ao agendar alerta de equipe: {alert_err}")
             return dados
 
     except Exception as exc:

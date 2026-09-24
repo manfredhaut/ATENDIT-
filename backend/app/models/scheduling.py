@@ -336,6 +336,8 @@ class Lead(Base):
     prioridade: Mapped[str] = mapped_column(String(20), nullable=False, default="media", index=True)
     boas_vindas_enviada: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     boas_vindas_enviada_em: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    alerta_equipe_enviado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
+    alerta_equipe_enviado_em: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     utm_source: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     utm_medium: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     utm_campaign: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
