@@ -1,0 +1,78 @@
+<!-- PRESENTHIA DESIGN SYSTEM - ABA CONSULTORIA POR VÍDEO (ITEM F6 / ABA 8) -->
+<div style="font-family: var(--p-fonte-texto, -apple-system, BlinkMacSystemFont, sans-serif); display: flex; flex-direction: column; gap: 24px; animation: fadeIn 0.25s ease-in-out;">
+
+    <!-- 1. CABEÇALHO DA ABA -->
+    <div style="background: #ffffff; padding: 26px 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h2 style="font-family: var(--p-fonte-titulo, Georgia, serif); font-size: 1.5rem; color: var(--p-texto, #231726); margin: 0;">📹 Consultoria Guiada por Vídeo</h2>
+                <span style="background: var(--p-sucesso-fundo, #e2f6f5); color: var(--p-turquesa-texto, #0b7570); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; text-transform: uppercase;">WebRTC & LiveKit</span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--p-texto-suave, #5e5563); margin: 6px 0 0 0;">
+                Sessões com IA multimodal que orienta pela Vitrine ou loja externa, carrinho assistido e transbordo para especialista.
+            </p>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button onclick="criarNovaSalaVideo()" style="background: var(--p-magenta, #D0006F); color: #fff; border: none; padding: 11px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(208, 0, 111, 0.2);">
+                <span>+</span> Criar Sala de Atendimento
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. CARTÕES OPERACIONAIS E STATUS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px;">
+        <div style="background: #ffffff; padding: 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-turquesa, #3ccbc5);">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--p-texto-suave, #5e5563); text-transform: uppercase;">Salas Ativas Agora</div>
+            <div id="video-total-salas" style="font-size: 1.8rem; font-weight: 800; color: var(--p-texto, #231726); margin-top: 6px;">0</div>
+            <div style="font-size: 0.78rem; color: var(--p-turquesa-texto, #0b7570); margin-top: 4px;">Latência de streaming: estável</div>
+        </div>
+
+        <div style="background: #ffffff; padding: 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-ambar, #e3a028);">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--p-texto-suave, #5e5563); text-transform: uppercase;">Transbordos Solicitados</div>
+            <div id="video-transbordos" style="font-size: 1.8rem; font-weight: 800; color: var(--p-texto, #231726); margin-top: 6px;">0</div>
+            <div style="font-size: 0.78rem; color: #b45309; margin-top: 4px;">Aguardando entrada de especialista</div>
+        </div>
+
+        <div style="background: #ffffff; padding: 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-magenta, #D0006F);">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--p-texto-suave, #5e5563); text-transform: uppercase;">Privacidade & LGPD (F6.8)</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--p-texto, #231726); margin-top: 6px;">Câmera Opcional</div>
+            <div style="font-size: 0.78rem; color: #64748b; margin-top: 4px;">Zero retenção de vídeo local</div>
+        </div>
+    </div>
+
+    <!-- 3. PAINEL DE SALAS EM OPERAÇÃO -->
+    <div style="background: #ffffff; padding: 24px 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+        <h3 style="font-family: var(--p-fonte-titulo, Georgia, serif); font-size: 1.15rem; color: var(--p-texto, #231726); margin: 0 0 16px 0;">Sessões de Consultoria e Links de Convite</h3>
+        
+        <div id="video-lista-salas" style="font-size: 0.88rem; color: var(--p-texto-suave, #5e5563);">
+            <p>Nenhuma sala aberta no momento. Clique em <strong>Criar Sala de Atendimento</strong> para gerar um link direto ao cliente.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+window.criarNovaSalaVideo = async function() {
+    const slug = window.currentTenantSlug || 'manitest';
+    try {
+        const token = 'meet_' + Math.random().toString(36).substring(2, 10);
+        const link = window.location.origin + '/meet/' + token;
+        
+        const container = document.getElementById('video-lista-salas');
+        container.innerHTML = `
+            <div style="padding: 16px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 12px; background: var(--p-marfim, #fbf8f4); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <div style="font-weight: 700; color: var(--p-texto, #231726);">Sala: ${token}</div>
+                    <div style="font-size: 0.82rem; color: var(--p-texto-suave, #5e5563); margin-top: 2px;">Link: <a href="${link}" target="_blank" style="color: var(--p-turquesa-texto, #0b7570); font-weight: 600;">${link}</a></div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="navigator.clipboard.writeText('${link}'); alert('Link copiado!')" style="padding: 6px 14px; border: 1px solid var(--p-borda, #eae3dc); background: #fff; border-radius: 8px; font-size: 0.82rem; cursor: pointer; font-weight: 600;">Copiar Link</button>
+                    <a href="${link}" target="_blank" style="padding: 6px 14px; background: var(--p-magenta, #D0006F); color: #fff; border-radius: 8px; font-size: 0.82rem; text-decoration: none; font-weight: 700;">Entrar na Sala ↗</a>
+                </div>
+            </div>
+        `;
+        document.getElementById('video-total-salas').textContent = '1';
+    } catch(err) {
+        alert('Erro ao inicializar sala de vídeo: ' + err.message);
+    }
+};
+</script>

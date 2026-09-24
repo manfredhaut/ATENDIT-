@@ -29,6 +29,7 @@ from sqlalchemy import select
 from app.core import tenant_auth as _sessao
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
+from app.core.feature_flags import is_flag_enabled
 from app.models.tenant import Tenant
 from app.models.tenant_user import TenantUser
 from app.services.email_service import enviar_email, montar_html
@@ -322,23 +323,8 @@ async def logout_tenant():
 # ---------------------------------------------------------------------------
 @router.get("/tenant/painel", include_in_schema=False)
 async def painel_tenant(request: Request):
-    """
-    Painel do cliente — reaproveita as MESMAS telas de /dashboards/* que o
-    painel admin usa. Nenhuma view foi recriada.
-
-    > ### 🔴 O SLUG VEM DA SESSÃO, NUNCA DA URL
-    > `slug` é lido do cookie de sessão e injetado no HTML pelo servidor. Não
-    > existe `?slug=` nem `/tenant/painel/{slug}` — se existisse, trocar uma
-    > palavra na barra de endereço apontaria o painel para outro inquilino.
-    >
-    > Isso é **defesa em profundidade, não a defesa principal**: mesmo que
-    > alguém forje o slug no JavaScript, as rotas `/v1/*` conferem o inquilino
-    > da sessão em `autorizacao.exigir_acesso_ao_tenant` e devolvem 403.
-    > As duas camadas existem porque a de baixo é a que realmente protege, e a
-    > de cima evita que o painel sequer tente algo inválido.
-    """
     dados = _sessao.sessao_do_tenant(request)
-    if not dados:      # cinto e suspensorio: o middleware ja barra
+    if not dados:
         return RedirectResponse("/tenant/login", status_code=303)
 
     async with AsyncSessionLocal() as sessao:
@@ -349,12 +335,66 @@ async def painel_tenant(request: Request):
             await sessao.execute(select(TenantUser).where(TenantUser.id == dados["usuario_id"]))
         ).scalar_one_or_none()
 
-    if inquilino is None or conta is None:
-        r = RedirectResponse("/tenant/login", status_code=303)
-        r.delete_cookie(_sessao.NOME_COOKIE, path="/")
-        return r
+        if inquilino is None or conta is None:
+            r = RedirectResponse("/tenant/login", status_code=303)
+            r.delete_cookie(_sessao.NOME_COOKIE, path="/")
+            return r
+
+        # Checagem de Feature Flag (F0.11 / F1.1)
+        menu_param = request.query_params.get("menu")
+        flag_core = await is_flag_enabled("presenthia_core", sessao, tenant_id=inquilino.id)
+        
+        # O piloto manitest ou quem explicitamente pedir ?menu=novo verá a navegação V2 (14 abas)
+        usar_menu_v2 = (menu_param == "novo") or (flag_core and menu_param != "legado")
 
     slug = inquilino.slug
+
+    # Menu Legado de 10 Abas (Fallback / Inquilinos comuns)
+    menu_legado_html = '''
+    <nav class="menu" id="menu">
+      <a class="item ativo" data-v="inicio">📊 Painel Principal</a>
+      <a class="item" data-v="empresa_cadastro">🏢 Cadastro da Empresa</a>
+      <a class="item" data-v="ia_config">⚙️ Configurações do Atendente</a>
+      <a class="item" data-v="canais">📡 Canais WhatsApp</a>
+      <a class="item" data-v="calendar_config">📅 Configuração do Calendário</a>
+      <a class="item" data-v="rag_management">📁 Gestão de Documentos</a>
+      <a class="item" data-v="fila_atendimento">💬 Atendimento</a>
+      <a class="item" data-v="gemini_config">🧠 Configuração da IA</a>
+      <a class="item" data-v="ecommerce_config">🛒 Loja & E-Commerce</a>
+      <a class="item" data-v="intel_operacional">📊 Inteligência Comercial & Operacional</a>
+    </nav>
+    <div class="rodape">
+      <a href="/tenant/painel?menu=novo" style="font-size: 11px; color: var(--p-turquesa, #3ccbc5); display: block; margin-bottom: 8px;">✨ Experimentar Novo Menu V2</a>
+      <a href="/tenant/logout">← Sair da conta</a>
+    </div>
+    '''
+
+    # Menu Oficial Presenthia V2 de 14 Abas (com duplo rótulo temporário F1.1)
+    menu_v2_html = '''
+    <nav class="menu" id="menu">
+      <a class="item ativo" data-v="inicio"><span class="m-icon">🏠</span> 1. Início</a>
+      <a class="item" data-v="fila_atendimento"><span class="m-icon">💬</span> 2. Atendimento</a>
+      <a class="item" data-v="leads"><span class="m-icon">🎯</span> 3. Aquisição</a>
+      <a class="item" data-v="leads"><span class="m-icon">📊</span> 4. CRM & Funil</a>
+      <a class="item" data-v="calendar_config"><span class="m-icon">📅</span> 5. Agenda <small class="sub-legado">antes: Configuração do Calendário</small></a>
+      <a class="item" data-v="equipe"><span class="m-icon">👥</span> 6. Profissionais & Escalas</a>
+      <a class="item" data-v="ecommerce_config"><span class="m-icon">🛍️</span> 7. Vitrine & Loja <small class="sub-legado">antes: Loja & E-Commerce</small></a>
+      <a class="item" data-v="video"><span class="m-icon">📹</span> 8. Consultoria por Vídeo</a>
+      <a class="item" data-v="ia_config"><span class="m-icon">🤖</span> 9. Assistente IA <small class="sub-legado">antes: Config. Atendente + IA</small></a>
+      <a class="item" data-v="rag_management"><span class="m-icon">📚</span> 10. Base de Conhecimento <small class="sub-legado">antes: Gestão de Documentos</small></a>
+      <a class="item" data-v="canais"><span class="m-icon">📡</span> 11. Canais</a>
+      <a class="item" data-v="faturamento"><span class="m-icon">💳</span> 12. Financeiro</a>
+      <a class="item" data-v="intel_operacional"><span class="m-icon">📈</span> 13. Inteligência Operacional</a>
+      <a class="item" data-v="empresa_cadastro"><span class="m-icon">🏢</span> 14. Empresa & Conta <small class="sub-legado">antes: Cadastro da Empresa</small></a>
+    </nav>
+    <div class="rodape">
+      <a href="/tenant/painel?menu=legado" style="font-size: 11px; color: #a1a1aa; display: block; margin-bottom: 8px;">↩ Voltar ao menu anterior</a>
+      <a href="/tenant/logout">← Sair da conta</a>
+    </div>
+    '''
+
+    nav_escolhida = menu_v2_html if usar_menu_v2 else menu_legado_html
+
     return HTMLResponse(content=f"""<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -366,17 +406,19 @@ async def painel_tenant(request: Request):
   *{{box-sizing:border-box}}
   body{{margin:0;display:flex;min-height:100vh;background:var(--p-marfim, #fbf8f4);
        font-family:var(--p-fonte-texto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);color:var(--p-texto, #231726)}}
-  .lateral{{width:260px;background:var(--p-berinjela, #231726);color:#DCD2DF;display:flex;flex-direction:column;
-           flex-shrink:0}}
+  .lateral{{width:280px;background:var(--p-berinjela, #231726);color:#DCD2DF;display:flex;flex-direction:column;
+           flex-shrink:0;box-shadow: 2px 0 8px rgba(0,0,0,0.06);}}
   .marca{{padding:22px 20px;font-family:var(--p-fonte-titulo, Georgia, serif);font-size:22px;font-weight:400;color:var(--p-turquesa, #3ccbc5);letter-spacing:.5px;
-         border-bottom:1px solid rgba(255,255,255,0.08)}}
-  .menu{{padding:14px 0;flex:1}}
-  .item{{display:block;padding:11px 20px;font-size:13.5px;color:#B5A8BA;cursor:pointer;
-        border-left:3px solid transparent;transition:all 0.15s ease}}
+         border-bottom:1px solid rgba(255,255,255,0.08);display: flex;align-items: center;justify-content: space-between;}}
+  .marca-tag{{font-size: 10px; background: rgba(60, 203, 197, 0.15); color: var(--p-turquesa, #3ccbc5); padding: 2px 8px; border-radius: 999px; font-weight: 700; letter-spacing: 0.5px;}}
+  .menu{{padding:14px 0;flex:1;overflow-y:auto;max-height:calc(100vh - 140px);}}
+  .item{{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:13.2px;color:#B5A8BA;cursor:pointer;
+        border-left:3px solid transparent;transition:all 0.15s ease;text-decoration:none;}}
   .item:hover{{background:rgba(255,255,255,0.06);color:#ffffff}}
   .item.ativo{{background:#3A2740;color:var(--p-turquesa, #3ccbc5);border-left-color:var(--p-turquesa, #3ccbc5);font-weight:600}}
+  .sub-legado{{display:block;font-size:10px;color:#8e8293;font-weight:400;margin-top:1px;}}
   .rodape{{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08)}}
-  .rodape a{{color:#B5A8BA;font-size:13px;text-decoration:none;transition:color 0.15s ease}}
+  .rodape a{{color:#B5A8BA;font-size:12.5px;text-decoration:none;transition:color 0.15s ease}}
   .rodape a:hover{{color:var(--p-turquesa, #3ccbc5)}}
   .principal{{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--p-marfim, #fbf8f4)}}
   .topo{{background:#fff;border-bottom:1px solid var(--p-borda, #eae3dc);padding:14px 26px;display:flex;
@@ -388,27 +430,15 @@ async def painel_tenant(request: Request):
         border-radius:999px;font-size:12px;font-weight:600;text-decoration:none;transition:background 0.15s ease}}
   .sair:hover{{background:#fff5f5}}
   .area{{padding:24px;overflow:auto;flex:1}}
-  .aviso{{background:#fff;border:1px solid var(--p-borda, #eae3dc);border-radius:var(--p-raio, 16px);padding:26px;
-         max-width:720px;box-shadow:0 1px 3px rgba(0,0,0,0.02)}}
-  .aviso h2{{margin:0 0 12px;font-family:var(--p-fonte-titulo, Georgia, serif);font-size:18px}}
-  .aviso p{{margin:0 0 12px;font-size:14px;line-height:1.6;color:var(--p-texto-suave, #5e5563)}}
-  .aviso a{{color:var(--p-turquesa-texto, #0b7570);font-weight:600}}
+  @keyframes fadeIn {{ from {{ opacity: 0; transform: translateY(4px); }} to {{ opacity: 1; transform: translateY(0); }} }}
+  .fade-in {{ animation: fadeIn 0.25s ease-in-out; }}
 </style></head><body>
 <div class="lateral">
-  <div class="marca">PRESENTHIA</div>
-  <nav class="menu" id="menu">
-    <a class="item ativo" data-v="inicio">📊 Painel Principal</a>
-    <a class="item" data-v="empresa_cadastro">🏢 Cadastro da Empresa</a>
-    <a class="item" data-v="ia_config">⚙️ Configurações do Atendente</a>
-    <a class="item" data-v="canais">📡 Canais WhatsApp</a>
-    <a class="item" data-v="calendar_config">📅 Configuração do Calendário</a>
-    <a class="item" data-v="rag_management">📁 Gestão de Documentos</a>
-    <a class="item" data-v="fila_atendimento">💬 Atendimento</a>
-    <a class="item" data-v="gemini_config">🧠 Configuração da IA</a>
-    <a class="item" data-v="ecommerce_config">🛒 Loja & E-Commerce</a>
-    <a class="item" data-v="intel_operacional">📊 Inteligência Comercial & Operacional</a>
-  </nav>
-  <div class="rodape"><a href="/tenant/logout">← Sair da conta</a></div>
+  <div class="marca">
+    <span>PRESENTHIA</span>
+    <span class="marca-tag">{'V2' if usar_menu_v2 else 'V1'}</span>
+  </div>
+  {nav_escolhida}
 </div>
 <div class="principal">
   <header class="topo">
@@ -419,61 +449,61 @@ async def painel_tenant(request: Request):
       <a class="sair" href="/tenant/logout">Sair</a>
     </div>
   </header>
-  <div class="area" id="conteudo">
-    <div class="aviso">
-      <h2>Bem-vindo, {inquilino.name}</h2>
-      <p>Escolha uma opção no menu à esquerda. Você está vendo <strong>apenas os
-         dados da sua empresa</strong> — o identificador
-         <code>{slug}</code> vem da sua sessão e não pode ser trocado pela URL.</p>
-      <p><strong>WhatsApp e agenda começam desconectados.</strong> Conectar é
-         passo seu: use <em>Conexão WhatsApp</em> e
-         <em>Configuração do Calendário</em>.</p>
-      <p>Conectar agenda agora:
-        <a href="/calendar/oauth/google/start?tenant={slug}">Google Calendar</a> ·
-        <a href="/calendar/oauth/microsoft/start?tenant={slug}">Microsoft 365</a></p>
-    </div>
-  </div>
+  <div class="area" id="conteudo"></div>
 </div>
 <script>
-// O slug vem do SERVIDOR, a partir do cookie de sessao. As telas de
-// /dashboards/* leem window.currentTenantSlug -- e por isso que elas
-// funcionam aqui sem nenhuma alteracao.
 window.currentTenantSlug = {slug!r};
 window.currentTenantData = {{ id: {str(inquilino.id)!r}, slug: window.currentTenantSlug, name: {inquilino.name!r} }};
 
-const htmlInicio = `<div class="p-card" style="padding: 32px; max-width: 820px; background: #ffffff; border: 1px solid var(--p-borda, #eae3dc); border-radius: var(--p-raio, 16px); box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--p-borda, #eae3dc); padding-bottom: 18px; margin-bottom: 22px;">
+const htmlInicio = `<div class="fade-in" style="display: flex; flex-direction: column; gap: 24px; max-width: 1000px;">
+    <div style="background: #ffffff; padding: 26px 30px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
       <div>
-        <h2 class="p-titulo" style="font-size: 1.6rem; color: var(--p-texto, #231726); margin: 0 0 4px 0;">Bem-vindo, {inquilino.name}</h2>
-        <p style="font-size: 0.9rem; color: var(--p-texto-suave, #5e5563); margin: 0;">Painel de controle unificado Presenthia para atendimento inteligente e gestão multicanal.</p>
+        <h2 style="font-family: var(--p-fonte-titulo, Georgia, serif); font-size: 1.6rem; color: var(--p-texto, #231726); margin: 0 0 4px 0;">Bem-vindo, {inquilino.name}</h2>
+        <p style="font-size: 0.88rem; color: var(--p-texto-suave, #5e5563); margin: 0;">Painel de Controle Unificado Presenthia — Atendimento inteligente, canais oficiais e conversão.</p>
       </div>
-      <span class="chip p-chip-ok" style="font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 999px;">
-        ID: {slug}
+      <span style="background: var(--p-sucesso-fundo, #e2f6f5); color: var(--p-turquesa-texto, #0b7570); font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 999px;">
+        Tenant: {slug}
       </span>
     </div>
 
-    <div style="font-size: 0.92rem; line-height: 1.65; color: var(--p-texto, #231726); display: flex; flex-direction: column; gap: 16px;">
-      <p style="margin: 0;">
-        Você está gerenciando o ambiente exclusivo da sua empresa. Todas as mensagens, atendimentos, regras de inteligência e históricos estão restritos à sua conta com isolamento estrito de dados.
-      </p>
+    <!-- CARTÕES DE ATENÇÃO AGORA (ITEM F1.2) -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+      <div style="background: #ffffff; padding: 18px 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-magenta, #D0006F);">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Atendimentos Pendentes</div>
+        <div style="font-size: 1.6rem; font-weight: 800; color: var(--p-texto, #231726); margin-top: 4px;">0</div>
+        <div style="font-size: 0.78rem; color: var(--p-turquesa-texto, #0b7570); margin-top: 4px; font-weight: 600; cursor: pointer;" onclick="document.querySelector('[data-v=fila_atendimento]')?.click()">Ver fila de espera →</div>
+      </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 8px 0;">
-        <div style="padding: 18px; background: var(--p-marfim, #fbf8f4); border: 1px solid var(--p-borda, #eae3dc); border-radius: 12px;">
-          <div style="font-weight: 700; font-size: 0.92rem; color: var(--p-texto, #231726); margin-bottom: 6px;">📱 Canais de WhatsApp</div>
-          <p style="font-size: 0.82rem; color: var(--p-texto-suave, #5e5563); margin: 0 0 12px 0;">Conecte via Evolution API (QR Code) ou configure a API Oficial da Meta com faturamento direto.</p>
-          <div style="display: flex; gap: 10px;">
-            <a href="javascript:void(0)" onclick="carregarView('canais', document.querySelector('[data-v=canais]')).then(() => window.abrirCanaisSubaba && window.abrirCanaisSubaba('qrcode'))" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Conectar QR Code ↗</a>
-            <a href="javascript:void(0)" onclick="carregarView('canais', document.querySelector('[data-v=canais]')).then(() => window.abrirCanaisSubaba && window.abrirCanaisSubaba('meta'))" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Configurar Meta ↗</a>
-          </div>
+      <div style="background: #ffffff; padding: 18px 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-turquesa, #3ccbc5);">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Status do WhatsApp</div>
+        <div style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-top: 6px;">Pronto para Conectar</div>
+        <div style="font-size: 0.78rem; color: var(--p-turquesa-texto, #0b7570); margin-top: 4px; font-weight: 600; cursor: pointer;" onclick="document.querySelector('[data-v=canais]')?.click()">Gerenciar canais →</div>
+      </div>
+
+      <div style="background: #ffffff; padding: 18px 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-ambar, #e3a028);">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Sincronização de Agenda</div>
+        <div style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-top: 6px;">Calendly / Google</div>
+        <div style="font-size: 0.78rem; color: #b45309; margin-top: 4px; font-weight: 600; cursor: pointer;" onclick="document.querySelector('[data-v=calendar_config]')?.click()">Ajustar grade →</div>
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÃO GUIADA E ATALHOS RÁPIDOS -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div style="padding: 20px; background: #ffffff; border: 1px solid var(--p-borda, #eae3dc); border-radius: var(--p-raio, 16px);">
+        <div style="font-weight: 700; font-size: 0.95rem; color: var(--p-texto, #231726); margin-bottom: 6px;">📱 Canais de WhatsApp</div>
+        <p style="font-size: 0.82rem; color: var(--p-texto-suave, #5e5563); margin: 0 0 14px 0;">Conecte via Evolution API (QR Code) ou configure a API Oficial da Meta com faturamento direto.</p>
+        <div style="display: flex; gap: 12px;">
+          <a href="javascript:void(0)" onclick="carregarView('canais', document.querySelector('[data-v=canais]')).then(() => window.abrirCanaisSubaba && window.abrirCanaisSubaba('qrcode'))" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Conectar QR Code ↗</a>
+          <a href="javascript:void(0)" onclick="carregarView('canais', document.querySelector('[data-v=canais]')).then(() => window.abrirCanaisSubaba && window.abrirCanaisSubaba('meta'))" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Configurar Meta ↗</a>
         </div>
+      </div>
 
-        <div style="padding: 18px; background: var(--p-marfim, #fbf8f4); border: 1px solid var(--p-borda, #eae3dc); border-radius: 12px;">
-          <div style="font-weight: 700; font-size: 0.92rem; color: var(--p-texto, #231726); margin-bottom: 6px;">📅 Agendamento Integrado</div>
-          <p style="font-size: 0.82rem; color: var(--p-texto-suave, #5e5563); margin: 0 0 12px 0;">Sincronize com agendas para que o atendente IA consulte horários livres e marque compromissos.</p>
-          <div style="display: flex; gap: 12px;">
-            <a href="/calendar/oauth/google/start?tenant={slug}" target="_blank" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Google Calendar ↗</a>
-            <a href="/calendar/oauth/microsoft/start?tenant={slug}" target="_blank" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Microsoft 365 ↗</a>
-          </div>
+      <div style="padding: 20px; background: #ffffff; border: 1px solid var(--p-borda, #eae3dc); border-radius: var(--p-raio, 16px);">
+        <div style="font-weight: 700; font-size: 0.95rem; color: var(--p-texto, #231726); margin-bottom: 6px;">📅 Agendamento Integrado</div>
+        <p style="font-size: 0.82rem; color: var(--p-texto-suave, #5e5563); margin: 0 0 14px 0;">Sincronize com agendas para que o atendente IA consulte horários livres e marque compromissos.</p>
+        <div style="display: flex; gap: 14px;">
+          <a href="/calendar/oauth/google/start?tenant={slug}" target="_blank" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Google Calendar ↗</a>
+          <a href="/calendar/oauth/microsoft/start?tenant={slug}" target="_blank" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Microsoft 365 ↗</a>
         </div>
       </div>
     </div>
@@ -484,57 +514,53 @@ async function carregarView(nome, el) {{
   if (el) el.classList.add('ativo');
   const area = document.getElementById('conteudo');
 
-  if (nome === 'link_whatsapp') {{
-    await carregarView('canais', document.querySelector('[data-v=canais]'));
-    if (window.abrirCanaisSubaba) window.abrirCanaisSubaba('qrcode');
-    return;
-  }}
-  if (nome === 'meta_config') {{
-    await carregarView('canais', document.querySelector('[data-v=canais]'));
-    if (window.abrirCanaisSubaba) window.abrirCanaisSubaba('meta');
-    return;
-  }}
   if (nome === 'inicio') {{
     area.innerHTML = htmlInicio;
     document.getElementById('titulo').textContent = {inquilino.name!r};
     return;
   }}
 
-  area.innerHTML = '<p style="color:#6b7280">Carregando…</p>';
+  area.innerHTML = '<div style="padding: 30px; text-align: center; color:#6b7280; font-weight: 600;">Carregando módulo...</div>';
   try {{
     const r = await fetch('/dashboards/' + nome);
     if (r.status === 401 || r.status === 403) {{ window.location = '/tenant/login'; return; }}
-    // A rota devolve o HTML EMBRULHADO EM JSON (JSONResponse(f.read())).
-    // Nao e um bug daqui: e o contrato existente, o mesmo que o index.html
-    // consome. Desembrulhar aqui evita mexer numa rota que o painel admin usa.
-    const html = await r.json();
+    
+    // Suporta tanto texto HTML direto quanto JSON embrulhado
+    const txt = await r.text();
+    let html;
+    try {{
+      html = JSON.parse(txt);
+    }} catch (_) {{
+      html = txt;
+    }}
+
     area.innerHTML = html;
-    // innerHTML NAO executa <script>. Sem recriar as tags, as telas
-    // aparecem mas nao funcionam -- botao que nao faz nada.
     area.querySelectorAll('script').forEach(antigo => {{
       const novo = document.createElement('script');
       if (antigo.src) novo.src = antigo.src; else novo.textContent = antigo.textContent;
       antigo.replaceWith(novo);
     }});
     document.getElementById('titulo').textContent =
-      (el ? el.textContent.replace(/^[^A-Za-zÀ-ÿ]+/, '').trim() : {inquilino.name!r});
+      (el ? el.textContent.replace(/^[^A-Za-zÀ-ÿ0-9]+/, '').trim() : {inquilino.name!r});
   }} catch (e) {{
-    area.innerHTML = '<div class="aviso"><h2>Não consegui abrir esta tela</h2>'
-      + '<p>Tente de novo em instantes.</p></div>';
+    area.innerHTML = '<div style="background:#fff; padding:24px; border-radius:12px; border:1px solid #eae3dc;"><h2>Não foi possível abrir esta tela</h2>'
+      + '<p style="color:#6b7280;">Tente novamente em instantes ou utilize o menu anterior.</p></div>';
   }}
 }}
 
 document.getElementById('menu').addEventListener('click', (ev) => {{
   const item = ev.target.closest('.item');
-  if (item) carregarView(item.dataset.v, item);
+  if (item && item.dataset.v) carregarView(item.dataset.v, item);
+}});
+
+// Carrega a tela inicial por padrão
+window.addEventListener('DOMContentLoaded', () => {{
+  carregarView('inicio', document.querySelector('.item.ativo'));
 }});
 </script>
 </body></html>""")
 
 
-# ---------------------------------------------------------------------------
-# esqueci minha senha
-# ---------------------------------------------------------------------------
 @router.get("/v1/auth/esqueci-senha-form", include_in_schema=False)
 async def tela_esqueci():
     return _pagina("Recuperar senha", """
@@ -726,6 +752,7 @@ async def api_listar_templates_segmentos():
 async def api_aplicar_template_segmento(request: Request):
     from app.services.segment_templates import obter_template
     from app.core.database import AsyncSessionLocal
+from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import text
     import json
     
@@ -798,6 +825,7 @@ async def api_busca_global(q: str = "", slug: str = "conta"):
     # 2. Busca de Contatos / Clientes no PostgreSQL
     try:
         from app.core.database import AsyncSessionLocal
+from app.core.feature_flags import is_flag_enabled
         from sqlalchemy import text
         async with AsyncSessionLocal() as session:
             query = await session.execute(text("""
@@ -840,6 +868,7 @@ async def api_listar_equipe(request: Request):
         return JSONResponse(status_code=403, content={"ok": False, "mensagem": "Acesso restrito a Donos e Gestores."})
 
     from app.core.database import AsyncSessionLocal
+from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.tenant_user import TenantUser
 
@@ -888,6 +917,7 @@ async def api_convidar_membro(request: Request):
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Papel inválido."})
 
     from app.core.database import AsyncSessionLocal
+from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.tenant_user import TenantUser
     from app.models.tenant import Tenant
@@ -938,6 +968,7 @@ async def api_alterar_role_membro(usuario_id: str, request: Request):
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Papel inválido."})
 
     from app.core.database import AsyncSessionLocal
+from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.tenant_user import TenantUser
 
@@ -965,6 +996,7 @@ async def api_remover_membro(usuario_id: str, request: Request):
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de usuário inválido."})
 
     from app.core.database import AsyncSessionLocal
+from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.tenant_user import TenantUser
 
@@ -996,6 +1028,7 @@ async def api_public_captura_lead(slug: str, request: Request, tarefas: Backgrou
     """
     from fastapi.responses import JSONResponse
     from app.core.database import AsyncSessionLocal
+from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.tenant import Tenant
     from app.models.scheduling import Lead
@@ -1067,6 +1100,7 @@ async def api_listar_leads_tenant(request: Request, status_filtro: Optional[str]
     from fastapi.responses import JSONResponse
     from app.core import autorizacao as _autz
     from app.core.database import AsyncSessionLocal
+from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select, desc
     from app.models.scheduling import Lead
 
@@ -1121,6 +1155,7 @@ async def api_atualizar_status_lead(lead_id: str, request: Request):
     from fastapi.responses import JSONResponse
     from app.core import autorizacao as _autz
     from app.core.database import AsyncSessionLocal
+from app.core.feature_flags import is_flag_enabled
     from sqlalchemy import select
     from app.models.scheduling import Lead
     import uuid
