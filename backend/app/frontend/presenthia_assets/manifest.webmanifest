@@ -1,0 +1,12 @@
+{
+  "name": "Presenthia",
+  "short_name": "Presenthia",
+  "start_url": "/tenant/painel",
+  "display": "standalone",
+  "background_color": "#FBF8F4",
+  "theme_color": "#231726",
+  "icons": [
+    { "src": "/static/brand/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/static/brand/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

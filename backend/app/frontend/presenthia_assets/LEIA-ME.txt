@@ -1,0 +1,7 @@
+Pacote de marca Presenthia
+- presenthia-*.svg / .png : logotipos oficiais (texto convertido em contorno; não depende de fonte instalada)
+- favicon.ico, favicon-16/32.png, apple-touch-icon.png, icon-192/512.png : ícones
+- tokens.css : cores e fontes da plataforma (Runbook, Etapa M)
+- manifest.webmanifest : instalação como app (PWA)
+- DMSerifDisplay-Regular.ttf, DMSans.ttf : fontes (licença SIL Open Font License, Google Fonts)
+Símbolo vetorizado a partir da imagem aprovada; cores do símbolo amostradas dela.

@@ -3,318 +3,480 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presenthia Console - Gestão SaaS Master</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="/presenthia/assets/favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/presenthia/assets/favicon-16.png">
-    <link rel="stylesheet" href="/presenthia/assets/tokens.css">
+    <title>Presenthia — Console de Gestão Master</title>
+    
+    <!-- Metadados de Marca e Ícones Oficiais do Pacote de Marca -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/brand/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/brand/favicon-16.png">
+    <link rel="apple-touch-icon" href="/static/brand/apple-touch-icon.png">
+    <link rel="manifest" href="/static/brand/manifest.webmanifest">
+    
+    <!-- Folha Oficial de Tokens de Design Presenthia -->
+    <link rel="stylesheet" href="/static/brand/tokens.css">
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            background-color: var(--presenthia-berinjela, #231726);
-            color: var(--presenthia-marfim, #FBF8F4);
-            font-family: var(--font-corpo, 'DM Sans', sans-serif);
+            font-family: var(--p-fonte-texto);
+            color: var(--p-texto);
+            background-color: var(--p-marfim);
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
+
+        /* Barra Lateral Escura (p-sidebar) */
         .sidebar {
-            width: 280px;
-            background: rgba(15, 9, 17, 0.95);
-            border-right: 1px solid rgba(240, 183, 78, 0.2);
+            width: 290px;
+            background-color: var(--p-berinjela);
+            color: #DCD2DF;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             padding: 24px 18px;
+            border-right: 1px solid rgba(234, 227, 220, 0.15);
+            flex-shrink: 0;
+            overflow-y: auto;
         }
-        .brand-container {
+
+        .sidebar-brand {
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(220, 210, 223, 0.12);
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(251, 248, 244, 0.1);
         }
-        .brand-logo {
-            height: 36px;
+
+        .sidebar-brand img {
+            height: 38px;
             width: auto;
+            display: block;
         }
-        .nav-list {
+
+        .sidebar-nav {
             margin-top: 24px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
         }
-        .nav-item {
+
+        .sidebar-nav a {
             padding: 10px 14px;
-            border-radius: 8px;
-            color: rgba(251, 248, 244, 0.7);
-            text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 13.5px;
             font-weight: 500;
+            color: #DCD2DF;
+            text-decoration: none;
             display: flex;
             align-items: center;
             gap: 10px;
             transition: all 0.2s ease;
+            border-radius: 8px;
         }
-        .nav-item:hover {
-            color: var(--presenthia-marfim, #FBF8F4);
-            background: rgba(208, 0, 111, 0.15);
-        }
-        .nav-item.active {
-            background: var(--presenthia-magenta, #D0006F);
+
+        .sidebar-nav a:hover {
             color: #FFFFFF;
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar-nav a[aria-current="page"] {
+            background-color: #3A2740;
+            color: #FFFFFF;
+            border-radius: 10px;
             font-weight: 600;
         }
+
+        .sidebar-footer {
+            padding-top: 18px;
+            border-top: 1px solid rgba(220, 210, 223, 0.12);
+            font-size: 11.5px;
+            color: rgba(220, 210, 223, 0.5);
+            line-height: 1.5;
+        }
+
+        /* Palco Principal */
         .main-stage {
             flex: 1;
             display: flex;
             flex-direction: column;
+            height: 100vh;
             overflow-y: auto;
-            background: #1b121e;
+            background-color: var(--p-marfim);
         }
+
+        /* Topbar Canônica */
         .topbar {
-            background: rgba(27, 18, 30, 0.8);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid rgba(251, 248, 244, 0.08);
+            background-color: #FFFFFF;
+            border-bottom: 1px solid var(--p-borda);
             padding: 18px 36px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-        .page-title {
-            font-family: var(--font-display, 'DM Serif Display', serif);
-            font-size: 1.8rem;
-            color: var(--presenthia-marfim, #FBF8F4);
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .topbar-title {
+            font-family: var(--p-fonte-titulo);
+            font-size: 26px;
             font-weight: 400;
+            color: var(--p-texto);
+            letter-spacing: -0.01em;
         }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Área de Conteúdo */
         .content-area {
-            padding: 36px;
+            padding: 32px 36px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 28px;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
         }
-        .status-badge {
-            background: var(--presenthia-ambar, #E3A028);
-            color: var(--presenthia-berinjela, #231726);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+
+        /* Grid de Indicadores (KPIs) */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .kpi-card {
+            padding: 22px 24px;
+            background-color: #FFFFFF;
+            border: 1px solid var(--p-borda);
+            border-radius: var(--p-raio);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(35, 23, 38, 0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(35, 23, 38, 0.05);
+        }
+
+        .kpi-header {
+            font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.06em;
+            color: var(--p-texto-suave);
+            margin-bottom: 8px;
         }
-        .overview-panel {
-            background: rgba(35, 23, 38, 0.85);
-            border: 1px solid rgba(240, 183, 78, 0.2);
-            border-radius: 12px;
+
+        .kpi-val {
+            font-family: var(--p-fonte-titulo);
+            font-size: 32px;
+            font-weight: 400;
+            color: var(--p-texto);
+        }
+
+        .kpi-val.magenta { color: var(--p-magenta); }
+        .kpi-val.turquesa { color: var(--p-turquesa-texto); }
+        .kpi-val.ambar { color: var(--p-ambar-escuro); }
+
+        .kpi-sub {
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--p-texto-suave);
+        }
+
+        /* Painéis e Tabelas */
+        .panel {
             padding: 28px;
+            background-color: #FFFFFF;
+            border: 1px solid var(--p-borda);
+            border-radius: var(--p-raio);
+            box-shadow: 0 2px 4px rgba(35, 23, 38, 0.02);
         }
-        .kpi-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .kpi-box {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(251, 248, 244, 0.08);
-            border-radius: 10px;
-            padding: 18px;
-        }
-        .kpi-label {
-            font-size: 0.8rem;
-            color: rgba(251, 248, 244, 0.6);
-            margin-bottom: 6px;
-        }
-        .kpi-number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--presenthia-turquesa, #3CCBC5);
-        }
-        .data-table-container {
-            margin-top: 28px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(251, 248, 244, 0.08);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .table-header {
-            padding: 16px 20px;
-            background: rgba(255, 255, 255, 0.04);
-            border-bottom: 1px solid rgba(251, 248, 244, 0.08);
+
+        .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--p-borda);
         }
-        .table-title {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: var(--presenthia-marfim, #FBF8F4);
+
+        .panel-title {
+            font-family: var(--p-fonte-titulo);
+            font-size: 20px;
+            color: var(--p-texto);
         }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 0.88rem;
+            font-size: 13.5px;
         }
+
         th {
-            padding: 12px 20px;
-            background: rgba(0, 0, 0, 0.2);
-            color: rgba(251, 248, 244, 0.5);
-            font-weight: 600;
+            background-color: var(--p-marfim);
+            color: var(--p-texto-suave);
+            font-weight: 700;
+            font-size: 11px;
             text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.06em;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--p-borda);
         }
+
         td {
-            padding: 14px 20px;
-            border-top: 1px solid rgba(251, 248, 244, 0.05);
-            color: rgba(251, 248, 244, 0.85);
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--p-borda);
+            color: var(--p-texto);
         }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
         tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
+            background-color: rgba(251, 248, 244, 0.5);
         }
-        .badge-active {
-            color: #10B981;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .badge-inactive {
-            color: #EF4444;
-            background: rgba(239, 68, 68, 0.1);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .btn-action {
-            background: transparent;
-            border: 1px solid rgba(240, 183, 78, 0.4);
-            color: var(--presenthia-ambar, #E3A028);
-            padding: 4px 10px;
+
+        .code-pill {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+            padding: 2px 8px;
+            background-color: var(--p-marfim);
+            border: 1px solid var(--p-borda);
             border-radius: 6px;
-            font-size: 0.78rem;
-            cursor: pointer;
-            transition: all 0.2s;
+            color: var(--p-turquesa-texto);
         }
-        .btn-action:hover {
-            background: var(--presenthia-ambar, #E3A028);
-            color: #231726;
+
+        /* Chips e Ações de Estado */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn-table-action {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: var(--p-fonte-texto);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-action-off {
+            background: transparent;
+            color: var(--p-texto-suave);
+            border: 1.5px solid var(--p-borda);
+        }
+
+        .btn-action-off:hover {
+            border-color: var(--p-texto);
+            color: var(--p-texto);
+        }
+
+        .btn-action-on {
+            background: transparent;
+            color: var(--p-amora);
+            border: 1.5px solid var(--p-amora);
+        }
+
+        .btn-action-on:hover {
+            background: var(--p-destaque-fundo);
+        }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; height: auto; overflow: visible; }
+            .sidebar { width: 100%; height: auto; }
+            .main-stage { height: auto; overflow: visible; }
+            .topbar { padding: 16px 20px; }
+            .content-area { padding: 20px; }
         }
     </style>
 </head>
 <body>
-    <aside class="sidebar">
+
+    <!-- SIDEBAR OFICIAL (p-sidebar) -->
+    <aside class="sidebar p-sidebar">
         <div>
-            <div class="brand-container">
-                <img class="brand-logo" src="/presenthia/assets/presenthia-logo-horizontal.svg" alt="Presenthia Logo">
+            <div class="sidebar-brand">
+                <img src="/static/brand/presenthia-console-escuro.svg" alt="Presenthia Console">
             </div>
-            <nav class="nav-list">
-                <a href="#visao-geral" class="nav-item active">1. Visão Geral</a>
-                <a href="#tenants" class="nav-item">2. Tenants Ativos</a>
-                <a href="#assinaturas" class="nav-item">3. Planos & Assinaturas</a>
-                <a href="#relatorios" class="nav-item">4. Relatórios</a>
-                <a href="#solicitacoes" class="nav-item">5. Solicitações</a>
-                <a href="#comunicacao" class="nav-item">6. Comunicação</a>
-                <a href="#tutoriais" class="nav-item">7. Tutoriais</a>
-                <a href="#copilotos" class="nav-item">8. Copilotos de IA</a>
-                <a href="#pulso" class="nav-item">9. Pulso da Operação</a>
-                <a href="#versoes" class="nav-item">10. Versões & Flags</a>
-                <a href="#tecnica" class="nav-item">11. Operação Técnica</a>
-                <a href="#auditoria" class="nav-item">12. Auditoria & Logs</a>
+            
+            <nav class="sidebar-nav">
+                <a href="#visao-geral" aria-current="page">1. Visão Geral</a>
+                <a href="#tenants">2. Inquilinos Ativos</a>
+                <a href="#planos">3. Planos & Assinaturas</a>
+                <a href="#relatorios">4. Relatórios</a>
+                <a href="#solicitacoes">5. Solicitações</a>
+                <a href="#comunicacao">6. Comunicação</a>
+                <a href="#tutoriais">7. Tutoriais</a>
+                <a href="#copilotos">8. Copilotos de IA</a>
+                <a href="#pulso">9. Pulso da Operação</a>
+                <a href="#flags">10. Versões & Flags</a>
+                <a href="#tecnica">11. Operação Técnica</a>
+                <a href="#auditoria">12. Auditoria & Logs</a>
             </nav>
         </div>
-        <div style="font-size: 0.75rem; color: rgba(251, 248, 244, 0.4);">
-            Presenthia Engine &copy; 2026<br>Telemetria em Tempo Real
+
+        <div class="sidebar-footer">
+            <strong>Presenthia Engine &copy; 2026</strong><br>
+            Plataforma Multi-Tenant Ativa<br>
+            <span style="color: var(--p-ambar);">Ambiente Seguro (Produção)</span>
         </div>
     </aside>
 
+    <!-- PALCO PRINCIPAL -->
     <main class="main-stage">
         <header class="topbar">
-            <h1 class="page-title">Console de Gestão Master</h1>
-            <span class="status-badge" id="badge-flag">Carregando Telemetria...</span>
+            <div class="topbar-left">
+                <h1 class="topbar-title p-titulo">Console de Gestão Master</h1>
+            </div>
+            <div class="topbar-actions">
+                <span class="chip p-chip-ok" id="badge-status-plataforma">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--p-turquesa-texto);"></span>
+                    Conectando Telemetria...
+                </span>
+                <button class="p-btn" onclick="carregarDados()" style="height: 38px; padding: 0 16px; font-size: 13px;">
+                    Atualizar Dados
+                </button>
+            </div>
         </header>
 
         <section class="content-area">
-            <div class="overview-panel">
-                <h2 style="font-family: var(--font-display, 'DM Serif Display', serif); color: var(--presenthia-ambar-claro, #F0B74E); font-size: 1.3rem; margin-bottom: 8px;">
-                    Telemetria Global da Plataforma
-                </h2>
-                <p style="color: rgba(251, 248, 244, 0.8); font-size: 0.95rem; line-height: 1.6;">
-                    Métricas consolidadas diretamente do banco de dados relacional. Gestão de Inquilinos, instâncias conectadas e chaves de funcionalidade ativas.
-                </p>
-                <div class="kpi-row">
-                    <div class="kpi-box">
-                        <div class="kpi-label">TOTAL DE INQUILINOS</div>
-                        <div class="kpi-number" id="kpi-total-tenants">--</div>
-                    </div>
-                    <div class="kpi-box">
-                        <div class="kpi-label">INQUILINOS ATIVOS</div>
-                        <div class="kpi-number" id="kpi-active-tenants" style="color: #10B981;">--</div>
-                    </div>
-                    <div class="kpi-box">
-                        <div class="kpi-label">WHATSAPP CONECTADOS</div>
-                        <div class="kpi-number" id="kpi-whatsapp">--</div>
-                    </div>
-                    <div class="kpi-box">
-                        <div class="kpi-label">FEATURE FLAGS ATIVAS</div>
-                        <div class="kpi-number" id="kpi-flags" style="color: var(--presenthia-magenta, #D0006F);">--</div>
-                    </div>
+            
+            <!-- GRADE DE KPIS (p-card) -->
+            <div class="kpi-grid">
+                <div class="kpi-card p-card">
+                    <div class="kpi-header">Inquilinos Cadastrados</div>
+                    <div class="kpi-val" id="kpi-total-tenants">--</div>
+                    <div class="kpi-sub">Total de contas registradas</div>
                 </div>
 
-                <!-- TABELA DINÂMICA DE INQUILINOS -->
-                <div class="data-table-container">
-                    <div class="table-header">
-                        <div class="table-title">Inquilinos Cadastrados (Multi-Tenant)</div>
-                        <button class="btn-action" onclick="carregarDados()">Atualizar Dados</button>
+                <div class="kpi-card p-card">
+                    <div class="kpi-header">Inquilinos em Operação</div>
+                    <div class="kpi-val turquesa" id="kpi-active-tenants">--</div>
+                    <div class="kpi-sub">Acesso liberado no sistema</div>
+                </div>
+
+                <div class="kpi-card p-card">
+                    <div class="kpi-header">Sessões WhatsApp</div>
+                    <div class="kpi-val ambar" id="kpi-whatsapp">--</div>
+                    <div class="kpi-sub">Instâncias ativas / conectadas</div>
+                </div>
+
+                <div class="kpi-card p-card">
+                    <div class="kpi-header">Feature Flags Ativas</div>
+                    <div class="kpi-val magenta" id="kpi-flags">--</div>
+                    <div class="kpi-sub">Chaves de funcionalidade ativas</div>
+                </div>
+            </div>
+
+            <!-- PAINEL 1: INQUILINOS (MULTI-TENANT) -->
+            <div class="panel p-card" id="tenants">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title p-titulo">Inquilinos Cadastrados (Multi-Tenant)</h2>
+                        <p style="font-size: 13px; color: var(--p-texto-suave); margin-top: 4px;">
+                            Controle individual de permissões, instâncias e acesso à plataforma
+                        </p>
                     </div>
+                    <span id="counter-tenants" class="chip p-chip-ok" style="font-size: 11px;">0 registros</span>
+                </div>
+
+                <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>Nome</th>
+                                <th>Nome do Inquilino</th>
                                 <th>Identificador (Slug)</th>
-                                <th>E-mail Master</th>
-                                <th>WhatsApp</th>
-                                <th>Status</th>
-                                <th>Ação</th>
+                                <th>E-mail do Administrador</th>
+                                <th>Canal WhatsApp</th>
+                                <th>Estado</th>
+                                <th style="text-align: right;">Ação de Governança</th>
                             </tr>
                         </thead>
                         <tbody id="tbody-tenants">
-                            <tr><td colspan="6" style="text-align: center; color: rgba(251, 248, 244, 0.5);">Carregando inquilinos...</td></tr>
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--p-texto-suave); padding: 24px;">
+                                    Carregando inquilinos da base de dados...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
 
-                <!-- TABELA DINÂMICA DE FEATURE FLAGS -->
-                <div class="data-table-container" style="margin-top: 24px;">
-                    <div class="table-header">
-                        <div class="table-title">Chaves de Funcionalidade (Feature Flags)</div>
+            <!-- PAINEL 2: FEATURE FLAGS -->
+            <div class="panel p-card" id="flags">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title p-titulo">Chaves de Funcionalidade (Feature Flags)</h2>
+                        <p style="font-size: 13px; color: var(--p-texto-suave); margin-top: 4px;">
+                            Ativação dinâmica de módulos no núcleo sem necessidade de deploy
+                        </p>
                     </div>
+                    <span id="counter-flags" class="chip p-chip-ok" style="font-size: 11px;">0 chaves</span>
+                </div>
+
+                <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>Chave (Key)</th>
+                                <th>Chave da Funcionalidade</th>
                                 <th>Escopo</th>
-                                <th>Status</th>
-                                <th>Ação</th>
+                                <th>Estado Atual</th>
+                                <th style="text-align: right;">Ação</th>
                             </tr>
                         </thead>
                         <tbody id="tbody-flags">
-                            <tr><td colspan="4" style="text-align: center; color: rgba(251, 248, 244, 0.5);">Carregando flags...</td></tr>
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--p-texto-suave); padding: 24px;">
+                                    Carregando chaves do sistema...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
-
             </div>
+
         </section>
     </main>
 
+    <!-- SCRIPT DE TELEMETRIA E SINCRONIZAÇÃO EM TEMPO REAL -->
     <script>
         async function carregarDados() {
+            console.log("[TELEMETRIA] Solicitando métricas ao backend...");
             try {
-                // 1. Carregar Estatísticas
+                // 1. Estatísticas Globais
                 const resStats = await fetch('/api/v1/presenthia/stats');
                 if (resStats.ok) {
                     const data = await resStats.json();
@@ -322,82 +484,118 @@
                     document.getElementById('kpi-active-tenants').innerText = data.active_tenants;
                     document.getElementById('kpi-whatsapp').innerText = `${data.instances_connected} (${data.whatsapp_active} ativo)`;
                     document.getElementById('kpi-flags').innerText = `${data.active_flags} / ${data.total_flags}`;
-                    document.getElementById('badge-flag').innerText = `Status: ${data.platform_status.toUpperCase()} (${data.environment})`;
+                    
+                    const badge = document.getElementById('badge-status-plataforma');
+                    badge.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: var(--p-turquesa-texto);"></span> ${data.platform_status.toUpperCase()} (${data.environment})`;
+                    console.log("[TELEMETRIA] Métricas consolidadas com sucesso:", data);
+                } else {
+                    console.error("[TELEMETRIA] Erro ao obter /stats. HTTP Status:", resStats.status);
                 }
 
-                // 2. Carregar Inquilinos
+                // 2. Inquilinos Cadastrados
                 const resTenants = await fetch('/api/v1/presenthia/tenants');
                 if (resTenants.ok) {
                     const tenants = await resTenants.json();
                     const tbody = document.getElementById('tbody-tenants');
                     tbody.innerHTML = '';
+                    document.getElementById('counter-tenants').innerText = `${tenants.length} inquilinos`;
+
                     if (tenants.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum inquilino encontrado.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--p-texto-suave); padding: 20px;">Nenhum inquilino registrado.</td></tr>';
                     } else {
                         tenants.forEach(t => {
                             const tr = document.createElement('tr');
-                            const statusBadge = t.is_active 
-                                ? '<span class="badge-active">Ativo</span>' 
-                                : '<span class="badge-inactive">Inativo</span>';
+                            const statusChip = t.is_active
+                                ? '<span class="chip p-chip-ok">Ativo</span>'
+                                : '<span class="chip p-chip-atencao">Inativo</span>';
+                            
+                            const btnClass = t.is_active ? 'btn-action-on' : 'btn-action-off';
                             const btnText = t.is_active ? 'Desativar' : 'Ativar';
+
                             tr.innerHTML = `
-                                <td style="font-weight: 600; color: #fff;">${t.name}</td>
-                                <td><code style="color: var(--presenthia-turquesa, #3CCBC5);">${t.slug}</code></td>
-                                <td>${t.admin_email}</td>
-                                <td>${t.whatsapp_number_e164 || t.evolution_instance || 'Nenhum'}</td>
-                                <td>${statusBadge}</td>
-                                <td><button class="btn-action" onclick="toggleTenant('${t.id}')">${btnText}</button></td>
+                                <td style="font-weight: 700; color: var(--p-texto);">${t.name}</td>
+                                <td><span class="code-pill">${t.slug}</span></td>
+                                <td style="color: var(--p-texto-suave);">${t.admin_email}</td>
+                                <td style="color: var(--p-texto-suave);">${t.whatsapp_number_e164 || t.evolution_instance || 'Não configurado'}</td>
+                                <td>${statusChip}</td>
+                                <td style="text-align: right;">
+                                    <button class="btn-table-action ${btnClass}" onclick="toggleTenant('${t.id}')">
+                                        ${btnText}
+                                    </button>
+                                </td>
                             `;
                             tbody.appendChild(tr);
                         });
                     }
                 }
 
-                // 3. Carregar Flags
+                // 3. Feature Flags
                 const resFlags = await fetch('/api/v1/presenthia/flags');
                 if (resFlags.ok) {
                     const flags = await resFlags.json();
                     const tbody = document.getElementById('tbody-flags');
                     tbody.innerHTML = '';
+                    document.getElementById('counter-flags').innerText = `${flags.length} chaves`;
+
                     flags.forEach(f => {
                         const tr = document.createElement('tr');
-                        const statusBadge = f.enabled 
-                            ? '<span class="badge-active">Ligada</span>' 
-                            : '<span class="badge-inactive">Desligada</span>';
+                        const statusChip = f.enabled
+                            ? '<span class="chip p-chip-ok">Ligada</span>'
+                            : '<span class="chip p-chip-atencao">Desligada</span>';
+                        
+                        const btnClass = f.enabled ? 'btn-action-on' : 'btn-action-off';
                         const btnText = f.enabled ? 'Desligar' : 'Ligar';
+
                         tr.innerHTML = `
-                            <td><strong style="color: var(--presenthia-ambar, #E3A028);">${f.key}</strong></td>
-                            <td>${f.scope}</td>
-                            <td>${statusBadge}</td>
-                            <td><button class="btn-action" onclick="toggleFlag('${f.key}')">${btnText}</button></td>
+                            <td><strong style="color: var(--p-texto);">${f.key}</strong></td>
+                            <td><span class="code-pill">${f.scope}</span></td>
+                            <td>${statusChip}</td>
+                            <td style="text-align: right;">
+                                <button class="btn-table-action ${btnClass}" onclick="toggleFlag('${f.key}')">
+                                    ${btnText}
+                                </button>
+                            </td>
                         `;
                         tbody.appendChild(tr);
                     });
                 }
             } catch (err) {
-                console.error("Erro ao atualizar dados:", err);
+                console.error("[TELEMETRIA] Falha ao comunicar com os endpoints:", err);
             }
         }
 
         async function toggleTenant(tenantId) {
+            console.log(`[AÇÃO] Solicitando alternância de estado para Tenant: ${tenantId}`);
             try {
                 const res = await fetch(`/api/v1/presenthia/tenants/${tenantId}/toggle-active`, { method: 'POST' });
-                if (res.ok) carregarDados();
+                if (res.ok) {
+                    console.log(`[AÇÃO] Tenant ${tenantId} atualizado.`);
+                    carregarDados();
+                } else {
+                    alert("Não foi possível alterar o estado do inquilino.");
+                }
             } catch (err) {
-                alert("Erro ao alterar inquilino: " + err);
+                console.error("[AÇÃO] Erro ao alternar tenant:", err);
+                alert("Falha de comunicação: " + err);
             }
         }
 
         async function toggleFlag(flagKey) {
+            console.log(`[AÇÃO] Solicitando alternância de estado para Flag: ${flagKey}`);
             try {
                 const res = await fetch(`/api/v1/presenthia/flags/${flagKey}/toggle`, { method: 'POST' });
-                if (res.ok) carregarDados();
+                if (res.ok) {
+                    console.log(`[AÇÃO] Flag ${flagKey} atualizada.`);
+                    carregarDados();
+                } else {
+                    alert("Não foi possível alterar o estado da funcionalidade.");
+                }
             } catch (err) {
-                alert("Erro ao alterar flag: " + err);
+                console.error("[AÇÃO] Erro ao alternar flag:", err);
+                alert("Falha de comunicação: " + err);
             }
         }
 
-        // Executar carregamento inicial imediatamente
         document.addEventListener('DOMContentLoaded', carregarDados);
     </script>
 </body>

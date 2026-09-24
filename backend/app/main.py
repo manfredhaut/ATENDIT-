@@ -19,12 +19,13 @@ logger = logging.getLogger("atendit-api")
 
 app = FastAPI(title="ATENDIT SaaS Engine", version="1.0.0")
 
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    from fastapi.responses import Response
-    import base64
-    ico = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
-    return Response(content=ico, media_type="image/x-icon", status_code=200)
+@app.api_route("/favicon.ico", methods=["GET", "HEAD"], include_in_schema=False)
+async def serve_canonical_favicon():
+    fav_file = FRONTEND_DIR / "presenthia_assets" / "favicon.ico"
+    if fav_file.is_file():
+        from fastapi.responses import FileResponse
+        return FileResponse(fav_file, media_type="image/x-icon")
+    return Response(status_code=204)
 
 
 app.add_middleware(
@@ -1286,9 +1287,10 @@ from fastapi.staticfiles import StaticFiles
 
 _presenthia_assets_path = FRONTEND_DIR / "presenthia_assets"
 if _presenthia_assets_path.is_dir():
+    app.mount("/static/brand", StaticFiles(directory=str(_presenthia_assets_path)), name="presenthia_brand_assets")
     app.mount("/presenthia/assets", StaticFiles(directory=str(_presenthia_assets_path)), name="presenthia_static_assets")
 
-@app.get("/presenthia/console", response_class=HTMLResponse, dependencies=[Depends(flag_on("presenthia_core"))], include_in_schema=False)
+@app.api_route("/presenthia/console", methods=["GET", "HEAD"], response_class=HTMLResponse, dependencies=[Depends(flag_on("presenthia_core"))], include_in_schema=False)
 async def serve_presenthia_console_dashboard():
     target = FRONTEND_DIR / "presenthia_console.html"
     if target.is_file():

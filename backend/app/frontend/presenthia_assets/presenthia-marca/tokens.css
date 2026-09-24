@@ -1,0 +1,25 @@
+/* Presenthia — tokens de marca. Incluir em todas as páginas: <link rel="stylesheet" href="/static/brand/tokens.css"> */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..800&display=swap');
+:root{
+  --p-magenta:#D0006F; --p-amora:#990049;
+  --p-ambar:#F0B74E; --p-ambar-escuro:#E3A028;
+  --p-turquesa:#3CCBC5; --p-turquesa-texto:#0B7570;
+  --p-berinjela:#231726; --p-marfim:#FBF8F4;
+  --p-texto:#231726; --p-texto-suave:#5E5563; --p-borda:#EAE3DC;
+  --p-sucesso-fundo:#E2F6F5; --p-atencao-fundo:#FDF1DC; --p-destaque-fundo:#FBE6F0;
+  --p-fonte-titulo:'DM Serif Display', Georgia, serif;
+  --p-fonte-texto:'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --p-raio:16px;
+}
+body{font-family:var(--p-fonte-texto);color:var(--p-texto);background:var(--p-marfim)}
+h1,h2,h3,.p-titulo{font-family:var(--p-fonte-titulo);font-weight:400;letter-spacing:-0.01em}
+a{color:var(--p-turquesa-texto)}
+.p-btn{display:inline-flex;align-items:center;height:44px;padding:0 20px;border:0;border-radius:999px;background:var(--p-magenta);color:#fff;font:700 14px var(--p-fonte-texto);cursor:pointer}
+.p-btn:hover{background:var(--p-amora)}
+.p-btn-sec{background:transparent;color:var(--p-texto);border:1.5px solid var(--p-texto)}
+.p-card{background:#fff;border:1px solid var(--p-borda);border-radius:var(--p-raio)}
+.p-sidebar{background:var(--p-berinjela);color:#DCD2DF}
+.p-sidebar a{color:inherit;text-decoration:none}
+.p-sidebar a[aria-current="page"]{background:#3A2740;color:#fff;border-radius:10px}
+.p-chip-ok{background:var(--p-sucesso-fundo);color:var(--p-turquesa-texto)}
+.p-chip-atencao{background:var(--p-atencao-fundo);color:#7A4B00}
