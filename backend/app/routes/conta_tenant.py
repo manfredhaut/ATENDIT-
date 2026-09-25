@@ -1328,7 +1328,7 @@ async def api_listar_leads_tenant(request: Request, status_filtro: Optional[str]
 
 @router.patch("/api/tenant/leads/{lead_id}/status")
 async def api_atualizar_status_lead(lead_id: str, request: Request):
-    """Atualiza a fase do lead no funil."""
+    """Atualiza a fase do lead no funil com isolamento multi-tenant estrito."""
     from fastapi.responses import JSONResponse
     from app.core import autorizacao as _autz
     from app.core.database import AsyncSessionLocal
@@ -1349,24 +1349,33 @@ async def api_atualizar_status_lead(lead_id: str, request: Request):
     if novo_status not in ("novo", "qualificado", "em_atendimento", "convertido", "arquivado"):
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Status inválido."})
 
+    sessao_t = _autz.sessao_tenant(request)
+    sessao_adm = _autz.sessao_admin(request)
+    t_id = sessao_t.get("tenant_id") if sessao_t else None
+
     async with AsyncSessionLocal() as session:
-        res = await session.execute(select(Lead).where(Lead.id == lid))
+        query = select(Lead).where(Lead.id == lid)
+        if not sessao_adm and t_id:
+            query = query.where(Lead.tenant_id == uuid.UUID(str(t_id)))
+
+        res = await session.execute(query)
         lead = res.scalar_one_or_none()
         if not lead:
-            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Lead não encontrado."})
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Lead não encontrado nesta organização."})
 
         lead.status = novo_status
         await session.commit()
         return JSONResponse(content={"ok": True, "mensagem": f"Status atualizado para {novo_status}!"})
 
 
-
-
 @router.post("/api/tenant/leads/{lead_id}/qualificar")
 async def api_requalificar_lead(lead_id: str, request: Request, tarefas: BackgroundTasks):
-    """Aciona re-qualificação imediata com IA."""
+    """Aciona re-qualificação imediata com IA com validação de posse do lead."""
     from fastapi.responses import JSONResponse
     from app.core import autorizacao as _autz
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select
+    from app.models.scheduling import Lead
     from app.services.lead_qualification_service import qualificar_lead_ia
     import uuid
 
@@ -1378,6 +1387,18 @@ async def api_requalificar_lead(lead_id: str, request: Request, tarefas: Backgro
     except ValueError:
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de lead inválido."})
 
+    sessao_t = _autz.sessao_tenant(request)
+    sessao_adm = _autz.sessao_admin(request)
+    t_id = sessao_t.get("tenant_id") if sessao_t else None
+
+    async with AsyncSessionLocal() as session:
+        query = select(Lead.id).where(Lead.id == lid)
+        if not sessao_adm and t_id:
+            query = query.where(Lead.tenant_id == uuid.UUID(str(t_id)))
+        res = await session.execute(query)
+        if not res.scalar_one_or_none():
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Lead não encontrado nesta organização."})
+
     # Executa a análise de IA
     resultado = await qualificar_lead_ia(lid)
     if resultado:
@@ -1385,13 +1406,14 @@ async def api_requalificar_lead(lead_id: str, request: Request, tarefas: Backgro
     return JSONResponse(status_code=500, content={"ok": False, "mensagem": "Falha na análise da IA."})
 
 
-
-
 @router.post("/api/tenant/leads/{lead_id}/boas-vindas")
 async def api_reenviar_boas_vindas(lead_id: str, request: Request, tarefas: BackgroundTasks):
     """Dispara ou reenvia mensagem de boas-vindas no WhatsApp do lead."""
     from fastapi.responses import JSONResponse
     from app.core import autorizacao as _autz
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select
+    from app.models.scheduling import Lead
     from app.services.lead_welcome_service import enviar_boas_vindas_lead
     import uuid
 
@@ -1403,13 +1425,22 @@ async def api_reenviar_boas_vindas(lead_id: str, request: Request, tarefas: Back
     except ValueError:
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de lead inválido."})
 
-    # Força envio imediato
+    sessao_t = _autz.sessao_tenant(request)
+    sessao_adm = _autz.sessao_admin(request)
+    t_id = sessao_t.get("tenant_id") if sessao_t else None
+
+    async with AsyncSessionLocal() as session:
+        query = select(Lead.id).where(Lead.id == lid)
+        if not sessao_adm and t_id:
+            query = query.where(Lead.tenant_id == uuid.UUID(str(t_id)))
+        res = await session.execute(query)
+        if not res.scalar_one_or_none():
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Lead não encontrado nesta organização."})
+
     enviado = await enviar_boas_vindas_lead(lid)
     if enviado:
         return JSONResponse(content={"ok": True, "mensagem": "Mensagem de boas-vindas entregue ao WhatsApp!"})
     return JSONResponse(status_code=500, content={"ok": False, "mensagem": "Não foi possível entregar a mensagem (verifique se a instância está conectada)."})
-
-
 
 
 @router.post("/api/tenant/leads/{lead_id}/alerta-equipe")
@@ -1417,6 +1448,9 @@ async def api_disparar_alerta_equipe(lead_id: str, request: Request):
     """Dispara ou reenvia notificação interna para o WhatsApp da equipe sobre o lead."""
     from fastapi.responses import JSONResponse
     from app.core import autorizacao as _autz
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import select
+    from app.models.scheduling import Lead
     from app.services.lead_alert_service import enviar_alerta_lead_quente
     import uuid
 
@@ -1427,6 +1461,18 @@ async def api_disparar_alerta_equipe(lead_id: str, request: Request):
         lid = uuid.UUID(lead_id)
     except ValueError:
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de lead inválido."})
+
+    sessao_t = _autz.sessao_tenant(request)
+    sessao_adm = _autz.sessao_admin(request)
+    t_id = sessao_t.get("tenant_id") if sessao_t else None
+
+    async with AsyncSessionLocal() as session:
+        query = select(Lead.id).where(Lead.id == lid)
+        if not sessao_adm and t_id:
+            query = query.where(Lead.tenant_id == uuid.UUID(str(t_id)))
+        res = await session.execute(query)
+        if not res.scalar_one_or_none():
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Lead não encontrado nesta organização."})
 
     enviado = await enviar_alerta_lead_quente(lid)
     if enviado:

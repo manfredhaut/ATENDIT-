@@ -224,6 +224,7 @@
 
     function gerarCodigoEmbed() {
         const urlOrigem = window.location.origin;
+        const slug = window.currentTenantSlug || 'conta';
         const snippet = `<!-- FORMULÁRIO PRESENTHIA COM IA, WHATSAPP & ALERTA INTERNO -->
 <form id="presenthia-lead-form" style="max-width: 420px; font-family: sans-serif; display: flex; flex-direction: column; gap: 12px;">
     <input type="text" id="p-nome" placeholder="Seu Nome Completo" required style="padding: 11px; border: 1px solid #ccc; border-radius: 8px;">
@@ -255,7 +256,7 @@ document.getElementById('presenthia-lead-form').addEventListener('submit', async
     };
 
     try {
-        const r = await fetch('${urlOrigem}/api/public/conta/leads', {
+        const r = await fetch('${urlOrigem}/api/public/${slug}/leads', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
