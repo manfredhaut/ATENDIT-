@@ -910,41 +910,46 @@ async def api_listar_templates_segmentos():
 async def api_aplicar_template_segmento(request: Request):
     from app.services.segment_templates import obter_template
     from app.core.database import AsyncSessionLocal
-    from sqlalchemy import text
-    import json
-    
+    from app.core import tenant_auth as _sessao
+    from sqlalchemy import select
+    from app.models.tenant import Tenant
+    import uuid
+
+    dados_sessao = _sessao.sessao_do_tenant(request)
+    if not dados_sessao or "tenant_id" not in dados_sessao:
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Sessão não autorizada ou expirada."})
+
     corpo = await request.json()
     template_id = corpo.get("template_id")
-    slug = corpo.get("slug", "conta")
-    
+
     template = obter_template(template_id)
     if not template:
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Template inválido."})
-        
+
+    t_uuid = uuid.UUID(str(dados_sessao["tenant_id"]))
+
     async with AsyncSessionLocal() as session:
-        # Atualiza a persona e o prompt na tabela tenants (meta_data ou ai_config)
-        await session.execute(text("""
-            UPDATE tenants 
-            SET meta_data = COALESCE(meta_data, '{}'::jsonb) || :dados
-            WHERE slug = :slug
-        """), {
-            "slug": slug,
-            "dados": json.dumps({
-                "segmento": template_id,
-                "prompt_ia": template["prompt_ia"],
-                "perguntas_qualificacao": template["perguntas_qualificacao"],
-                "mensagem_boas_vindas": template["mensagem_boas_vindas"],
-                "etapas_funil": template["etapas_funil"]
-            })
+        res = await session.execute(select(Tenant).where(Tenant.id == t_uuid))
+        tenant = res.scalar_one_or_none()
+        if not tenant:
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Inquilino não encontrado."})
+
+        meta = dict(tenant.meta_data or {})
+        meta.update({
+            "segmento": template_id,
+            "prompt_ia": template["prompt_ia"],
+            "perguntas_qualificacao": template["perguntas_qualificacao"],
+            "mensagem_boas_vindas": template["mensagem_boas_vindas"],
+            "etapas_funil": template["etapas_funil"]
         })
+        tenant.meta_data = meta
         await session.commit()
-        
+
     return JSONResponse(content={
-        "ok": True, 
+        "ok": True,
         "mensagem": f"Modelo '{template['nome']}' aplicado com sucesso!",
         "template": template
     })
-
 
 
 # ---------------------------------------------------------------------------
@@ -1066,6 +1071,10 @@ async def api_convidar_membro(request: Request):
     if perfil["role"] not in ("dono", "gestor") and perfil["tipo"] != "admin":
         return JSONResponse(status_code=403, content={"ok": False, "mensagem": "Apenas Donos ou Gestores podem convidar membros."})
 
+    sessao_t = _autz.sessao_tenant(request)
+    if not sessao_t or "tenant_id" not in sessao_t:
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Sessão de inquilino não identificada."})
+
     corpo = await request.json()
     email = (corpo.get("email") or "").strip().lower()
     senha = corpo.get("senha") or "Mudar@1234"
@@ -1080,24 +1089,20 @@ async def api_convidar_membro(request: Request):
     from app.core.database import AsyncSessionLocal
     from sqlalchemy import select
     from app.models.tenant_user import TenantUser
-    from app.models.tenant import Tenant
     from app.core.panel_auth import gerar_hash
+    import uuid
+
+    t_uuid = uuid.UUID(str(sessao_t["tenant_id"]))
 
     async with AsyncSessionLocal() as session:
-        # Verificar se já existe o e-mail
-        res_exist = await session.execute(select(TenantUser).where(TenantUser.email == email))
+        res_exist = await session.execute(
+            select(TenantUser).where(TenantUser.tenant_id == t_uuid, TenantUser.email == email)
+        )
         if res_exist.scalar_one_or_none():
-            return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Este e-mail já está cadastrado."})
-
-        # Obter tenant_id
-        sessao_t = _autz.sessao_tenant(request)
-        tenant_id = sessao_t["tenant_id"] if sessao_t else None
-        if not tenant_id:
-            res_t = await session.execute(select(Tenant.id).limit(1))
-            tenant_id = res_t.scalar_one()
+            return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Este e-mail já está cadastrado nesta empresa."})
 
         novo_usuario = TenantUser(
-            tenant_id=tenant_id,
+            tenant_id=t_uuid,
             email=email,
             password_hash=gerar_hash(senha),
             role=role,
@@ -1116,9 +1121,14 @@ async def api_alterar_role_membro(usuario_id: str, request: Request):
     if perfil["role"] != "dono" and perfil["tipo"] != "admin":
         return JSONResponse(status_code=403, content={"ok": False, "mensagem": "Apenas o Dono pode alterar papéis."})
 
+    sessao_t = _autz.sessao_tenant(request)
+    if not sessao_t or "tenant_id" not in sessao_t:
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Sessão de inquilino não identificada."})
+
     import uuid
     try:
         uid = uuid.UUID(usuario_id)
+        t_uuid = uuid.UUID(str(sessao_t["tenant_id"]))
     except ValueError:
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de usuário inválido."})
 
@@ -1132,10 +1142,14 @@ async def api_alterar_role_membro(usuario_id: str, request: Request):
     from app.models.tenant_user import TenantUser
 
     async with AsyncSessionLocal() as session:
-        res = await session.execute(select(TenantUser).where(TenantUser.id == uid))
+        query = select(TenantUser).where(TenantUser.id == uid)
+        if perfil["tipo"] != "admin":
+            query = query.where(TenantUser.tenant_id == t_uuid)
+
+        res = await session.execute(query)
         usuario = res.scalar_one_or_none()
         if not usuario:
-            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Membro não encontrado."})
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Membro não encontrado nesta organização."})
 
         usuario.role = novo_role
         await session.commit()
@@ -1148,9 +1162,14 @@ async def api_remover_membro(usuario_id: str, request: Request):
     if perfil["role"] != "dono" and perfil["tipo"] != "admin":
         return JSONResponse(status_code=403, content={"ok": False, "mensagem": "Apenas o Dono pode remover membros."})
 
+    sessao_t = _autz.sessao_tenant(request)
+    if not sessao_t or "tenant_id" not in sessao_t:
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Sessão de inquilino não identificada."})
+
     import uuid
     try:
         uid = uuid.UUID(usuario_id)
+        t_uuid = uuid.UUID(str(sessao_t["tenant_id"]))
     except ValueError:
         return JSONResponse(status_code=400, content={"ok": False, "mensagem": "ID de usuário inválido."})
 
@@ -1159,19 +1178,21 @@ async def api_remover_membro(usuario_id: str, request: Request):
     from app.models.tenant_user import TenantUser
 
     async with AsyncSessionLocal() as session:
-        res = await session.execute(select(TenantUser).where(TenantUser.id == uid))
+        query = select(TenantUser).where(TenantUser.id == uid)
+        if perfil["tipo"] != "admin":
+            query = query.where(TenantUser.tenant_id == t_uuid)
+
+        res = await session.execute(query)
         usuario = res.scalar_one_or_none()
         if not usuario:
-            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Membro não encontrado."})
+            return JSONResponse(status_code=404, content={"ok": False, "mensagem": "Membro não encontrado nesta organização."})
 
-        sessao_t = _autz.sessao_tenant(request)
-        if sessao_t and sessao_t.get("usuario_id") == uid:
+        if sessao_t.get("usuario_id") == uid:
             return JSONResponse(status_code=400, content={"ok": False, "mensagem": "Você não pode excluir seu próprio usuário."})
 
         await session.delete(usuario)
         await session.commit()
         return JSONResponse(content={"ok": True, "mensagem": "Membro removido da equipe com sucesso."})
-
 
 
 

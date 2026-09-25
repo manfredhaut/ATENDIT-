@@ -127,7 +127,9 @@
         try {
             var res = await fetch('/dashboards/' + nomeDashboard);
             if (!res.ok) throw new Error('HTTP ' + res.status);
-            var html = await res.json();
+            var txt = await res.text();
+            var html;
+            try { html = JSON.parse(txt); } catch(_) { html = txt; }
             container.innerHTML = html;
             container.querySelectorAll('script').forEach(function(sAntigo) {
                 var sNovo = document.createElement('script');
