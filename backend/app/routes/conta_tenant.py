@@ -430,6 +430,23 @@ async def painel_tenant(request: Request):
         border-radius:999px;font-size:12px;font-weight:600;text-decoration:none;transition:background 0.15s ease}}
   .sair:hover{{background:#fff5f5}}
   .area{{padding:24px;overflow:auto;flex:1}}
+  .btn-busca-topo{{display:flex;align-items:center;gap:10px;background:#fbf8f4;border:1px solid #eae3dc;padding:6px 14px;border-radius:10px;font-size:12.5px;color:#6b7280;cursor:pointer;transition:all 0.15s ease}}
+  .btn-busca-topo:hover{{background:#f4eee7;border-color:#dcd2df;color:#231726}}
+  .btn-busca-topo kbd{{background:#fff;border:1px solid #dcd2df;border-radius:5px;padding:2px 6px;font-size:10px;font-weight:700;color:#5e5563}}
+  .busca-overlay{{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(35,23,38,0.5);backdrop-filter:blur(3px);z-index:9999;display:none;align-items:flex-start;justify-content:center;padding-top:12vh}}
+  .busca-modal{{background:#ffffff;width:100%;max-width:620px;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,0.18);border:1px solid #eae3dc;overflow:hidden}}
+  .busca-campo-wrap{{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid #eae3dc;gap:12px}}
+  .busca-input{{flex:1;border:none;outline:none;font-size:15px;color:#231726;background:transparent}}
+  .busca-lista{{max-height:360px;overflow-y:auto;padding:8px}}
+  .busca-item{{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;cursor:pointer;text-decoration:none}}
+  .busca-item:hover, .busca-item.selecionado{{background:rgba(60,203,197,0.12)}}
+  .busca-item-icon{{font-size:18px;width:24px;text-align:center}}
+  .busca-item-info{{flex:1}}
+  .busca-item-titulo{{font-size:13.5px;font-weight:600;color:#231726}}
+  .busca-item-sub{{font-size:11.5px;color:#6b7280;margin-top:2px}}
+  .busca-item-badge{{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:#fbf8f4;border:1px solid #eae3dc;color:#5e5563}}
+  .busca-rodape{{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;background:#fbf8f4;border-top:1px solid #eae3dc;font-size:11px;color:#8e8293}}
+  .busca-rodape kbd{{background:#ffffff;border:1px solid #dcd2df;border-radius:4px;padding:2px 5px;font-size:10px}}
   @keyframes fadeIn {{ from {{ opacity: 0; transform: translateY(4px); }} to {{ opacity: 1; transform: translateY(0); }} }}
   .fade-in {{ animation: fadeIn 0.25s ease-in-out; }}
 </style></head><body>
@@ -444,6 +461,11 @@ async def painel_tenant(request: Request):
   <header class="topo">
     <h1 id="titulo">{inquilino.name}</h1>
     <div style="display:flex;align-items:center;gap:12px">
+      <button type="button" class="btn-busca-topo" onclick="window.abrirModalBusca()">
+        <i class="bi bi-search"></i>
+        <span>Buscar ou ir para...</span>
+        <kbd>Ctrl+K</kbd>
+      </button>
       <span class="cracha">{slug}</span>
       <span style="font-size:12.5px;color:#6b7280">{conta.email}</span>
       <a class="sair" href="/tenant/logout">Sair</a>
@@ -557,7 +579,143 @@ document.getElementById('menu').addEventListener('click', (ev) => {{
 window.addEventListener('DOMContentLoaded', () => {{
   carregarView('inicio', document.querySelector('.item.ativo'));
 }});
+
+// Item F1.6: Busca Global e Atalhos Ctrl+K
+let indiceBusca = 0;
+let timerBusca = null;
+
+window.abrirModalBusca = function() {{
+  const modal = document.getElementById('modal-busca-global');
+  const input = document.getElementById('campo-busca-global');
+  if (modal && input) {{
+    modal.style.display = 'flex';
+    input.value = '';
+    input.focus();
+    executarBusca('');
+  }}
+}};
+
+window.fecharModalBusca = function() {{
+  const modal = document.getElementById('modal-busca-global');
+  if (modal) modal.style.display = 'none';
+}};
+
+window.addEventListener('keydown', (e) => {{
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {{
+    e.preventDefault();
+    const modal = document.getElementById('modal-busca-global');
+    if (modal && modal.style.display === 'flex') {{
+      window.fecharModalBusca();
+    }} else {{
+      window.abrirModalBusca();
+    }}
+  }} else if (e.key === 'Escape') {{
+    window.fecharModalBusca();
+  }}
+}});
+
+async function executarBusca(termo) {{
+  const lista = document.getElementById('busca-resultados-lista');
+  if (termo.trim().length === 0) {{
+    lista.innerHTML = '<div style="padding: 10px 14px; font-size: 11px; font-weight: 700; color: #8e8293; text-transform: uppercase;">Acesso Rápido às 14 Abas</div>'
+      + '<div class="busca-item selecionado" onclick="selecionarAbaBusca(\'inicio\')"><span class="busca-item-icon">🏠</span><div class="busca-item-info"><div class="busca-item-titulo">1. Início</div><div class="busca-item-sub">Painel Principal e visão geral</div></div><span class="busca-item-badge">Aba</span></div>'
+      + '<div class="busca-item" onclick="selecionarAbaBusca(\'fila_atendimento\')"><span class="busca-item-icon">💬</span><div class="busca-item-info"><div class="busca-item-titulo">2. Atendimento</div><div class="busca-item-sub">Fila e conversas ao vivo</div></div><span class="busca-item-badge">Aba</span></div>'
+      + '<div class="busca-item" onclick="selecionarAbaBusca(\'leads\')"><span class="busca-item-icon">🎯</span><div class="busca-item-info"><div class="busca-item-titulo">3. Aquisição & 4. CRM</div><div class="busca-item-sub">Gestão de oportunidades e funil</div></div><span class="busca-item-badge">Aba</span></div>'
+      + '<div class="busca-item" onclick="selecionarAbaBusca(\'calendar_config\')"><span class="busca-item-icon">📅</span><div class="busca-item-info"><div class="busca-item-titulo">5. Agenda</div><div class="busca-item-sub">Integrações de calendário</div></div><span class="busca-item-badge">Aba</span></div>'
+      + '<div class="busca-item" onclick="selecionarAbaBusca(\'canais\')"><span class="busca-item-icon">📡</span><div class="busca-item-info"><div class="busca-item-titulo">11. Canais WhatsApp</div><div class="busca-item-sub">Oficial Meta e QR Code</div></div><span class="busca-item-badge">Aba</span></div>'
+      + '<div class="busca-item" onclick="selecionarAbaBusca(\'video\')"><span class="busca-item-icon">📹</span><div class="busca-item-info"><div class="busca-item-titulo">8. Consultoria por Vídeo</div><div class="busca-item-sub">Salas de conferência WebRTC</div></div><span class="busca-item-badge">Aba</span></div>';
+    indiceBusca = 0;
+    return;
+  }}
+
+  try {{
+    const res = await fetch('/api/busca-global?q=' + encodeURIComponent(termo));
+    const data = await res.json();
+    if (data.resultados === undefined || data.resultados.length === 0) {{
+      lista.innerHTML = '<div style="padding: 24px; text-align: center; font-size: 13px; color: #8e8293;">Nenhum resultado encontrado para "' + termo + '".</div>';
+      return;
+    }}
+    indiceBusca = 0;
+    let htmlItens = '';
+    for (let i = 0; i < data.resultados.length; i++) {{
+      const r = data.resultados[i];
+      const sel = (i === 0) ? ' selecionado' : '';
+      const sub = r.subtitulo ? r.subtitulo : '';
+      const subaba = r.subaba ? r.subaba : '';
+      htmlItens += '<div class="busca-item' + sel + '" onclick="executarItemBusca(\'' + r.acao + '\', \'' + subaba + '\')">'
+        + '<span class="busca-item-icon">' + (r.icone || '🔍') + '</span>'
+        + '<div class="busca-item-info"><div class="busca-item-titulo">' + r.titulo + '</div><div class="busca-item-sub">' + sub + '</div></div>'
+        + '<span class="busca-item-badge">' + r.tipo + '</span></div>';
+    }}
+    lista.innerHTML = htmlItens;
+  }} catch (_) {{
+    lista.innerHTML = '<div style="padding: 16px; color: #b91c1c; font-size: 12px;">Erro ao buscar resultados.</div>';
+  }}
+}}
+
+window.selecionarAbaBusca = function(view) {{
+  window.fecharModalBusca();
+  const el = document.querySelector('[data-v="' + view + '"]');
+  carregarView(view, el);
+}};
+
+window.executarItemBusca = function(acao, subaba) {{
+  window.fecharModalBusca();
+  const el = document.querySelector('[data-v="' + acao + '"]');
+  carregarView(acao, el).then(() => {{
+    if (subaba && window.abrirCanaisSubaba) {{
+      setTimeout(() => window.abrirCanaisSubaba(subaba), 150);
+    }}
+  }});
+}};
+
+window.addEventListener('DOMContentLoaded', () => {{
+  const campo = document.getElementById('campo-busca-global');
+  if (campo) {{
+    campo.addEventListener('input', (e) => {{
+      clearTimeout(timerBusca);
+      timerBusca = setTimeout(() => executarBusca(e.target.value), 200);
+    }});
+    campo.addEventListener('keydown', (e) => {{
+      const itens = document.querySelectorAll('.busca-item');
+      if (itens.length === 0) return;
+      if (e.key === 'ArrowDown') {{
+        e.preventDefault();
+        itens[indiceBusca] && itens[indiceBusca].classList.remove('selecionado');
+        indiceBusca = (indiceBusca + 1) % itens.length;
+        itens[indiceBusca] && itens[indiceBusca].classList.add('selecionado');
+        itens[indiceBusca] && itens[indiceBusca].scrollIntoView({{ block: 'nearest' }});
+      }} else if (e.key === 'ArrowUp') {{
+        e.preventDefault();
+        itens[indiceBusca] && itens[indiceBusca].classList.remove('selecionado');
+        indiceBusca = (indiceBusca - 1 + itens.length) % itens.length;
+        itens[indiceBusca] && itens[indiceBusca].classList.add('selecionado');
+        itens[indiceBusca] && itens[indiceBusca].scrollIntoView({{ block: 'nearest' }});
+      }} else if (e.key === 'Enter') {{
+        e.preventDefault();
+        itens[indiceBusca] && itens[indiceBusca].click();
+      }}
+    }});
+  }}
+}});
 </script>
+
+<!-- MODAL DE BUSCA GLOBAL (ITEM F1.6 - CTRL+K) -->
+<div id="modal-busca-global" class="busca-overlay" onclick="if(event.target===this) window.fecharModalBusca()">
+  <div class="busca-modal">
+    <div class="busca-campo-wrap">
+      <i class="bi bi-search" style="color: var(--p-turquesa-texto, #0b7570); font-size: 16px;"></i>
+      <input type="text" id="campo-busca-global" class="busca-input" placeholder="Digite para buscar abas, ferramentas ou contatos..." autocomplete="off" />
+      <span style="cursor:pointer; font-size:11px; background:#f4eee7; padding:3px 8px; border-radius:6px; color:#5e5563; font-weight:700;" onclick="window.fecharModalBusca()">ESC</span>
+    </div>
+    <div id="busca-resultados-lista" class="busca-lista"></div>
+    <div class="busca-rodape">
+      <span><kbd>↑</kbd> <kbd>↓</kbd> navegar</span>
+      <span><kbd>Enter</kbd> selecionar</span>
+      <span><kbd>ESC</kbd> fechar</span>
+    </div>
+  </div>
+</div>
 </body></html>""")
 
 
@@ -793,57 +951,63 @@ async def api_aplicar_template_segmento(request: Request):
 # F1.6 - Busca Global e Atalhos (Ctrl+K)
 # ---------------------------------------------------------------------------
 @router.get("/api/busca-global")
-async def api_busca_global(q: str = "", slug: str = "conta"):
+async def api_busca_global(request: Request, q: str = ""):
     from fastapi.responses import JSONResponse
     termo = q.strip().lower()
-    if not termo:
+    if len(termo) == 0:
         return JSONResponse(content={"ok": True, "resultados": []})
 
     resultados = []
 
-    # 1. Rotas e Módulos do Sistema
     modulos = [
-        {"tipo": "Navegação", "titulo": "Painel Principal (Atenção Agora)", "acao": "faturamento", "icone": "📊"},
-        {"tipo": "Navegação", "titulo": "Configuração Guiada (Onboarding)", "acao": "configuracao_guiada", "icone": "🧭"},
-        {"tipo": "Navegação", "titulo": "Modelos por Segmento", "acao": "modelos_segmento", "icone": "🎯"},
-        {"tipo": "Navegação", "titulo": "Cadastro da Empresa & Conta", "acao": "empresa_cadastro", "icone": "🏢"},
-        {"tipo": "Navegação", "titulo": "Canais WhatsApp (Oficial Cloud API & QR Code)", "acao": "canais", "icone": "📡"},
-        {"tipo": "Navegação", "titulo": "Configurações do Atendente IA", "acao": "ia_config", "icone": "⚙️"},
-        {"tipo": "Navegação", "titulo": "Configuração da IA & Modelos", "acao": "gemini_config", "icone": "🧠"},
-        {"tipo": "Navegação", "titulo": "Agenda & Calendário", "acao": "calendar_config", "icone": "📅"},
-        {"tipo": "Navegação", "titulo": "Gestão de Documentos & RAG", "acao": "rag_management", "icone": "📁"},
-        {"tipo": "Navegação", "titulo": "Fila de Atendimento & Chat", "acao": "fila_atendimento", "icone": "💬"},
-        {"tipo": "Navegação", "titulo": "Loja, Vitrine & E-Commerce", "acao": "ecommerce_config", "icone": "🛒"},
-        {"tipo": "Navegação", "titulo": "Inteligência Operacional", "acao": "intel_operacional", "icone": "📈"}
+        {"tipo": "Aba", "titulo": "1. Início", "subtitulo": "Painel Principal e visão geral", "acao": "inicio", "icone": "🏠", "tags": "inicio home dashboard metricas atencao"},
+        {"tipo": "Aba", "titulo": "2. Atendimento", "subtitulo": "Fila de conversas em tempo real", "acao": "fila_atendimento", "icone": "💬", "tags": "chat atendimento fila conversas operador"},
+        {"tipo": "Aba", "titulo": "3. Aquisição", "subtitulo": "Captação de leads omnichannel", "acao": "leads", "icone": "🎯", "tags": "aquisicao leads captacao formularios"},
+        {"tipo": "Aba", "titulo": "4. CRM & Funil", "subtitulo": "Pipeline e estágios de conversão", "acao": "leads", "icone": "📊", "tags": "crm funil vendas pipeline negociacao"},
+        {"tipo": "Aba", "titulo": "5. Agenda", "subtitulo": "Calendly, Google Calendar e horários", "acao": "calendar_config", "icone": "📅", "tags": "agenda calendario calendly google horarios"},
+        {"tipo": "Aba", "titulo": "6. Profissionais & Escalas", "subtitulo": "Equipe, turnos e permissões", "acao": "equipe", "icone": "👥", "tags": "profissionais equipe membros escalas permissoes"},
+        {"tipo": "Aba", "titulo": "7. Vitrine & Loja", "subtitulo": "Catálogo de produtos e e-commerce", "acao": "ecommerce_config", "icone": "🛍️", "tags": "vitrine loja ecommerce produtos catalogo"},
+        {"tipo": "Aba", "titulo": "8. Consultoria por Vídeo", "subtitulo": "Salas WebRTC e atendimento ao vivo", "acao": "video", "icone": "📹", "tags": "video webrtc livekit salas consultoria reuniao"},
+        {"tipo": "Aba", "titulo": "9. Assistente IA", "subtitulo": "Personalidade e regras do atendente", "acao": "ia_config", "icone": "🤖", "tags": "ia assistente bot inteligencia atendente"},
+        {"tipo": "Aba", "titulo": "10. Base de Conhecimento", "subtitulo": "Documentos RAG e manuais", "acao": "rag_management", "icone": "📚", "tags": "base conhecimento rag documentos pdf manuais"},
+        {"tipo": "Aba", "titulo": "11. Canais", "subtitulo": "WhatsApp Oficial e QR Code", "acao": "canais", "icone": "📡", "tags": "canais whatsapp meta oficial qr code evolution"},
+        {"tipo": "Aba", "titulo": "12. Financeiro", "subtitulo": "Faturas, planos e consumo de IA", "acao": "faturamento", "icone": "💳", "tags": "financeiro faturamento faturas planos consumo"},
+        {"tipo": "Aba", "titulo": "13. Inteligência Operacional", "subtitulo": "Analytics, relatórios e KPIs", "acao": "intel_operacional", "icone": "📈", "tags": "inteligencia operacional relatorios analytics kpis"},
+        {"tipo": "Aba", "titulo": "14. Empresa & Conta", "subtitulo": "Cadastro, dados da empresa e segurança", "acao": "empresa_cadastro", "icone": "🏢", "tags": "empresa conta perfil cadastro dados senha"},
+        {"tipo": "Ação Rápida", "titulo": "Conectar WhatsApp QR Code", "subtitulo": "Escanear QR Code com o aplicativo", "acao": "canais", "subaba": "qrcode", "icone": "📲", "tags": "conectar qrcode evolution celular"},
+        {"tipo": "Ação Rápida", "titulo": "Configurar Meta Oficial (WABA)", "subtitulo": "Credenciais Cloud API Oficial", "acao": "canais", "subaba": "meta", "icone": "🌐", "tags": "meta oficial waba cloud api token"},
+        {"tipo": "Ação Rápida", "titulo": "Nova Sala de Vídeo", "subtitulo": "Gerar link instantâneo de videoconferência", "acao": "video", "icone": "➕", "tags": "criar sala video chamada link"}
     ]
 
     for m in modulos:
-        if termo in m["titulo"].lower() or termo in m["acao"].lower():
+        if termo in m["titulo"].lower() or termo in m["subtitulo"].lower() or termo in m.get("tags", "").lower():
             resultados.append(m)
 
-    # 2. Busca de Contatos / Clientes no PostgreSQL
-    try:
-        from app.core.database import AsyncSessionLocal
-        from sqlalchemy import text
-        async with AsyncSessionLocal() as session:
-            query = await session.execute(text("""
-                SELECT id, name, whatsapp_number_e164, profile_name 
-                FROM tenants 
-                WHERE (name ILIKE :t OR whatsapp_number_e164 ILIKE :t OR profile_name ILIKE :t)
-                LIMIT 5
-            """), {"t": f"%{termo}%"})
-            linhas = query.fetchall()
-            for row in linhas:
-                nome = row[1] or row[3] or "Contato"
-                num = row[2] or "Sem número"
-                resultados.append({
-                    "tipo": "Contato",
-                    "titulo": f"{nome} ({num})",
-                    "acao": "fila_atendimento",
-                    "icone": "👤"
-                })
-    except Exception as e:
-        pass
+    dados = _sessao.sessao_do_tenant(request)
+    if dados and "tenant_id" in dados:
+        try:
+            from app.core.database import AsyncSessionLocal
+            from sqlalchemy import text
+            import uuid
+            t_uuid = uuid.UUID(str(dados["tenant_id"]))
+            async with AsyncSessionLocal() as session:
+                q_lead = await session.execute(text("""
+                    SELECT id, nome, whatsapp, email, status
+                    FROM leads
+                    WHERE tenant_id = :t_id
+                      AND (nome ILIKE :t OR whatsapp ILIKE :t OR email ILIKE :t)
+                    ORDER BY created_at DESC LIMIT 5
+                """), {"t_id": t_uuid, "t": f"%{termo}%"})
+                for row in q_lead.fetchall():
+                    resultados.append({
+                        "tipo": "Lead",
+                        "titulo": row[1] or "Lead",
+                        "subtitulo": f"Status: {(row[4] or 'novo').capitalize()} · {row[2] or row[3] or ''}",
+                        "acao": "leads",
+                        "icone": "👤"
+                    })
+        except Exception:
+            pass
 
     return JSONResponse(content={"ok": True, "resultados": resultados[:10]})
 
