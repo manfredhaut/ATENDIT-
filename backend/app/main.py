@@ -176,7 +176,7 @@ get_tenants_store = _store_json_aposentado
 save_tenants_store = _store_json_aposentado
 
 RESERVED_ROUTES = {
-    "saas", "admin", "login", "cadastro", "register", "cliente", "clientes",
+    "saas", "admin", "login", "cadastro", "register", "cliente", "clientes", "loja", "vitrine",
     "health", "v1", "dashboards", "static", "docs", "redoc", "openapi.json", "favicon.ico"
 }
 
@@ -280,6 +280,7 @@ from app.routes import video as _video_routes
 from app.routes import ecommerce as _ecommerce_routes
 app.include_router(_video_routes.router)
 app.include_router(_ecommerce_routes.router)
+app.include_router(_ecommerce_routes.public_router)
 from app.routes import presenthia as _presenthia_routes
 app.include_router(_presenthia_routes.router)
 

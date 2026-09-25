@@ -2,6 +2,8 @@ import logging
 import uuid
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from pathlib import Path
 from pydantic import BaseModel
 from sqlalchemy import select, desc
 
@@ -149,6 +151,17 @@ async def excluir_item_catalogo(tenant: str, item_id: str, request: Request):
 
 
 @router.get("/public/items/{tenant_slug}", tags=["Vitrine Pública (F4.2)"])
+@router.get("/loja/{tenant_slug}", response_class=HTMLResponse, tags=["Vitrine Pública (F4.2)"], include_in_schema=False)
+@router.get("/vitrine/{tenant_slug}", response_class=HTMLResponse, tags=["Vitrine Pública (F4.2)"], include_in_schema=False)
+async def renderizar_vitrine_publica(tenant_slug: str):
+    """Serve a página pública da vitrine da empresa com identidade Presenthia (F4.2)."""
+    vitrine_file = Path(__file__).resolve().parent.parent / "frontend" / "vitrine.html"
+    if not vitrine_file.is_file():
+        raise HTTPException(status_code=500, detail="Template de vitrine não localizado.")
+    return HTMLResponse(vitrine_file.read_text(encoding="utf-8"))
+
+
+@router.get("/public/items/{tenant_slug}", tags=["Vitrine Pública (F4.2)"])
 async def listar_itens_vitrine_publica(tenant_slug: str):
     """Endpoint público de vitrine: retorna apenas itens ativos de um tenant pelo slug."""
     async with AsyncSessionLocal() as session:
@@ -166,9 +179,15 @@ async def listar_itens_vitrine_publica(tenant_slug: str):
         res_prods = await session.execute(query_prods)
         itens = res_prods.scalars().all()
 
+        meta = t.meta_data or {}
+        wa_numero = t.whatsapp_number_e164 or t.whatsapp_notificacoes or meta.get("ai_number") or ""
+        msg_boas_vindas = meta.get("mensagem_boas_vindas") or "Produtos e serviços com atendimento inteligente."
+
         return {
             "tenant_name": t.name,
             "tenant_slug": t.slug,
+            "whatsapp_number": wa_numero,
+            "welcome_message": msg_boas_vindas,
             "total_items": len(itens),
             "catalog": [
                 {

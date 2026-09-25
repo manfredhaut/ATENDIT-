@@ -354,6 +354,15 @@
         <button type="button" class="primary" onclick="window.publishStore()">🚀 Publicar / atualizar loja</button>
       </div>
       <div style="padding:18px 20px;display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px">
+        <div class="pub" style="grid-column: 1 / -1; background: #FAF7F2; border: 1.5px solid var(--brand); padding: 16px; border-radius: 12px; margin-bottom: 12px;">
+  <strong style="font-size:15px; color:var(--navy);">🔗 Link Direto da sua Vitrine & E-Commerce</strong>
+  <p style="margin: 4px 0 10px; font-size:13px; color:var(--muted);">Compartilhe este link com seus clientes no WhatsApp, Instagram e campanhas de venda:</p>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <input type="text" id="vitrineDirectUrl" readonly style="flex:1; padding:10px 14px; border-radius:8px; border:1px solid #c8d4e4; font-family:monospace; font-size:13px; background:#fff; font-weight:600;" value="Carregando link...">
+    <button type="button" class="primary" onclick="window.copiarLinkVitrine()" style="white-space:nowrap; padding:10px 18px;">📋 Copiar Link</button>
+    <button type="button" class="secondary" onclick="window.abrirVitrinePublica()" style="white-space:nowrap; padding:10px 18px;">↗ Acessar Loja</button>
+  </div>
+</div>
         <div class="pub"><strong>🌐 Site / Loja pública</strong><p>Vitrine responsiva com URL pública.</p><a href="#" onclick="window.showToast('Preview público aberto em demonstração.');return false;">Abrir preview →</a></div>
         <div class="pub"><strong>💬 WhatsApp</strong><p>CTA com contexto do produto/serviço.</p><a href="#" onclick="window.showToast('Integração de CTA WhatsApp preparada.');return false;">Configurar →</a></div>
         <div class="pub"><strong>🔗 Magic Link</strong><p>Links profundos por item e campanha.</p><a href="#" onclick="window.showToast('Magic Link gerado para demonstração.');return false;">Gerar link →</a></div>
@@ -686,6 +695,10 @@
 <script>
 (function() {
   console.info("[PRESENTHIA-ECOM] Carregando motor da Vitrine e Configuração da Loja...");
+  window.abrirVitrinePublica = function() {
+    var slug = window.currentTenantSlug || 'manitest';
+    window.open('/loja/' + slug, '_blank');
+  };
 
   window.items = [];
 
