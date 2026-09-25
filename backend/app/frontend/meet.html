@@ -149,40 +149,95 @@
         }
         @keyframes pulse-mic { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); } 70% { transform: scale(1.1); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); } 100% { transform: scale(1); } }
 
-        /* CESTA DE PRODUTOS/SERVIÇOS */
+        /* CESTA DE PRODUTOS/SERVIÇOS (Presenthia V2) */
         .basket-card {
-            background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border: 1px solid var(--border-glass);
-            border-radius: 20px;
-            padding: 18px;
+            background: #FFFFFF;
+            border: 1px solid rgba(35, 23, 38, 0.08);
+            border-radius: 18px;
+            padding: 20px;
             flex: 1;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 24px rgba(35, 23, 38, 0.05);
         }
-        .basket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-weight: 700; font-size: 0.95rem; color: var(--primary); }
-        .basket-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; max-height: 200px; }
-        .basket-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px 12px; border-radius: 10px; font-size: 0.83rem; display: flex; justify-content: space-between; align-items: center; }
-        .remove-item { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; font-size: 1rem; padding: 2px 6px; }
-
-        .checkout-footer { border-top: 1px solid var(--border-glass); padding-top: 14px; }
-        .total-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.05rem; margin-bottom: 14px; }
-        .total-value { color: var(--accent); }
-        .checkout-btn {
-            background: linear-gradient(135deg, var(--accent), #059669);
-            color: white;
+        .basket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #231726;
+        }
+        .basket-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 14px;
+            max-height: 200px;
+        }
+        .basket-item {
+            background: #FBF8F4;
+            border: 1px solid rgba(35, 23, 38, 0.06);
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.83rem;
+            color: #231726;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .remove-item {
+            background: none;
             border: none;
-            padding: 14px;
-            border-radius: 12px;
+            color: var(--danger);
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 2px 6px;
+        }
+        .checkout-footer {
+            border-top: 1px solid rgba(35, 23, 38, 0.08);
+            padding-top: 14px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-weight: 800;
+            font-size: 1.05rem;
+            margin-bottom: 14px;
+            color: #231726;
+        }
+        .total-value {
+            color: #0B7570;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+        .checkout-btn {
+            background: #D0006F;
+            color: #FFFFFF;
+            border: none;
+            width: 100%;
+            padding: 13px;
+            border-radius: 12px;
+            font-weight: 700;
             font-size: 0.95rem;
             cursor: pointer;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
-            transition: transform 0.2s, opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(208, 0, 111, 0.25);
+            transition: all 0.2s ease;
         }
-        .checkout-btn:hover { transform: translateY(-2px); opacity: 0.95; }
+        .checkout-btn:hover {
+            background: #990049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(208, 0, 111, 0.35);
+        }
 
         /* COLUNA DIREITA: VITRINE DE ITENS */
         .catalog-viewport {
