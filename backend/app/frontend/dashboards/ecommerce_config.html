@@ -670,7 +670,13 @@
         <div class="field"><label>Preço base (R$)</label><input id="itemPrice" type="number" step="0.01" value="0"></div>
         <div class="field"><label>Categoria</label><input id="itemCat" placeholder="Ex.: Automação"></div>
         <div class="field"><label>Status</label><select id="itemStatus"><option value="active">Ativo</option><option value="draft">Rascunho</option></select></div>
-        <div class="field full"><label>Foto do item</label><input id="itemImage" type="file" accept="image/*"></div>
+        <div class="field full">
+          <label>Mídia do item (Foto ou Vídeo curto MP4/WebM até 15MB)</label>
+          <input id="itemImage" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" onchange="window.uploadMediaItem(event)">
+          <input id="itemImageUrl" type="hidden" value="">
+          <div id="itemMediaStatus" style="font-size:12px; margin-top:5px; color:#475569;"></div>
+          <div id="itemMediaPreview" style="margin-top:8px; display:none; max-width:240px; border-radius:8px; overflow:hidden; border:1px solid var(--line); background:#000;"></div>
+        </div>
         <div class="field full"><label>Campos técnicos / observações para IA</label><textarea id="itemTech" placeholder="Dimensões, materiais, normas, compatibilidade, prazo, garantia, certificados..."></textarea></div>
         <div class="field full">
           <label>Publicação do item</label>
@@ -767,7 +773,8 @@
           var badgeLabel = (x.status === 'active') ? 'Ativo' : 'Rascunho';
           var typeLabel = (x.type === 'product') ? 'PRODUTO' : 'SERVIÇO';
           var qtyLabel = (x.type === 'product') ? 'Estoque' : 'Disponibilidade';
-          var imgEl = x.image ? '<img src="' + x.image + '" alt="">' : '<div class="placeholder">🛍️</div>';
+          var isVid = x.image && (x.image.endsWith('.mp4') || x.image.endsWith('.webm'));
+          var imgEl = x.image ? (isVid ? '<video src="' + x.image + '" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>' : '<img src="' + x.image + '" alt="">') : '<div class="placeholder">🛍️</div>';
 
           return '<article class="item-card">' +
             '<div class="thumb">' + imgEl + '<span class="' + badgeClass + '">' + badgeLabel + '</span></div>' +
@@ -813,7 +820,8 @@
       list.innerHTML = '<div class="empty" style="grid-column:1/-1">Sem resultados na prévia.</div>';
     } else {
       list.innerHTML = filtered.map(function(x) {
-        var imgHtml = x.image ? '<img src="' + x.image + '" alt="">' : '';
+        var isVid = x.image && (x.image.endsWith('.mp4') || x.image.endsWith('.webm'));
+        var imgHtml = x.image ? (isVid ? '<video src="' + x.image + '" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>' : '<img src="' + x.image + '" alt="">') : '';
         var tLabel = (x.type === 'product') ? 'Produto' : 'Serviço';
         return '<div class="mini-product">' +
           '<div class="mini-img">' + imgHtml + '</div>' +
@@ -913,6 +921,10 @@
     if (document.getElementById('itemPrice')) document.getElementById('itemPrice').value = '0';
     if (document.getElementById('itemType')) document.getElementById('itemType').value = 'product';
     if (document.getElementById('itemStatus')) document.getElementById('itemStatus').value = 'active';
+    if (document.getElementById('itemImageUrl')) document.getElementById('itemImageUrl').value = '';
+    if (document.getElementById('itemImage')) document.getElementById('itemImage').value = '';
+    if (document.getElementById('itemMediaStatus')) document.getElementById('itemMediaStatus').textContent = '';
+    if (window.updateMediaPreview) window.updateMediaPreview('');
     var m = document.getElementById('itemModal');
     if (m) m.classList.add('open');
   };
@@ -936,6 +948,10 @@
     if (document.getElementById('itemPrice')) document.getElementById('itemPrice').value = x.price;
     if (document.getElementById('itemCat')) document.getElementById('itemCat').value = x.cat;
     if (document.getElementById('itemStatus')) document.getElementById('itemStatus').value = x.status;
+    if (document.getElementById('itemImageUrl')) document.getElementById('itemImageUrl').value = x.image || '';
+    if (document.getElementById('itemImage')) document.getElementById('itemImage').value = '';
+    if (document.getElementById('itemMediaStatus')) document.getElementById('itemMediaStatus').textContent = x.image ? 'Mídia cadastrada' : '';
+    if (window.updateMediaPreview) window.updateMediaPreview(x.image || '');
     var m = document.getElementById('itemModal');
     if (m) m.classList.add('open');
   };
@@ -957,6 +973,7 @@
       stock_qty: Number((document.getElementById('itemQty') || {}).value) || 0,
       duration_minutes: 30,
       status: (document.getElementById('itemStatus') || {}).value || 'active',
+      image_url: (document.getElementById('itemImageUrl') || {}).value || null,
       description: (document.getElementById('itemDesc') || {}).value || '',
       meta_data: { category: (document.getElementById('itemCat') || {}).value || 'Geral' }
     };

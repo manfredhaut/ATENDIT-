@@ -24,7 +24,7 @@ main{display:grid;grid-template-columns:1fr 340px;gap:20px;margin:22px auto 50px
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
 .card{background:#fff;border:1px solid var(--p-borda);border-radius:var(--p-raio);overflow:hidden;display:flex;flex-direction:column}
 .thumb{height:140px;background:#F4EFEA;display:flex;align-items:center;justify-content:center;position:relative}
-.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb img,.thumb video{width:100%;height:100%;object-fit:cover}
 .tag{position:absolute;top:8px;left:8px;background:rgba(35,23,38,.85);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px}
 .card-b{padding:12px;display:flex;flex-direction:column;flex:1}
 .card-t{font-size:14px;font-weight:700;margin-bottom:4px}
@@ -97,7 +97,8 @@ function render(list){
   if(!list.length){g.innerHTML='<p>Sem itens disponíveis.</p>';return}
   g.innerHTML=list.map(function(i){
     var prod=i.type==='product';
-    var img=i.image_url?'<img src="'+i.image_url+'">':'<div style="font-size:32px">'+(prod?'🛍️':'⏱️')+'</div>';
+    var isVid = i.image_url && (i.image_url.endsWith('.mp4') || i.image_url.endsWith('.webm'));
+    var img = i.image_url ? (isVid ? '<video src="' + i.image_url + '" autoplay loop muted playsinline></video>' : '<img src="' + i.image_url + '">') : '<div style="font-size:32px">' + (prod ? '🛍️' : '⏱️') + '</div>';
     return '<article class="card"><div class="thumb"><span class="tag">'+(prod?'PRODUTO':'SERVIÇO')+'</span>'+img+'</div><div class="card-b"><div class="card-t">'+i.name+'</div><div class="card-d">'+(i.description||'Disponível para pronta entrega ou agendamento.')+'</div><div class="card-f"><div class="card-p">'+i.price_formatted+'</div><button class="btn-add" data-id="' + i.id + '" onclick="addCart(this.dataset.id)">+ Adicionar</button></div></div></article>'
   }).join('')
 }

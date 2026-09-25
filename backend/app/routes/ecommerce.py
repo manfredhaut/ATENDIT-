@@ -2,7 +2,7 @@ import logging
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy import select, desc
@@ -204,3 +204,25 @@ async def listar_itens_vitrine_publica(tenant_slug: str):
                 for i in itens
             ]
         }
+
+@router.post("/upload-media/{tenant}", include_in_schema=False)
+async def upload_midia_item(tenant: str, request: Request, file: UploadFile = File(...)):
+    tenant_id, slug = await _exigir_dono(request, tenant)
+    ext = Path(file.filename or "").suffix.lower()
+    permitidos = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".webm"}
+    if ext not in permitidos:
+        raise HTTPException(status_code=400, detail="Formato invalido. Envie imagens (JPG, PNG, WebP) ou videos curtos (MP4, WebM).")
+    
+    out_dir = Path(__file__).resolve().parent.parent / "static" / "uploads"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    fname = f"{slug}_{uuid.uuid4().hex[:10]}{ext}"
+    dest = out_dir / fname
+    
+    content = await file.read()
+    if len(content) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Arquivo excede o limite maximo de 15MB.")
+    
+    dest.write_bytes(content)
+    is_vid = ext in {".mp4", ".webm"}
+    logger.info(f"[ECOMMERCE] Midia enviada para {slug}: {fname} ({len(content)} bytes, video={is_vid})")
+    return {"ok": True, "url": f"/static/uploads/{fname}", "is_video": is_vid}

@@ -1300,3 +1300,10 @@ async def serve_presenthia_console_dashboard():
     if target.is_file():
         return HTMLResponse(target.read_text(encoding="utf-8"))
     return HTMLResponse("<h1>Presenthia Console - Carregando</h1>", status_code=200)
+
+# Servimento estatico de midia (fotos e videos curtos da vitrine)
+from fastapi.staticfiles import StaticFiles
+_up_dir = Path(__file__).resolve().parent / "static" / "uploads"
+_up_dir.mkdir(parents=True, exist_ok=True)
+if not any(getattr(r, "path", None) == "/static/uploads" for r in app.routes):
+    app.mount("/static/uploads", StaticFiles(directory=str(_up_dir)), name="uploads_media")
