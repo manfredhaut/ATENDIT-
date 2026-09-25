@@ -5,20 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATENDIT • Tour Guiado & Assistente Multimodal</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=DM+Serif+Display&display=swap');
+
         :root {
-            --primary: #06b6d4;
-            --primary-glow: rgba(6, 182, 212, 0.4);
-            --bg-base: #030712;
-            --surface: #0f172a;
-            --surface-glass: rgba(15, 23, 42, 0.75);
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #10b981;
+            --primary: #D0006F;
+            --primary-hover: #990049;
+            --primary-glow: rgba(208, 0, 111, 0.25);
+            --bg-base: #FBF8F4;
+            --surface: #FFFFFF;
+            --surface-glass: rgba(255, 255, 255, 0.95);
+            --border-glass: rgba(35, 23, 38, 0.08);
+            --text-main: #231726;
+            --text-muted: #625966;
+            --accent: #0B7570;
             --danger: #ef4444;
+
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background: var(--bg-base); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; background-image: radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 40%); }
 
         /* HEADER */
@@ -184,12 +188,12 @@
         .catalog-viewport {
             padding: 32px;
             overflow-y: auto;
-            background: radial-gradient(circle at 50% 0%, rgba(15, 23, 42, 0.8) 0%, var(--bg-base) 100%);
+            background: var(--bg-base);
             display: flex;
             flex-direction: column;
             gap: 24px;
         }
-        .catalog-title h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+        .catalog-title h1 { font-size: 1.85rem; font-weight: 400; font-family: 'DM Serif Display', Georgia, serif; color: var(--text-main); margin-bottom: 6px; }
         .catalog-title p { color: var(--text-muted); font-size: 0.92rem; }
 
         .items-grid {
@@ -248,7 +252,7 @@
             <div class="brand-icon">✨</div>
             <span id="tenant-brand-name">ATENDIT • Tour Guiado</span>
         </div>
-        <div class="session-badge">
+        <button type="button" onclick="solicitarEspecialistaHumano()" style="background:#fff; color:#231726; border:1px solid rgba(35,23,38,0.15); padding:7px 14px; border-radius:8px; font-weight:700; font-size:0.8rem; cursor:pointer; margin-right:12px;">👤 Chamar Especialista</button><div class="session-badge">
             <div class="dot"></div>
             <span>Atendimento Inteligente Ativo</span>
         </div>
@@ -257,26 +261,48 @@
     <div class="workspace">
         <!-- PAINEL ESQUERDO: ORB DE IA E CESTA -->
         <aside class="assistant-panel">
-            <div class="orb-card">
-                <div class="whatsapp-origin" id="origin-tag">💬 Iniciado via WhatsApp</div>
-                <div class="ai-orb-container" id="ai-orb" onclick="acionarVozManual()" title="Clique para interagir">
-                    <div class="orb-icon">🤖</div>
+            <div class="orb-card" style="padding:16px; background:#fff; border-radius:18px; border:1px solid rgba(35,23,38,0.08); box-shadow:0 8px 24px rgba(35,23,38,0.05); display:flex; flex-direction:column; gap:12px;">
+                <div class="whatsapp-origin" id="origin-tag" style="background:rgba(60,203,197,0.15); color:#0B7570; font-weight:700; border-radius:20px; padding:4px 12px; font-size:0.75rem; width:fit-content;">💬 Consultoria Guiada por Vídeo</div>
+                
+                <!-- REPRODUTOR DE VIDEO DA IA / APRESENTACAO (F6.3) -->
+                <div id="ai-video-viewport" style="position:relative; width:100%; height:220px; background:#1c1020; border-radius:14px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                    <div style="position:absolute; top:8px; left:8px; background:rgba(35,23,38,0.75); color:#fff; padding:4px 10px; border-radius:12px; font-size:0.72rem; font-weight:700;">✨ IA Consultora Presenthia</div>
+                    <div id="ai-avatar-display" style="text-align:center; color:#fff;">
+                        <div style="width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg, #D0006F, #0B7570); margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; box-shadow:0 0 25px rgba(208,0,111,0.5);">🌸</div>
+                        <div style="font-weight:700; font-size:0.95rem;">Lia • Assistente Conectada</div>
+                        <div style="font-size:0.75rem; color:#d1cad4;">Transmitindo recomendações ao vivo</div>
+                    </div>
                 </div>
-                <div style="font-weight: 800; font-size: 0.95rem; margin-top: 4px;">ManiBot • Assistente Multimodal</div>
-                <div class="ai-speech-bubble" id="ai-speech-text">
-                    "Olá! Analisei sua solicitação no WhatsApp. Estou guiando você pela nossa vitrine para resolvermos isso rapidamente."
+                
+                <!-- CAMERA DO USUARIO (SOB DEMANDA - DESLIGADA POR PADRAO - F6.2) -->
+                <div id="user-camera-box" style="display:none; position:relative; width:100%; height:180px; background:#000; border-radius:12px; overflow:hidden;">
+                    <video id="user-webcam" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover;"></video>
+                    <div style="position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,0.7); color:#fff; padding:4px 8px; border-radius:6px; font-size:0.7rem;">📷 Sua Câmera (Diagnóstico Visual Ativo)</div>
+                </div>
+                
+                <div style="font-weight:800; font-size:0.95rem; color:#231726;">Lia • Consultoria Presenthia V2</div>
+                <div class="ai-speech-bubble" id="ai-speech-text" style="color:#231726; background:#FBF8F4; border:1px solid rgba(35,23,38,0.08); border-left:3px solid #D0006F; border-radius:10px; padding:10px 14px; font-size:0.88rem; line-height:1.45;">
+                    "Olá! Estou guiando você pela vitrine. Se desejar uma avaliação técnica, você pode ativar a câmera ou enviar uma foto."
                 </div>
             </div>
 
-            <!-- BOTÃO DE MICROFONE PARA O CLIENTE FALAR -->
-            <div class="mic-box">
-                <div>
-                    <div class="mic-label">Conversação Natural</div>
-                    <div style="font-size: 0.72rem; color: var(--text-muted);">Fale por áudio com a IA</div>
+            <!-- CONTROLES DO CLIENTE (VOZ E DIAGNOSTICO VISUAL) -->
+            <div class="mic-box" style="flex-direction:column; gap:10px; align-items:stretch; background:#fff; border:1px solid rgba(35,23,38,0.08); border-radius:14px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div class="mic-label" style="color:#231726; font-weight:700;">Conversação com IA</div>
+                        <div style="font-size:0.72rem; color:#625966;">Fale por voz com a consultora</div>
+                    </div>
+                    <button type="button" class="mic-action-btn" id="mic-btn" onclick="alternarMicrofone()" title="Falar por voz">🎙️</button>
                 </div>
-                <button type="button" class="mic-action-btn" id="mic-btn" onclick="alternarMicrofone()" title="Falar com o ATENDIT">
-                    🎙️
-                </button>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
+                    <button type="button" id="btn-camera" onclick="alternarCameraDiagnostico()" style="padding:9px; border-radius:8px; border:1px solid rgba(35,23,38,0.12); background:#fff; color:#231726; font-size:0.75rem; font-weight:700; cursor:pointer;">📷 Ativar Câmera</button>
+                    <input type="file" id="foto-input" accept="image/*" style="display:none;" onchange="processarEnvioFoto(this)">
+                    <button type="button" onclick="document.getElementById('foto-input').click()" style="padding:9px; border-radius:8px; border:1px solid rgba(35,23,38,0.12); background:#fff; color:#231726; font-size:0.75rem; font-weight:700; cursor:pointer;">📁 Enviar Imagem</button>
+                </div>
+                <div style="font-size:0.68rem; color:#625966; text-align:center; line-height:1.3;">
+                    🔒 <strong>Privacidade:</strong> Sua câmera permanece desligada por padrão (F6.2). Ative somente para diagnóstico.
+                </div>
             </div>
 
             <!-- CESTA DE PRODUTOS E SERVIÇOS -->
