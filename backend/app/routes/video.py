@@ -62,6 +62,31 @@ async def carregar_sala_video(room_token: str):
         res = await session.execute(stmt)
         sala = res.scalars().first()
 
+        if not sala and room_token.startswith("loja_"):
+            partes = room_token.split("_")
+            if len(partes) >= 2:
+                slug_loja = partes[1]
+                stmt_t = select(Tenant).where(Tenant.slug == slug_loja)
+                res_t = await session.execute(stmt_t)
+                tenant = res_t.scalars().first()
+                if tenant:
+                    from datetime import timedelta
+                    agora = datetime.now(timezone.utc)
+                    sala = VideoRoom(
+                        tenant_id=tenant.id,
+                        room_token=room_token,
+                        customer_phone="vitrine_web",
+                        customer_name="Visitante da Vitrine",
+                        status="waiting",
+                        tags_context={"origem": "vitrine_loja", "tenant_slug": tenant.slug},
+                        escalation_score=0.5,
+                        created_at=agora,
+                        expires_at=agora + timedelta(hours=2)
+                    )
+                    session.add(sala)
+                    await session.commit()
+                    logger.info(f"[VIDEO] Sala de vitrine provisionada: {room_token} para tenant {tenant.slug}")
+
         if not sala:
             return HTMLResponse("<h2 style='font-family:sans-serif;text-align:center;margin-top:50px;'>Sala não encontrada ou token inválido.</h2>", status_code=404)
 
