@@ -492,8 +492,10 @@ from pydantic import BaseModel
 class NovoEncaixeRequest(BaseModel):
     customer_name: str
     customer_phone: str
+    service_type_id: Optional[str] = None
     start_at: str
     duration_minutes: int = 45
+
 
 @router.post("/appointments/{tenant}", include_in_schema=False)
 async def criar_encaixe_manual(tenant: str, request: Request, payload: NovoEncaixeRequest):
@@ -507,19 +509,53 @@ async def criar_encaixe_manual(tenant: str, request: Request, payload: NovoEncai
         raise HTTPException(status_code=400, detail=f"Data/hora inválida: {e}")
 
     async with AsyncSessionLocal() as sessao:
+        # Resolução do service_type_id obrigatório
+        svc_uuid = None
+        if payload.service_type_id:
+            try:
+                svc_uuid = uuid.UUID(payload.service_type_id)
+            except ValueError:
+                pass
+
+        if not svc_uuid:
+            res_st = await sessao.execute(
+                select(ServiceType).where(ServiceType.tenant_id == tenant_id, ServiceType.is_active == True).limit(1)
+            )
+            st_obj = res_st.scalar_one_or_none()
+            if not st_obj:
+                st_obj = ServiceType(
+                    tenant_id=tenant_id,
+                    name="Atendimento Geral",
+                    duration_minutes=payload.duration_minutes or 30,
+                    buffer_minutes=10,
+                    is_active=True,
+                    waitlist_timeout_minutes=30,
+                    reminder_offset_minutes=1440
+                )
+                sessao.add(st_obj)
+                await sessao.flush()
+            svc_uuid = st_obj.id
+
         novo = Appointment(
             tenant_id=tenant_id,
+            service_type_id=svc_uuid,
             customer_name=payload.customer_name.strip(),
             customer_phone=payload.customer_phone.strip(),
             start_at=dt_ini,
             end_at=dt_fim,
             status="confirmed",
-            provider="manual",
-            source="painel_cockpit"
+            provider="local",
+            source="painel"
         )
         sessao.add(novo)
-        await sessao.commit()
-        await sessao.refresh(novo)
+        try:
+            await sessao.commit()
+            await sessao.refresh(novo)
+        except Exception as exc:
+            await sessao.rollback()
+            if "ex_appointments_sem_sobreposicao" in str(exc) or "ExclusionViolation" in str(exc):
+                raise HTTPException(status_code=409, detail="Já existe um agendamento confirmado neste mesmo horário.")
+            raise
 
     logger.info(f"[ENCAIXE] Novo compromisso criado no cockpit para {payload.customer_name} às {dt_ini}")
     return {"success": True, "id": str(novo.id), "start_at": novo.start_at.isoformat()}
