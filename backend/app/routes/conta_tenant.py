@@ -408,18 +408,18 @@ async def painel_tenant(request: Request):
        font-family:var(--p-fonte-texto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);color:var(--p-texto, #231726)}}
   .lateral{{width:280px;background:var(--p-berinjela, #231726);color:#DCD2DF;display:flex;flex-direction:column;
            flex-shrink:0;box-shadow: 2px 0 8px rgba(0,0,0,0.06);}}
-  .marca{{padding:22px 20px;font-family:var(--p-fonte-titulo, Georgia, serif);font-size:22px;font-weight:400;color:var(--p-turquesa, #3ccbc5);letter-spacing:.5px;
+  .marca{{padding:22px 20px;font-family:var(--p-fonte-titulo, Georgia, serif);font-size:22px;font-weight:400;color:#FFFFFF;letter-spacing:.5px;
          border-bottom:1px solid rgba(255,255,255,0.08);display: flex;align-items: center;justify-content: space-between;}}
   .marca-tag{{font-size: 10px; background: rgba(60, 203, 197, 0.15); color: var(--p-turquesa, #3ccbc5); padding: 2px 8px; border-radius: 999px; font-weight: 700; letter-spacing: 0.5px;}}
   .menu{{padding:14px 0;flex:1;overflow-y:auto;max-height:calc(100vh - 140px);}}
   .item{{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:13.2px;color:#B5A8BA;cursor:pointer;
         border-left:3px solid transparent;transition:all 0.15s ease;text-decoration:none;}}
   .item:hover{{background:rgba(255,255,255,0.06);color:#ffffff}}
-  .item.ativo{{background:#3A2740;color:var(--p-turquesa, #3ccbc5);border-left-color:var(--p-turquesa, #3ccbc5);font-weight:600}}
+  .item.ativo{{background:rgba(208, 0, 111, 0.18);color:#FFFFFF;border-left-color:#D0006F;font-weight:600}}
   .sub-legado{{display:block;font-size:10px;color:#8e8293;font-weight:400;margin-top:1px;}}
   .rodape{{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08)}}
   .rodape a{{color:#B5A8BA;font-size:12.5px;text-decoration:none;transition:color 0.15s ease}}
-  .rodape a:hover{{color:var(--p-turquesa, #3ccbc5)}}
+  .rodape a:hover{{color:#FFFFFF}}
   .principal{{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--p-marfim, #fbf8f4)}}
   .topo{{background:#fff;border-bottom:1px solid var(--p-borda, #eae3dc);padding:14px 26px;display:flex;
         align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}}
@@ -449,6 +449,15 @@ async def painel_tenant(request: Request):
   .busca-rodape kbd{{background:#ffffff;border:1px solid #dcd2df;border-radius:4px;padding:2px 5px;font-size:10px}}
   @keyframes fadeIn {{ from {{ opacity: 0; transform: translateY(4px); }} to {{ opacity: 1; transform: translateY(0); }} }}
   .fade-in {{ animation: fadeIn 0.25s ease-in-out; }}
+  .btn-menu-hamb {{ display: none; background: #fff; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; padding: 6px 10px; font-size: 18px; color: var(--p-texto, #231726); cursor: pointer; line-height: 1; }}
+  .btn-menu-hamb:hover {{ background: #f4eee7; }}
+  .menu-backdrop {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(35,23,38,0.5); backdrop-filter: blur(2px); z-index: 1040; display: none; }}
+  .menu-backdrop.visivel {{ display: block; }}
+  @media (max-width: 900px) {{
+    .btn-menu-hamb {{ display: inline-flex; align-items: center; justify-content: center; }}
+    .lateral {{ position: fixed; top: 0; left: -290px; bottom: 0; z-index: 1050; transition: left 0.25s ease; height: 100vh; }}
+    .lateral.aberto {{ left: 0; }}
+  }}
 </style></head><body>
 <div class="lateral">
   <div class="marca">
@@ -459,7 +468,7 @@ async def painel_tenant(request: Request):
 </div>
 <div class="principal">
   <header class="topo">
-    <h1 id="titulo">{inquilino.name}</h1>
+    <div style="display:flex;align-items:center;gap:12px"><button type="button" class="btn-menu-hamb" onclick="window.toggleMenuLateral()" aria-label="Abrir Menu"><i class="bi bi-list"></i></button><h1 id="titulo">{inquilino.name}</h1></div>
     <div style="display:flex;align-items:center;gap:12px">
       <button type="button" class="btn-busca-topo" onclick="window.abrirModalBusca()">
         <i class="bi bi-search"></i>
@@ -531,7 +540,29 @@ const htmlInicio = `<div class="fade-in" style="display: flex; flex-direction: c
     </div>
   </div>`;
 
+window.toggleMenuLateral = function() {{
+  const lat = document.querySelector(".lateral");
+  const back = document.getElementById("menu-backdrop");
+  if (lat && back) {{
+    lat.classList.toggle("aberto");
+    back.classList.toggle("visivel");
+  }}
+}};
+
+window.fecharMenuLateral = function() {{
+  const lat = document.querySelector(".lateral");
+  const back = document.getElementById("menu-backdrop");
+  if (lat && back) {{
+    lat.classList.remove("aberto");
+    back.classList.remove("visivel");
+  }}
+}};
+
 async function carregarView(nome, el) {{
+  if (window.innerWidth <= 900) {{
+    window.fecharMenuLateral();
+  }}
+
   document.querySelectorAll('.item').forEach(e => e.classList.remove('ativo'));
   if (el) el.classList.add('ativo');
   const area = document.getElementById('conteudo');
