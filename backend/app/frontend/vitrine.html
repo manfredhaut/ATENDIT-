@@ -98,7 +98,7 @@ function render(list){
   g.innerHTML=list.map(function(i){
     var prod=i.type==='product';
     var img=i.image_url?'<img src="'+i.image_url+'">':'<div style="font-size:32px">'+(prod?'🛍️':'⏱️')+'</div>';
-    return '<article class="card"><div class="thumb"><span class="tag">'+(prod?'PRODUTO':'SERVIÇO')+'</span>'+img+'</div><div class="card-b"><div class="card-t">'+i.name+'</div><div class="card-d">'+(i.description||'Disponível para pronta entrega ou agendamento.')+'</div><div class="card-f"><div class="card-p">'+i.price_formatted+'</div><button class="btn-add" onclick="addCart(''+i.id+'')">+ Adicionar</button></div></div></article>'
+    return '<article class="card"><div class="thumb"><span class="tag">'+(prod?'PRODUTO':'SERVIÇO')+'</span>'+img+'</div><div class="card-b"><div class="card-t">'+i.name+'</div><div class="card-d">'+(i.description||'Disponível para pronta entrega ou agendamento.')+'</div><div class="card-f"><div class="card-p">'+i.price_formatted+'</div><button class="btn-add" data-id="' + i.id + '" onclick="addCart(this.dataset.id)">+ Adicionar</button></div></div></article>'
   }).join('')
 }
 function filtrar(t,btn){
