@@ -687,16 +687,34 @@
 (function() {
   console.info("[PRESENTHIA-ECOM] Carregando motor da Vitrine e Configuração da Loja...");
 
-  window.items = [
-    {id:1,type:'product',sku:'PROD-AUT-001',name:'Kit Sensor Industrial IoT',desc:'Conjunto para coleta de dados de temperatura e vibração.',qty:42,price:1290.00,cat:'IoT Industrial',status:'active',image:'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80'},
-    {id:2,type:'product',sku:'PROD-PLC-002',name:'Gateway Edge 4.0',desc:'Conectividade industrial com processamento de borda.',qty:18,price:2490.00,cat:'Automação',status:'active',image:'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=900&q=80'},
-    {id:3,type:'product',sku:'PROD-HMI-003',name:'Painel HMI Touch 10\"',desc:'Interface touch para supervisão e operação de máquinas.',qty:9,price:3190.00,cat:'Automação',status:'active',image:'https://images.unsplash.com/photo-1581090700227-1e37b190418e?auto=format&fit=crop&w=900&q=80'},
-    {id:4,type:'product',sku:'PROD-MTR-004',name:'Motor Industrial Premium',desc:'Motor de alto rendimento para aplicações contínuas.',qty:7,price:6840.00,cat:'Motores',status:'draft',image:'https://images.unsplash.com/photo-1581092335397-9fa341ce5f6d?auto=format&fit=crop&w=900&q=80'},
-    {id:5,type:'service',sku:'SRV-DIAG-001',name:'Diagnóstico de Maturidade Digital',desc:'Avaliação estruturada e roadmap para Indústria 4.0.',qty:20,price:2800.00,cat:'Consultoria',status:'active',image:'https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=900&q=80'},
-    {id:6,type:'service',sku:'SRV-IA-002',name:'Implantação de IA Aplicada',desc:'Descoberta, priorização e implantação de casos de uso de IA.',qty:12,price:6900.00,cat:'Inteligência Artificial',status:'active',image:'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=900&q=80'},
-    {id:7,type:'service',sku:'SRV-CONS-003',name:'Consultoria Estratégica C-Level',desc:'Sessões executivas para estratégia, inovação e transformação.',qty:30,price:1800.00,cat:'Consultoria',status:'active',image:'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=80'},
-    {id:8,type:'service',sku:'SRV-MANUT-01',name:'Visita Técnica Especializada',desc:'Atendimento técnico presencial com raio e requisitos configuráveis.',qty:15,price:180.00,cat:'Campo',status:'active',image:'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=900&q=80'}
-  ];
+  window.items = [];
+
+  window.carregarItensCatalogo = async function() {
+    var slug = window.currentTenantSlug || 'manitest';
+    try {
+      var r = await fetch('/v1/ecommerce/items/' + slug);
+      if (r.ok) {
+        var dados = await r.json();
+        window.items = (dados.items || []).map(function(i) {
+          return {
+            id: i.id,
+            type: i.type || 'product',
+            sku: i.sku || 'SEM-SKU',
+            name: i.name,
+            desc: i.description || '',
+            qty: i.stock_qty || 0,
+            price: (i.price_cents || 0) / 100,
+            cat: (i.meta_data && i.meta_data.category) || (i.type === 'product' ? 'Produto' : 'Serviço'),
+            status: i.status || 'active',
+            image: i.image_url || ''
+          };
+        });
+        window.renderItems();
+      }
+    } catch(e) {
+      console.error("[CATALOGO] Falha ao carregar itens da API:", e);
+    }
+  };
 
   window.currentTypeFilter = 'all';
   window.editingItemId = null;
@@ -749,7 +767,7 @@
                 '<div class="qty">' + qtyLabel + ': ' + x.qty + '</div>' +
               '</div>' +
               '<div class="item-actions">' +
-                '<button type="button" onclick="window.editItem(' + x.id + ')">✏️ Editar</button>' +
+                '<button type="button" onclick="window.editItem(' + x.id + ')">✏️ Editar🗑️ Excluir</button>' +
                 '<button type="button" onclick="window.showToast(\'Ficha técnica aberta para ' + x.sku + '\')">📄 Ficha</button>' +
                 '<button type="button" onclick="window.showToast(\'Link público gerado para ' + x.sku + '\')">🔗 Link</button>' +
               '</div>' +
@@ -909,35 +927,60 @@
     if (m) m.classList.add('open');
   };
 
-  window.saveItem = function() {
+  window.saveItem = async function() {
     var name = (document.getElementById('itemName') || {}).value;
     if (!name || !name.trim()) {
       alert('Informe o nome do item.');
       return;
     }
-    var data = {
+    var slug = window.currentTenantSlug || 'manitest';
+    var priceVal = Number((document.getElementById('itemPrice') || {}).value) || 0;
+    var payload = {
+      id: window.editingItemId || null,
+      name: name.trim(),
       type: (document.getElementById('itemType') || {}).value || 'product',
       sku: (document.getElementById('itemSku') || {}).value || 'SEM-SKU',
-      name: name.trim(),
-      desc: (document.getElementById('itemDesc') || {}).value || '',
-      qty: Number((document.getElementById('itemQty') || {}).value) || 0,
-      price: Number((document.getElementById('itemPrice') || {}).value) || 0,
-      cat: (document.getElementById('itemCat') || {}).value || 'Geral',
+      price_cents: Math.round(priceVal * 100),
+      stock_qty: Number((document.getElementById('itemQty') || {}).value) || 0,
+      duration_minutes: 30,
       status: (document.getElementById('itemStatus') || {}).value || 'active',
-      image: ''
+      description: (document.getElementById('itemDesc') || {}).value || '',
+      meta_data: { category: (document.getElementById('itemCat') || {}).value || 'Geral' }
     };
 
-    if (window.editingItemId) {
-      var item = window.items.find(function(i){ return i.id === window.editingItemId; });
-      if (item) Object.assign(item, data);
-      window.showToast('Item atualizado com sucesso.');
-    } else {
-      data.id = Date.now();
-      window.items.unshift(data);
-      window.showToast('Novo item cadastrado na vitrine.');
+    try {
+      var res = await fetch('/v1/ecommerce/items/' + slug, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        window.showToast(window.editingItemId ? 'Item atualizado com sucesso.' : 'Novo item salvo no catálogo.');
+        window.closeItemModal();
+        await window.carregarItensCatalogo();
+      } else {
+        var err = await res.json();
+        alert('Erro ao salvar item: ' + (err.detail || 'Falha na requisição'));
+      }
+    } catch(e) {
+      alert('Erro de conexão ao salvar item.');
     }
-    window.closeItemModal();
-    window.renderItems();
+  };
+
+  window.deleteItem = async function(id) {
+    if (!confirm('Deseja realmente excluir este item do catálogo?')) return;
+    var slug = window.currentTenantSlug || 'manitest';
+    try {
+      var res = await fetch('/v1/ecommerce/items/' + slug + '/' + id, { method: 'DELETE' });
+      if (res.ok) {
+        window.showToast('Item removido do catálogo com sucesso.');
+        await window.carregarItensCatalogo();
+      } else {
+        alert('Erro ao excluir item.');
+      }
+    } catch(e) {
+      alert('Falha de conexão com o servidor ao excluir.');
+    }
   };
 
   // 3. Sistema de Alternância Entre as 7 Sub-Abas
