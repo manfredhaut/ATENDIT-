@@ -19,7 +19,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger("calendly_test")
 
 
-async def suite_calendly_completa():
+async def test_suite_calendly_completa():
+    return await _suite_calendly_completa()
+
+async def _suite_calendly_completa():
     print("=" * 70)
     print("      INICIANDO SUÍTE DE TESTES ESTRUTURAIS DO CALENDLY (E2E)        ")
     print("=" * 70)
