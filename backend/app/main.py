@@ -277,7 +277,9 @@ app.include_router(_calendar_routes.router)
 app.include_router(_logistics_routes.router)
 app.include_router(_intel_operacional_routes.router)
 from app.routes import video as _video_routes
+from app.routes import ecommerce as _ecommerce_routes
 app.include_router(_video_routes.router)
+app.include_router(_ecommerce_routes.router)
 from app.routes import presenthia as _presenthia_routes
 app.include_router(_presenthia_routes.router)
 

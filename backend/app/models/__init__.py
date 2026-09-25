@@ -38,3 +38,5 @@ from app.models.logistics import LogisticConfig, ServiceOrder
 
 from app.models.intel_operacional import OperationalTag, EntityTagAssignment, CompositeServicePackage, CompositeServiceStep
 from app.models.feature_flag import FeatureFlag
+
+from app.models.catalog import Product
