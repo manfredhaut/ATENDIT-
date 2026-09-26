@@ -501,19 +501,19 @@ const htmlInicio = `<div class="fade-in" style="display: flex; flex-direction: c
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
       <div style="background: #ffffff; padding: 18px 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-magenta, #D0006F);">
         <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Atendimentos Pendentes</div>
-        <div style="font-size: 1.6rem; font-weight: 800; color: var(--p-texto, #231726); margin-top: 4px;">0</div>
+        <div id="card-atendimentos-qtd" style="font-size: 1.6rem; font-weight: 800; color: var(--p-texto, #231726); margin-top: 4px;">0</div>
         <div style="font-size: 0.78rem; color: var(--p-turquesa-texto, #0b7570); margin-top: 4px; font-weight: 600; cursor: pointer;" onclick="document.querySelector('[data-v=fila_atendimento]')?.click()">Ver fila de espera →</div>
       </div>
 
       <div style="background: #ffffff; padding: 18px 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-turquesa, #3ccbc5);">
         <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Status do WhatsApp</div>
-        <div style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-top: 6px;">Pronto para Conectar</div>
+        <div id="card-whatsapp-status" style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-top: 6px;">Pronto para Conectar</div>
         <div style="font-size: 0.78rem; color: var(--p-turquesa-texto, #0b7570); margin-top: 4px; font-weight: 600; cursor: pointer;" onclick="document.querySelector('[data-v=canais]')?.click()">Gerenciar canais →</div>
       </div>
 
       <div style="background: #ffffff; padding: 18px 20px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-ambar, #e3a028);">
         <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Sincronização de Agenda</div>
-        <div style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-top: 6px;">Calendly / Google</div>
+        <div id="card-agenda-status" style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-top: 6px;">Calendly / Google</div>
         <div style="font-size: 0.78rem; color: #b45309; margin-top: 4px; font-weight: 600; cursor: pointer;" onclick="document.querySelector('[data-v=calendar_config]')?.click()">Ajustar grade →</div>
       </div>
     </div>
@@ -558,6 +558,23 @@ window.fecharMenuLateral = function() {{
   }}
 }};
 
+async function atualizarCardsAtencao() {{
+    try {{
+      const resp = await fetch('/api/tenant/resumo-atencao');
+      if (!resp.ok) return;
+      const d = await resp.json();
+      if (!d.ok) return;
+      const elAtend = document.getElementById('card-atendimentos-qtd');
+      if (elAtend && d.atendimentos_pendentes !== undefined) elAtend.textContent = d.atendimentos_pendentes;
+      const elWhats = document.getElementById('card-whatsapp-status');
+      if (elWhats && d.whatsapp) elWhats.textContent = d.whatsapp.status_texto;
+      const elAgenda = document.getElementById('card-agenda-status');
+      if (elAgenda && d.agenda) elAgenda.textContent = d.agenda.status_texto;
+    }} catch (e) {{
+      console.error('[Presenthia F1.2] Erro ao carregar cartoes:', e);
+    }}
+  }}
+
 async function carregarView(nome, el) {{
   if (window.innerWidth <= 900) {{
     window.fecharMenuLateral();
@@ -570,6 +587,7 @@ async function carregarView(nome, el) {{
   if (nome === 'inicio') {{
     area.innerHTML = htmlInicio;
     document.getElementById('titulo').textContent = {inquilino.name!r};
+    atualizarCardsAtencao();
     return;
   }}
 
@@ -1566,3 +1584,66 @@ async def alterar_senha_autenticado(request: Request, payload: AlterarSenhaReque
             return {"status": "ok", "message": "Sua senha foi alterada com sucesso."}
 
     raise HTTPException(status_code=401, detail="Sessão não autenticada.")
+# ---------------------------------------------------------------------------
+# F1.2 - Resumo de Atenção Imediata (Cartões Dinâmicos em Tempo Real)
+# ---------------------------------------------------------------------------
+@router.get("/api/tenant/resumo-atencao")
+async def api_tenant_resumo_atencao(request: Request):
+    from app.core import tenant_auth as _sessao
+    dados = _sessao.sessao_do_tenant(request)
+    if not dados or "tenant_id" not in dados:
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Não autenticado."})
+
+    import uuid
+    from sqlalchemy import select, func
+    from app.core.database import AsyncSessionLocal
+    from app.models.tenant import Tenant
+    from app.models.scheduling import Lead, CalendarConnection
+    from app.models.meta import TenantMetaConfig
+
+    t_uuid = uuid.UUID(str(dados["tenant_id"]))
+    async with AsyncSessionLocal() as session:
+        # 1. Atendimentos Pendentes (leads com status novo)
+        q_leads = await session.execute(
+            select(func.count(Lead.id)).where(Lead.tenant_id == t_uuid, Lead.status == "novo")
+        )
+        atendimentos_pendentes = q_leads.scalar() or 0
+
+        # 2. Status WhatsApp (Evolution API ou Meta Oficial)
+        q_tenant = await session.execute(select(Tenant).where(Tenant.id == t_uuid))
+        tenant = q_tenant.scalar_one_or_none()
+
+        q_meta = await session.execute(
+            select(TenantMetaConfig).where(TenantMetaConfig.tenant_id == t_uuid, TenantMetaConfig.is_active.is_(True))
+        )
+        meta_cfg = q_meta.scalar_one_or_none()
+
+        whatsapp_conectado = False
+        whatsapp_tipo = "Nenhum"
+        if meta_cfg and meta_cfg.phone_number_id:
+            whatsapp_conectado = True
+            whatsapp_tipo = "Meta Oficial"
+        elif tenant and (tenant.whatsapp_jid or tenant.evolution_instance):
+            whatsapp_conectado = True
+            whatsapp_tipo = "Evolution API"
+
+        # 3. Status Agenda (CalendarConnection)
+        q_agenda = await session.execute(
+            select(CalendarConnection.provider).where(CalendarConnection.tenant_id == t_uuid).limit(1)
+        )
+        agenda_prov = q_agenda.scalar_one_or_none()
+
+        return JSONResponse(content={
+            "ok": True,
+            "atendimentos_pendentes": atendimentos_pendentes,
+            "whatsapp": {
+                "conectado": whatsapp_conectado,
+                "tipo": whatsapp_tipo,
+                "status_texto": "Conectado" if whatsapp_conectado else "Pronto para Conectar"
+            },
+            "agenda": {
+                "conectado": bool(agenda_prov),
+                "provedor": str(agenda_prov).capitalize() if agenda_prov else "Não Integrado",
+                "status_texto": str(agenda_prov).capitalize() if agenda_prov else "Não Integrado"
+            }
+        })
