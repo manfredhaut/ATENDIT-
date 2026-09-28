@@ -1,124 +1,284 @@
 <div style="display: flex; flex-direction: column; gap: 24px;" class="fade-in">
-    <!-- CABEÇALHO DO ONBOARDING -->
+    <!-- CABEZADO DO ONBOARDING -->
     <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-        <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 8px;">🚀 Configuração Guiada Presenthia</h2>
-        <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5;">Complete os 4 passos abaixo para deixar sua IA pronta para atender e vender no piloto automático em menos de 10 minutos.</p>
-        
-        <!-- PROGRESS BAR -->
-        <div style="margin-top: 20px; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden;">
-            <div id="onboarding-progress" style="background: var(--p-magenta, #D0006F); width: 25%; height: 100%; transition: width 0.3s ease;"></div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+            <div>
+                <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--p-texto, #231726); margin-bottom: 6px;">✯ Configuração Guiada Presenthia</h2>
+                <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5; margin: 0;">Complete os 5 passos para calibrar sua empresa e habilitar o atendimento automatizado por IA em até 10 minutos.</p>
+            </div>
+            <button onclick="carregarStatusOnboarding(true)" style="padding: 8px 14px; background: #f8fafc; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; font-size: 0.82rem; font-weight: 600; color: #475569; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                M Atualizar Status
+            </button>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: #64748b;">
-            <span id="step-indicator-text">Passo 1 de 4: Conectar Canal</span>
-            <span>25% Concluído</span>
+
+        <!-- BARRA DE PROGRESSO -->
+        <div style="margin-top: 24px; background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden;">
+            <div id="onboarding-progress" style="background: linear-gradient(90deg, #D0006F 0%, #3CCBC5 100%); width: 0%; height: 100%; transition: width 0.4s ease;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.82rem; font-weight: 700; color: #475569;">
+            <span id="onboarding-passos-concluidos">Carregando status dos 5 passos...</span>
+            <span id="onboarding-percentual-text">0% Concluído</span>
         </div>
     </div>
 
-    <!-- CORPO DOS PASSOS -->
-    <div style="background: #ffffff; padding: 32px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-        
+    <!-- CARDS DOS 5 PASSOS -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+
         <!-- PASSO 1 -->
-        <div class="onboarding-step" id="step-1">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 12px;">Passo 1: Escolha e Conecte seu Canal de WhatsApp</h3>
-            <p style="font-size: 0.88rem; color: #475569; margin-bottom: 20px;">Selecione como deseja operar o WhatsApp dos seus clientes:</p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
-                <div onclick=" selecionarCanal('oficial', this)" class="canal-card selected" style="padding: 20px; border: 2px solid var(--p-magenta, #D0006F); border-radius: 12px; cursor: pointer; background: #fdf2f8;">
-                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--p-texto, #231726);">WhatsApp Oficial (Cloud API)</div>
-                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Recomendado para empresas e alta estabilidade com suporte a anúncios.</div>
+        <div id="card-passo-1" style="background: #ffffff; padding: 22px 26px; border-radius: 12px; border: 1px solid var(--p-borda, #eae3dc); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div id="badge-passo-1" style="width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;">1</div>
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 700; color: var(--p-texto, #231726); margin: 0 0 4px 0;">1. Conectar WhatsApp (Oficial ou QR Code)</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin: 0;">Conecte seu canal via Meta Cloud API Oficial ou pareamento QR Code da Evolution API.</p>
                 </div>
-                <div onclick="selecionarCanal('qrcode', this)" class="canal-card" style="padding: 20px; border: 2px solid var(--p-borda, #eae3dc); border-radius: 12px; cursor: pointer;">
-                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--p-texto, #231726);">WhatsApp QR Code (Evolution)</div>
-                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Ativação instantânea por leitura de código QR na tela.</div>
-                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span id="status-tag-1" style="font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: #fef2f2; color: #b91c1c;">Pendente</span>
+                <button onclick="navegarParaPasso('canais')" style="padding: 8px 16px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; font-size: 0.85rem; color: #1e293b; cursor: pointer;">Configurar Canal ↓</button>
             </div>
         </div>
 
         <!-- PASSO 2 -->
-        <div class="onboarding-step" id="step-2" style="display: none;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 12px;">Passo 2: Perona e Tom de Voz do Atendente IA</h3>
-            <p style="font-size: 0.88rem; color: #475569; margin-bottom: 20px;">Diga à IA como ela deve se portar ao atender seus clientes.</p>
-            <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+        <div id="card-passo-2" style="background: #ffffff; padding: 22px 26px; border-radius: 12px; border: 1px solid var(--p-borda, #eae3dc); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div id="badge-passo-2" style="width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;">2</div>
                 <div>
-                    <label style="font-size: 0.82rem; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">Nome do Atendente Virtual</label>
-                    <input type="text" id="ai-name" value="Sofia — Assistente Virtual" style="width: 100%; padding: 11px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; font-size: 0.9rem;">
+                    <h3 style="font-size: 1rem; font-weight: 700; color: var(--p-texto, #231726); margin: 0 0 4px 0;">2. Importar Catálogo de Produtos e Serviços</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin: 0;">Cadastre procedimentos, durações, preços e links de vitrine da sua empresa.</p>
                 </div>
-                <div>
-                    <label style="font-size: 0.82rem; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">Instruções e Comportamento (Prompt Inicial)</label>
-                    <textarea id="ai-prompt" rows="4" style="width: 100%; padding: 11px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; font-size: 0.9rem;">Você é uma assistente virtual prestativa, simpática e focada em agendar horários e tirar dúvidas comerciais da empresa.</textarea>
-                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span id="status-tag-2" style="font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: #fef2f2; color: #b91c1c;">Pendente</span>
+                <button onclick="navegarParaPasso('ecommerce_config')" style="padding: 8px 16px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; font-size: 0.85rem; color: #1e293b; cursor: pointer;">Cadastrar Itens ↓</button>
             </div>
         </div>
 
+
         <!-- PASSO 3 -->
-        <div class="onboarding-step" id="step-3" style="display: none;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 12px;">Passo 3: Importação de Conhecimento e FAQ</h3>
-            <p style="font-size: 0.88rem; color: #475569; margin-bottom: 20px;">Insira as principais perguntas frequentes ou regras do seu negócio.</p>
-            <div style="margin-bottom: 24px;">
-                <textarea rows="5" placeholder="Ex: Qual o horário de funcionamento? Segunda a sexta das 8h às 18h. Qual o valor do atendimento? R$ 150." style="width: 100%; padding: 11px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; font-size: 0.9rem;"></textarea>
+        <div id="card-passo-3" style="background: #ffffff; padding: 22px 26px; border-radius: 12px; border: 1px solid var(--p-borda, #eae3dc); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div id="badge-passo-3" style="width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;">3</div>
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 700; color: var(--p-texto, #231726); margin: 0 0 4px 0;">3. Base de Conhecimento e FAQ (RAG)</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin: 0;">Envie manuais, políticas de atendimento e dúvidas frequentes para treinar o assistente.</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span id="status-tag-3" style="font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: #fef2f2; color: #b91c1c;">Pendente</span>
+                <button onclick="navegarParaPasso('rag_management')" style="padding: 8px 16px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; font-size: 0.85rem; color: #1e293b; cursor: pointer;">Subir Documentos ↓</button>
             </div>
         </div>
 
         <!-- PASSO 4 -->
-        <div class="onboarding-step" id="step-4" style="display: none;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--p-texto, #231726); margin-bottom: 12px;">Passo 4: Conclusão & Teste no Simulador</h3>
-            <p style="font-size: 0.88rem; color: #475569; margin-bottom: 20px;">Tudo pronto! Sua IA está configurada e integrada com sucesso ao ecossistema Presenthia.</p>
-            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 12px; color: #166534; font-weight: 600; margin-bottom: 24px;">
-                ✓ Instância validada e pronta para entrar em produção. Clique em finalizar para começar a operar.
+        <div id="card-passo-4" style="background: #ffffff; padding: 24px 26px; border-radius: 12px; border: 1px solid var(--p-borda, #eae3dc);">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div id="badge-passo-4" style="width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;">4</div>
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--p-texto, #231726); margin: 0 0 4px 0;">4. Persona e Tom de Voz do Atendente IA</h3>
+                        <p style="font-size: 0.85rem; color: #64748b; margin: 0;">Defina o nome de exibição e as instruções de conduta para as conversas.</p>
+                    </div>
+                </div>
+                <span id="status-tag-4" style="font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: #fef2f2; color: #b91c1c;">Pendente</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr; gap: 14px; background: #f8fafc; padding: 18px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                <div>
+                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Nome do Atendente Virtual</label>
+                    <input type="text" id="input-persona-nome" placeholder="Ex: Sofia — Atendente Virtual" style="width: 100%; padding: 10px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; font-size: 0.9rem; background: #ffffff;">
+                </div>
+                <div>
+                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Instrução de Comportamento & Tom de Voz (Prompt)</label>
+                    <textarea id="input-persona-prompt" rows="3" placeholder="Ex: Você é um assistente virtual atencioso e acolhedor..." style="width: 100%; padding: 10px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; font-size: 0.9rem; background: #ffffff;"></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button onclick="salvarPersonaOnboarding()" id="btn-salvar-persona" style="padding: 9px 20px; background: var(--p-magenta, #D0006F); color: #ffffff; border: none; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer;">
+                        Salvar Persona e Tom
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- BOTÕES DE NAVEGAÇÃO -->
-        <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--p-borda, #eae3dc); pt: 20px; margin-top: 24px;">
-            <button id="btn-voltar-onboard" onclick="mudarPasso(-1)" style="padding: 10px 20px; background: #e2e8f0; color: #475569; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; visibility: hidden;">← Voltar</button>
-            <button id="btn-proximo-onboard" onclick="mudarPasso(1)" style="padding: 10px 24px; background: var(--p-magenta, #D0006F); color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Próximo Passo →</button>
+        <!-- PASSO 5 -->
+        <div id="card-passo-5" style="background: #ffffff; padding: 24px 26px; border-radius: 12px; border: 1px solid var(--p-borda, #eae3dc);">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div id="badge-passo-5" style="width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;">5</div>
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--p-texto, #231726); margin: 0 0 4px 0;">5. Validação no Simulador Interativo</h3>
+                        <p style="font-size: 0.85rem; color: #64748b; margin: 0;">Faça um teste de mensagem para aprovar a resposta da sua IA em tempo real.</p>
+                    </div>
+                </div>
+                <span id="status-tag-5" style="font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: #fef2f2; color: #b91c1c;">Pendente</span>
+            </div>
+
+
+            <div style="display: flex; flex-direction: column; gap: 12px; background: #f8fafc; padding: 18px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                <div id="simulador-chat-box" style="min-height: 90px; max-height: 220px; overflow-y: auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; font-size: 0.88rem; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="color: #64748b; font-style: italic;">Envie uma mensagem abaixo para testar sua IA configurada...</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="input-simulador-msg" placeholder="Ex: Olá, quais são os horários e serviços disponíveis?" style="flex: 1; padding: 10px 14px; border: 1px solid var(--p-borda, #eae3dc); border-radius: 8px; font-size: 0.9rem;" onkeydown="if(event.key === 'Enter') enviarSimuladorOnboarding()">
+                    <button onclick="enviarSimuladorOnboarding()" id="btn-enviar-simulador" style="padding: 10px 22px; background: var(--p-magenta, #D0006F); color: #ffffff; border: none; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer;">
+                        Enviar Teste
+                    </button>
+                </div>
+            </div>
         </div>
 
     </div>
 </div>
 
 <script>
-    let currentStep = 1;
-    const totalSteps = 4;
-
-    function selecionarCanal(tipo, el) {
-        document.querySelectorAll('.canal-card').forEach(c => {
-            c.style.borderColor = 'var(--p-borda, #eae3dc)';
-            c.style.background = '#ffffff';
-        });
-        el.style.borderColor = 'var(--p-magenta, #D0006F)';
-        el.style.background = '#fdf2f8';
-    }
-
-    function mudarPasso(direcao) {
-        const next = currentStep + direcao;
-        if (next < 1 || next > totalSteps) {
-            if (next > totalSteps) {
-                alert('Parabéns! Configuração concluída com sucesso.');
-                loadView('faturamento');
+    async function carregarStatusOnboarding(alertaSucesso = false) {
+        console.log("[ONBOARDING] Sincronizando status dos 5 passos...");
+        try {
+            const resp = await fetch("/api/tenant/onboarding-status");
+            if (!resp.ok) {
+                console.error("[ONBOARDING] Erro ao buscar status:", resp.status);
+                return;
             }
-            return;
+            const data = await resp.json();
+            if (!data.ok) return;
+
+            document.getElementById("onboarding-progress").style.width = data.percentual + "%";
+            document.getElementById("onboarding-percentual-text").innerText = data.percentual + "% Concluído";
+            document.getElementById("onboarding-passos-concluidos").innerText = `${data.concluidos} de ${data.total} passos concluídos`;
+
+            if (data.dados_ia) {
+                const inputNome = document.getElementById("input-persona-nome");
+                const inputPrompt = document.getElementById("input-persona-prompt");
+                if (inputNome && !inputNome.value) inputNome.value = data.dados_ia.agent_name || "";
+                if (inputPrompt && !inputPrompt.value) inputPrompt.value = data.dados_ia.system_instruction || "";
+            }
+
+            data.passos.forEach(p => {
+                const tag = document.getElementById(`status-tag-${p.id}`);
+                const badge = document.getElementById(`badge-passo-${p.id}`);
+                const card = document.getElementById(`card-passo-${p.id}`);
+
+                if (tag && badge && card) {
+                    if (p.concluido) {
+                        tag.innerText = "✓ Concluído";
+                        tag.style.background = "#dcfce7";
+                        tag.style.color = "#15803d";
+                        badge.style.background = "#3CCBC5";
+                        badge.style.color = "#ffffff";
+                        card.style.borderColor = "#86efac";
+                    } else {
+                        tag.innerText = "Pendente";
+                        tag.style.background = "#fef2f2";
+                        tag.style.color = "#b91c1c";
+                        badge.style.background = "#e2e8f0";
+                        badge.style.color = "#475569";
+                        card.style.borderColor = "var(--p-borda, #eae3dc)";
+                    }
+                }
+            });
+
+            if (alertaSucesso) {
+                console.log("[ONBOARDING] Status sincronizado com sucesso:", data);
+            }
+        } catch (err) {
+            console.error("[ONBOARDING] Falha na requisição:", err);
         }
-
-        document.getElementById(`step-${currentStep}`).style.display = 'none';
-        currentStep = next;
-        document.getElementById(`step-${currentStep}`).style.display = 'block';
-
-        // Atualizar barra de progresso
-        const pct = (currentStep / totalSteps) * 100;
-        document.getElementById('onboarding-progress').style.width = pct + '%';
-        document.getElementById('step-indicator-text').innerText = `Passo ${currentStep} de ${totalSteps}: ${getStepTitle(currentStep)}`;
-
-        document.getElementById('btn-voltar-onboard').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
-        const btnProx = document.getElementById('btn-proximo-onboard');
-        btnProx.innerText = currentStep === totalSteps ? 'Finalizar Configuração ✓' : 'Próximo Passo →';
     }
 
-    function getStepTitle(step) {
-        switch(step) {
-            case 1: return 'Conectar Canal';
-            case 2: return 'Persona e Tom';
-            case 3: return 'Base de Conhecimento';
-            case 4: return 'Revisão e Teste';
+    function navegarParaPasso(viewName) {
+        if (typeof window.loadView === "function") {
+            const menuItem = document.querySelector(`[onclick*="loadView('${viewName}'"]`);
+            window.loadView(viewName, menuItem);
+        } else {
+            console.warn("[ONBOARDING] loadView nao esta no escopo global.");
         }
     }
+
+    async function salvarPersonaOnboarding() {
+        const btn = document.getElementById("btn-salvar-persona");
+        const nome = document.getElementById("input-persona-nome").value.trim();
+        const prompt = document.getElementById("input-persona-prompt").value.trim();
+
+        btn.disabled = true;
+        btn.innerText = "Salvando...";
+
+        try {
+            const resp = await fetch("/api/tenant/onboarding-persona", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ agent_name: nome, system_instruction: prompt })
+            });
+            const res = await resp.json();
+            if (res.ok) {
+                alert("✓</ Persona e Tom de Voz atualizados com sucesso!");
+                await carregarStatusOnboarding();
+            } else {
+                alert("Erro ao salvar persona: " + (res.mensagem || "desconhecido"));
+            }
+        } catch (e) {
+            console.error("[ONBOARDING] Erro ao salvar persona:", e);
+            alert("Erro de conexão ao salvar persona.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Salvar Persona e Tom";
+        }
+    }
+
+    async function enviarSimuladorOnboarding() {
+        const input = document.getElementById("input-simulador-msg");
+        const chatBox = document.getElementById("simulador-chat-box");
+        const btn = document.getElementById("btn-enviar-simulador");
+        const msg = input.value.trim();
+
+        if (!msg) return;
+
+        const divUser = document.createElement("div");
+        divUser.style.alignSelf = "flex-end";
+        divUser.style.background = "#231726";
+        divUser.style.color = "#ffffff";
+        divUser.style.padding = "8px 14px";
+        divUser.style.borderRadius = "12px 12px 0 12px";
+        divUser.style.maxWidth = "80%";
+        divUser.style.fontSize = "0.85rem";
+        divUser.innerText = msg;
+        chatBox.appendChild(divUser);
+        input.value = "";
+
+        const divIA = document.createElement("div");
+        divIA.style.alignSelf = "flex-start";
+        divIA.style.background = "#f1f5f9";
+        divIA.style.color = "#1e293b";
+        divIA.style.padding = "8px 14px";
+        divIA.style.borderRadius = "12px 12px 12px 0";
+        divIA.style.maxWidth = "80%";
+        divIA.style.fontSize = "0.85rem";
+        divIA.innerHTML = "<em>Digitando resposta...</em>";
+        chatBox.appendChild(divIA);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        btn.disabled = true;
+
+        try {
+            const resp = await fetch("/api/tenant/simulador-teste", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ mensagem: msg })
+            });
+            const res = await resp.json();
+            if (res.ok) {
+                divIA.innerText = res.resposta;
+                await carregarStatusOnboarding();
+            } else {
+                divIA.innerText = "Falha ao gerar resposta: " + (res.mensagem || "Erro na IA");
+            }
+        } catch (err) {
+            console.error("[ONBOARDING] Erro no simulador:", err);
+            divIA.innerText = "Erro de conexão ao testar IA.";
+        } finally {
+            btn.disabled = false;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    }
+
+    carregarStatusOnboarding();
 </script>
