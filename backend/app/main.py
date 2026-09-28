@@ -1095,8 +1095,9 @@ async def listar_chats_whatsapp(request: Request):
     slug = (request.query_params.get("tenant_slug") or request.query_params.get("slug") or "").strip().lower()
     if not slug:
         slug = await _autz.slug_da_sessao(request)
-    if slug:
-        await _autz.exigir_acesso_ao_tenant(request, slug=slug)
+    if not slug:
+        raise HTTPException(status_code=401, detail="Sessão ausente ou expirada. Faça login.")
+    await _autz.exigir_acesso_ao_tenant(request, slug=slug)
 
     async with _S() as sessao:
         t_res = await sessao.execute(
@@ -1167,8 +1168,9 @@ async def obter_transcricao_chat(target: str, request: Request):
     slug = (request.query_params.get("tenant_slug") or request.query_params.get("slug") or "").strip().lower()
     if not slug:
         slug = await _autz.slug_da_sessao(request)
-    if slug:
-        await _autz.exigir_acesso_ao_tenant(request, slug=slug)
+    if not slug:
+        raise HTTPException(status_code=401, detail="Sessão ausente ou expirada. Faça login.")
+    await _autz.exigir_acesso_ao_tenant(request, slug=slug)
 
     async with _S() as sessao:
         t_res = await sessao.execute(
@@ -1248,8 +1250,9 @@ async def alterar_status_chat(target: str, request: Request):
     slug = (corpo.get("slug") or request.query_params.get("tenant_slug") or "").strip().lower()
     if not slug:
         slug = await _autz.slug_da_sessao(request)
-    if slug:
-        await _autz.exigir_acesso_ao_tenant(request, slug=slug)
+    if not slug:
+        raise HTTPException(status_code=401, detail="Sessão ausente ou expirada. Faça login.")
+    await _autz.exigir_acesso_ao_tenant(request, slug=slug)
 
     novo_status = (corpo.get("status") or "ia").strip().lower()
 
