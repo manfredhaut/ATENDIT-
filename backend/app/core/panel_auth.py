@@ -76,6 +76,15 @@ CAMINHOS_SOMENTE_ADMIN = (
     "/docs",
     "/redoc",
     "/openapi.json",
+    # 2026-09-28: /tenants (routes/tenants.py) lista TODOS os tenants
+    # (nome, e-mail, trial) sem sessao alguma -- medido publicamente: HTTP 200
+    # sem cookie. O prefixo real do roteador e "/tenants", nao "/v1/tenants";
+    # a entrada antiga da lista protegia um caminho que o codigo nao usa mais.
+    "/tenants",
+    # Console administrativo Presenthia: so tem Depends(flag_on(...)), que
+    # verifica se a FUNCIONALIDADE esta ligada, nao quem esta pedindo. Sem
+    # esta linha, ligar a flag globalmente abre o console para qualquer um.
+    "/api/v1/presenthia",
 )
 
 

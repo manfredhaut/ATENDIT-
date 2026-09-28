@@ -377,14 +377,14 @@ async def painel_tenant(request: Request):
       <a class="item" data-v="leads"><span class="m-icon">🎯</span> 3. Aquisição</a>
       <a class="item" data-v="leads"><span class="m-icon">📊</span> 4. CRM & Funil</a>
       <a class="item" data-v="calendar_config"><span class="m-icon">📅</span> 5. Agenda <small class="sub-legado">antes: Configuração do Calendário</small></a>
-      <a class="item" data-v="equipe"><span class="m-icon">👥</span> 6. Profissionais & Escalas</a>
+      <a class="item" data-v="aviso_fase3_profissionais"><span class="m-icon">👥</span> 6. Profissionais & Escalas</a>
       <a class="item" data-v="ecommerce_config"><span class="m-icon">🛍️</span> 7. Vitrine & Loja <small class="sub-legado">antes: Loja & E-Commerce</small></a>
       <a class="item" data-v="video"><span class="m-icon">📹</span> 8. Consultoria por Vídeo</a>
       <a class="item" data-v="ia_config"><span class="m-icon">🤖</span> 9. Assistente IA <small class="sub-legado">antes: Config. Atendente + IA</small></a>
       <a class="item" data-v="rag_management"><span class="m-icon">📚</span> 10. Base de Conhecimento <small class="sub-legado">antes: Gestão de Documentos</small></a>
       <a class="item" data-v="canais"><span class="m-icon">📡</span> 11. Canais</a>
       <a class="item" data-v="faturamento"><span class="m-icon">💳</span> 12. Financeiro</a>
-      <a class="item" data-v="intel_operacional"><span class="m-icon">📈</span> 13. Inteligência Operacional</a>
+      <a class="item" data-v="intel_operacional"><span class="m-icon">📈</span> 13. Inteligência Comercial & Operacional</a>
       <a class="item" data-v="empresa_cadastro"><span class="m-icon">🏢</span> 14. Empresa & Conta <small class="sub-legado">antes: Cadastro da Empresa</small></a>
     </nav>
     <div class="rodape">
@@ -518,14 +518,32 @@ const htmlInicio = `<div class="fade-in" style="display: flex; flex-direction: c
       </div>
     </div>
 
+    <!-- ATALHO F1.3 - CONFIGURACAO GUIADA (ONBOARDING) -->
+    <div id="onb-card" style="background:#ffffff; padding:20px 22px; border-radius:var(--p-raio, 16px); border:1px solid var(--p-borda, #eae3dc); border-left:4px solid var(--p-magenta, #D0006F);">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:240px;">
+          <div style="font-weight:700; font-size:0.95rem; color:var(--p-texto, #231726); margin-bottom:4px;">🚀 Configuração Guiada (Onboarding)</div>
+          <p id="onb-texto" style="font-size:0.82rem; color:var(--p-texto-suave, #5e5563); margin:0;">Carregando progresso...</p>
+        </div>
+        <div style="text-align:right;">
+          <div id="onb-pct" style="font-size:1.6rem; font-weight:800; color:var(--p-magenta, #D0006F); line-height:1;">--</div>
+          <div style="font-size:0.7rem; font-weight:700; color:#64748b; text-transform:uppercase;">concluído</div>
+        </div>
+      </div>
+      <div style="margin-top:14px; height:8px; background:#f1f5f9; border-radius:999px; overflow:hidden;">
+        <div id="onb-barra" style="height:100%; width:0%; background:linear-gradient(90deg, #D0006F, #3ccbc5); border-radius:999px; transition:width .4s ease;"></div>
+      </div>
+      <button onclick="carregarView('configuracao_guiada', null)" style="margin-top:14px; padding:10px 18px; background:var(--p-magenta, #D0006F); color:#ffffff; border:none; border-radius:10px; font-weight:700; font-size:0.85rem; cursor:pointer;">Abrir Configuração Guiada →</button>
+    </div>
+
     <!-- CONFIGURAÇÃO GUIADA E ATALHOS RÁPIDOS -->
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
       <div style="padding: 20px; background: #ffffff; border: 1px solid var(--p-borda, #eae3dc); border-radius: var(--p-raio, 16px);">
         <div style="font-weight: 700; font-size: 0.95rem; color: var(--p-texto, #231726); margin-bottom: 6px;">📱 Canais de WhatsApp</div>
         <p style="font-size: 0.82rem; color: var(--p-texto-suave, #5e5563); margin: 0 0 14px 0;">Conecte via Evolution API (QR Code) ou configure a API Oficial da Meta com faturamento direto.</p>
         <div style="display: flex; gap: 12px;">
-          <a href="javascript:void(0)" onclick="carregarView('canais', document.querySelector('[data-v=canais]')).then(() => window.abrirCanaisSubaba && window.abrirCanaisSubaba('qrcode'))" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Conectar QR Code ↗</a>
-          <a href="javascript:void(0)" onclick="carregarView('canais', document.querySelector('[data-v=canais]')).then(() => window.abrirCanaisSubaba && window.abrirCanaisSubaba('meta'))" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Configurar Meta ↗</a>
+          <a href="javascript:void(0)" onclick="carregarView('canais', document.querySelector('[data-v=canais]'))" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Conectar QR Code ↗</a>
+          <a href="javascript:void(0)" onclick="carregarView('canais', document.querySelector('[data-v=canais]'))" style="font-size: 0.82rem; font-weight: 700; color: var(--p-turquesa-texto, #0b7570); text-decoration: underline;">Configurar Meta ↗</a>
         </div>
       </div>
 
@@ -575,6 +593,33 @@ async function atualizarCardsAtencao() {{
     }}
   }}
 
+async function atualizarOnboardingInicio() {{
+    try {{
+      const resp = await fetch('/api/tenant/onboarding-status');
+      if (!resp.ok) return;
+      const d = await resp.json();
+      if (!d.ok) return;
+      const barra = document.getElementById('onb-barra');
+      const pct = document.getElementById('onb-pct');
+      const txt = document.getElementById('onb-texto');
+      const card = document.getElementById('onb-card');
+      if (barra) barra.style.width = d.percentual + '%';
+      if (pct) pct.textContent = d.percentual + '%';
+      if (txt) {{
+        const pend = (d.passos || []).filter(p => !p.concluido).map(p => p.titulo);
+        txt.textContent = d.completo
+          ? 'Tudo pronto. Abra para revisar ou testar novamente no simulador.'
+          : 'Falta: ' + pend.join(' | ');
+      }}
+      if (card && d.completo) {{
+        card.style.borderLeftColor = 'var(--p-turquesa, #3ccbc5)';
+        if (pct) pct.style.color = 'var(--p-turquesa-texto, #0b7570)';
+      }}
+    }} catch (e) {{
+      console.error('[Presenthia F1.3] Erro ao carregar onboarding:', e);
+    }}
+  }}
+
 async function carregarView(nome, el) {{
   if (window.innerWidth <= 900) {{
     window.fecharMenuLateral();
@@ -588,6 +633,7 @@ async function carregarView(nome, el) {{
     area.innerHTML = htmlInicio;
     document.getElementById('titulo').textContent = {inquilino.name!r};
     atualizarCardsAtencao();
+    atualizarOnboardingInicio();
     return;
   }}
 
@@ -667,12 +713,12 @@ async function executarBusca(termo) {{
   const lista = document.getElementById('busca-resultados-lista');
   if (termo.trim().length === 0) {{
     lista.innerHTML = '<div style="padding: 10px 14px; font-size: 11px; font-weight: 700; color: #8e8293; text-transform: uppercase;">Acesso Rápido às 14 Abas</div>'
-      + '<div class="busca-item selecionado" onclick="selecionarAbaBusca(\'inicio\')"><span class="busca-item-icon">🏠</span><div class="busca-item-info"><div class="busca-item-titulo">1. Início</div><div class="busca-item-sub">Painel Principal e visão geral</div></div><span class="busca-item-badge">Aba</span></div>'
-      + '<div class="busca-item" onclick="selecionarAbaBusca(\'fila_atendimento\')"><span class="busca-item-icon">💬</span><div class="busca-item-info"><div class="busca-item-titulo">2. Atendimento</div><div class="busca-item-sub">Fila e conversas ao vivo</div></div><span class="busca-item-badge">Aba</span></div>'
-      + '<div class="busca-item" onclick="selecionarAbaBusca(\'leads\')"><span class="busca-item-icon">🎯</span><div class="busca-item-info"><div class="busca-item-titulo">3. Aquisição & 4. CRM</div><div class="busca-item-sub">Gestão de oportunidades e funil</div></div><span class="busca-item-badge">Aba</span></div>'
-      + '<div class="busca-item" onclick="selecionarAbaBusca(\'calendar_config\')"><span class="busca-item-icon">📅</span><div class="busca-item-info"><div class="busca-item-titulo">5. Agenda</div><div class="busca-item-sub">Integrações de calendário</div></div><span class="busca-item-badge">Aba</span></div>'
-      + '<div class="busca-item" onclick="selecionarAbaBusca(\'canais\')"><span class="busca-item-icon">📡</span><div class="busca-item-info"><div class="busca-item-titulo">11. Canais WhatsApp</div><div class="busca-item-sub">Oficial Meta e QR Code</div></div><span class="busca-item-badge">Aba</span></div>'
-      + '<div class="busca-item" onclick="selecionarAbaBusca(\'video\')"><span class="busca-item-icon">📹</span><div class="busca-item-info"><div class="busca-item-titulo">8. Consultoria por Vídeo</div><div class="busca-item-sub">Salas de conferência WebRTC</div></div><span class="busca-item-badge">Aba</span></div>';
+      + '<div class="busca-item selecionado" onclick="selecionarAbaBusca("inicio")"><span class="busca-item-icon">🏠</span><div class="busca-item-info"><div class="busca-item-titulo">1. Início</div><div class="busca-item-sub">Painel Principal e visão geral</div></div><span class="busca-item-badge">Aba</span></div>'
+      + '<div class="busca-item" onclick="selecionarAbaBusca("fila_atendimento")"><span class="busca-item-icon">💬</span><div class="busca-item-info"><div class="busca-item-titulo">2. Atendimento</div><div class="busca-item-sub">Fila e conversas ao vivo</div></div><span class="busca-item-badge">Aba</span></div>'
+      + '<div class="busca-item" onclick="selecionarAbaBusca("leads")"><span class="busca-item-icon">🎯</span><div class="busca-item-info"><div class="busca-item-titulo">3. Aquisição & 4. CRM</div><div class="busca-item-sub">Gestão de oportunidades e funil</div></div><span class="busca-item-badge">Aba</span></div>'
+      + '<div class="busca-item" onclick="selecionarAbaBusca("calendar_config")"><span class="busca-item-icon">📅</span><div class="busca-item-info"><div class="busca-item-titulo">5. Agenda</div><div class="busca-item-sub">Integrações de calendário</div></div><span class="busca-item-badge">Aba</span></div>'
+      + '<div class="busca-item" onclick="selecionarAbaBusca("canais")"><span class="busca-item-icon">📡</span><div class="busca-item-info"><div class="busca-item-titulo">11. Canais WhatsApp</div><div class="busca-item-sub">Oficial Meta e QR Code</div></div><span class="busca-item-badge">Aba</span></div>'
+      + '<div class="busca-item" onclick="selecionarAbaBusca("video")"><span class="busca-item-icon">📹</span><div class="busca-item-info"><div class="busca-item-titulo">8. Consultoria por Vídeo</div><div class="busca-item-sub">Salas de conferência WebRTC</div></div><span class="busca-item-badge">Aba</span></div>';
     indiceBusca = 0;
     return;
   }}
@@ -691,7 +737,7 @@ async function executarBusca(termo) {{
       const sel = (i === 0) ? ' selecionado' : '';
       const sub = r.subtitulo ? r.subtitulo : '';
       const subaba = r.subaba ? r.subaba : '';
-      htmlItens += '<div class="busca-item' + sel + '" onclick="executarItemBusca(\'' + r.acao + '\', \'' + subaba + '\')">'
+      htmlItens += '<div class="busca-item' + sel + '" onclick="executarItemBusca("' + r.acao + '", "' + subaba + '")">'
         + '<span class="busca-item-icon">' + (r.icone || '🔍') + '</span>'
         + '<div class="busca-item-info"><div class="busca-item-titulo">' + r.titulo + '</div><div class="busca-item-sub">' + sub + '</div></div>'
         + '<span class="busca-item-badge">' + r.tipo + '</span></div>';
@@ -992,11 +1038,28 @@ async def api_aplicar_template_segmento(request: Request):
             "etapas_funil": template["etapas_funil"]
         })
         tenant.meta_data = meta
+
+        # Alem de guardar no tenant (para o funil da Fase 3), aplica o prompt
+        # do modelo como persona ATIVA da IA agora -- e o unico jeito de o
+        # webhook (routes/webhook.py) realmente usar o modelo escolhido, ja
+        # que ele le AIConfig.system_instruction, nao Tenant.meta_data.
+        from app.models.tenant import AIConfig
+        res_ai = await session.execute(select(AIConfig).where(AIConfig.tenant_id == t_uuid))
+        ai_cfg = res_ai.scalar_one_or_none()
+        if ai_cfg is None:
+            ai_cfg = AIConfig(tenant_id=t_uuid)
+            session.add(ai_cfg)
+        ai_cfg.system_instruction = template["prompt_ia"]
+
         await session.commit()
 
     return JSONResponse(content={
         "ok": True,
-        "mensagem": f"Modelo '{template['nome']}' aplicado com sucesso!",
+        "mensagem": (
+            f"Modelo '{template['nome']}' aplicado! A persona da IA foi atualizada "
+            "com as instrucoes deste modelo (substitui o texto que estava em "
+            "Assistente IA › Persona e Tom)."
+        ),
         "template": template
     })
 
@@ -1026,7 +1089,7 @@ async def api_busca_global(request: Request, q: str = ""):
         {"tipo": "Aba", "titulo": "10. Base de Conhecimento", "subtitulo": "Documentos RAG e manuais", "acao": "rag_management", "icone": "📚", "tags": "base conhecimento rag documentos pdf manuais"},
         {"tipo": "Aba", "titulo": "11. Canais", "subtitulo": "WhatsApp Oficial e QR Code", "acao": "canais", "icone": "📡", "tags": "canais whatsapp meta oficial qr code evolution"},
         {"tipo": "Aba", "titulo": "12. Financeiro", "subtitulo": "Faturas, planos e consumo de IA", "acao": "faturamento", "icone": "💳", "tags": "financeiro faturamento faturas planos consumo"},
-        {"tipo": "Aba", "titulo": "13. Inteligência Operacional", "subtitulo": "Analytics, relatórios e KPIs", "acao": "intel_operacional", "icone": "📈", "tags": "inteligencia operacional relatorios analytics kpis"},
+        {"tipo": "Aba", "titulo": "13. Inteligência Comercial & Operacional", "subtitulo": "Analytics, relatórios e KPIs", "acao": "intel_operacional", "icone": "📈", "tags": "inteligencia operacional relatorios analytics kpis"},
         {"tipo": "Aba", "titulo": "14. Empresa & Conta", "subtitulo": "Cadastro, dados da empresa e segurança", "acao": "empresa_cadastro", "icone": "🏢", "tags": "empresa conta perfil cadastro dados senha"},
         {"tipo": "Ação Rápida", "titulo": "Conectar WhatsApp QR Code", "subtitulo": "Escanear QR Code com o aplicativo", "acao": "canais", "subaba": "qrcode", "icone": "📲", "tags": "conectar qrcode evolution celular"},
         {"tipo": "Ação Rápida", "titulo": "Configurar Meta Oficial (WABA)", "subtitulo": "Credenciais Cloud API Oficial", "acao": "canais", "subaba": "meta", "icone": "🌐", "tags": "meta oficial waba cloud api token"},
@@ -1647,3 +1710,189 @@ async def api_tenant_resumo_atencao(request: Request):
                 "status_texto": str(agenda_prov).capitalize() if agenda_prov else "Não Integrado"
             }
         })
+
+
+# ---------------------------------------------------------------------------
+# F1.3 - Configuração Guiada / Onboarding (Status, Persona e Simulador)
+# ---------------------------------------------------------------------------
+
+@router.get("/api/tenant/onboarding-status")
+async def api_tenant_onboarding_status(request: Request):
+    from app.core import tenant_auth as _sessao
+    dados = _sessao.sessao_do_tenant(request)
+    if not dados or "tenant_id" not in dados:
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Não autenticado."})
+
+    import uuid
+    from sqlalchemy import select, func
+    from app.core.database import AsyncSessionLocal
+    from app.models.tenant import Tenant, AIConfig
+    from app.models.catalog import Product
+    from app.models.rag import RAGDocument
+    from app.models.meta import TenantMetaConfig
+
+    t_uuid = uuid.UUID(str(dados["tenant_id"]))
+
+    async with AsyncSessionLocal() as session:
+        # Passo 1: WhatsApp Conectado (Meta Oficial ou Evolution)
+        q_tenant = await session.execute(select(Tenant).where(Tenant.id == t_uuid))
+        tenant = q_tenant.scalar_one_or_none()
+
+        q_meta = await session.execute(
+            select(TenantMetaConfig).where(TenantMetaConfig.tenant_id == t_uuid, TenantMetaConfig.is_active.is_(True))
+        )
+        meta_cfg = q_meta.scalar_one_or_none()
+
+        passo1_whatsapp = bool(
+            (meta_cfg and meta_cfg.phone_number_id) or
+            (tenant and (tenant.whatsapp_jid or tenant.evolution_instance))
+        )
+
+        # Passo 2: Catálogo de Produtos / Serviços cadastrados
+        q_cat = await session.execute(select(func.count(Product.id)).where(Product.tenant_id == t_uuid))
+        qtd_produtos = q_cat.scalar() or 0
+        passo2_catalogo = qtd_produtos > 0
+
+        # Passo 3: Base de Conhecimento / FAQ (RAG Documents)
+        q_rag = await session.execute(select(func.count(RAGDocument.id)).where(RAGDocument.tenant_id == t_uuid))
+        qtd_docs = q_rag.scalar() or 0
+        passo3_faq = qtd_docs > 0
+
+        # Passo 4: Persona e Tom de Voz da IA
+        q_ai = await session.execute(select(AIConfig).where(AIConfig.tenant_id == t_uuid))
+        ai_cfg = q_ai.scalar_one_or_none()
+        passo4_persona = bool(ai_cfg and (ai_cfg.system_instruction or ai_cfg.agent_name))
+
+        # Passo 5: Teste Realizado no Simulador (persistido em ai_config.meta_data)
+        passo5_simulador = False
+        if ai_cfg and isinstance(ai_cfg.meta_data, dict):
+            passo5_simulador = bool(ai_cfg.meta_data.get("onboarding_simulador_testado", False))
+
+        passos = [
+            {"id": 1, "chave": "whatsapp", "titulo": "Conectar WhatsApp", "concluido": passo1_whatsapp, "rota": "canais"},
+            {"id": 2, "chave": "catalogo", "titulo": "Importar Catálogo", "concluido": passo2_catalogo, "rota": "ecommerce_config"},
+            {"id": 3, "chave": "faq", "titulo": "Importar FAQ & Base", "concluido": passo3_faq, "rota": "rag_management"},
+            {"id": 4, "chave": "persona", "titulo": "Persona & Tom da IA", "concluido": passo4_persona, "rota": "ia_config"},
+            {"id": 5, "chave": "simulador", "titulo": "Testar no Simulador", "concluido": passo5_simulador, "rota": "configuracao_guiada"}
+        ]
+
+        total_concluidos = sum(1 for p in passos if p["concluido"])
+        percentual = int((total_concluidos / len(passos)) * 100)
+
+        return JSONResponse(content={
+            "ok": True,
+            "concluidos": total_concluidos,
+            "total": len(passos),
+            "percentual": percentual,
+            "completo": total_concluidos == len(passos),
+            "passos": passos,
+            "dados_ia": {
+                "agent_name": ai_cfg.agent_name if ai_cfg else "Assistente Virtual",
+                "system_instruction": ai_cfg.system_instruction if ai_cfg else ""
+            }
+        })
+
+
+@router.post("/api/tenant/onboarding-persona")
+async def api_tenant_onboarding_persona(request: Request):
+    from app.core import tenant_auth as _sessao
+    dados = _sessao.sessao_do_tenant(request)
+    if not dados or "tenant_id" not in dados:
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Não autenticado."})
+
+    import uuid
+    from sqlalchemy import select
+    from app.core.database import AsyncSessionLocal
+    from app.models.tenant import AIConfig
+
+    t_uuid = uuid.UUID(str(dados["tenant_id"]))
+    body = await request.json()
+    nome_agente = str(body.get("agent_name", "")).strip() or "Assistente Virtual"
+    instrucao = str(body.get("system_instruction", "")).strip()
+
+    async with AsyncSessionLocal() as session:
+        q_ai = await session.execute(select(AIConfig).where(AIConfig.tenant_id == t_uuid))
+        ai_cfg = q_ai.scalar_one_or_none()
+
+        if ai_cfg is None:
+            ai_cfg = AIConfig(
+                tenant_id=t_uuid,
+                agent_name=nome_agente,
+                system_instruction=instrucao,
+                provider="gemini",
+                model="gemini-1.5-flash",
+                meta_data={}
+            )
+            session.add(ai_cfg)
+        else:
+            ai_cfg.agent_name = nome_agente
+            if instrucao:
+                ai_cfg.system_instruction = instrucao
+
+        await session.commit()
+
+    return JSONResponse(content={"ok": True, "mensagem": "Persona configurada com sucesso."})
+
+
+@router.post("/api/tenant/simulador-teste")
+async def api_tenant_simulador_teste(request: Request):
+    from app.core import tenant_auth as _sessao
+    dados = _sessao.sessao_do_tenant(request)
+    if not dados or "tenant_id" not in dados:
+        return JSONResponse(status_code=401, content={"ok": False, "mensagem": "Não autenticado."})
+
+    import uuid
+    from sqlalchemy import select
+    from app.core.database import AsyncSessionLocal
+    from app.models.tenant import AIConfig
+    from app.services.llm_service import llm_service
+
+    t_uuid = uuid.UUID(str(dados["tenant_id"]))
+    body = await request.json()
+    mensagem_usuario = str(body.get("mensagem", "")).strip() or "Olá, como você pode me ajudar?"
+
+    async with AsyncSessionLocal() as session:
+        q_ai = await session.execute(select(AIConfig).where(AIConfig.tenant_id == t_uuid))
+        ai_cfg = q_ai.scalar_one_or_none()
+
+        prompt_sistema = (
+            ai_cfg.system_instruction
+            if ai_cfg and ai_cfg.system_instruction
+            else "Você é um atendente inteligente e prestativo da plataforma Presenthia."
+        )
+        chave_custom = ai_cfg.api_key if ai_cfg else None
+        modelo_escolhido = ai_cfg.model if ai_cfg else None
+
+        try:
+            resposta_ia = await llm_service.generate_response(
+                system_prompt=prompt_sistema,
+                user_message=mensagem_usuario,
+                custom_api_key=chave_custom,
+                model=modelo_escolhido
+            )
+        except Exception as e:
+            resposta_ia = f"Olá! Sou sua IA em modo de calibração. Simulação recebida com sucesso! (Aviso: {e})"
+
+        # Persistir flag de simulador testado no meta_data de AIConfig
+        if ai_cfg is None:
+            ai_cfg = AIConfig(
+                tenant_id=t_uuid,
+                agent_name="Assistente Virtual",
+                system_instruction=prompt_sistema,
+                provider="gemini",
+                model="gemini-1.5-flash",
+                meta_data={"onboarding_simulador_testado": True}
+            )
+            session.add(ai_cfg)
+        else:
+            meta = dict(ai_cfg.meta_data or {})
+            meta["onboarding_simulador_testado"] = True
+            ai_cfg.meta_data = meta
+
+        await session.commit()
+
+    return JSONResponse(content={
+        "ok": True,
+        "resposta": resposta_ia,
+        "passo5_concluido": True
+    })

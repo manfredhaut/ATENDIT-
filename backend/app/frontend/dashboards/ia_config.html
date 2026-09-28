@@ -1,3 +1,9 @@
+<div class="fade-in" style="display:flex; flex-direction:column; gap:18px;">
+  <div style="display:flex; gap:10px; border-bottom:1px solid var(--p-borda, #eae3dc); padding-bottom:2px;">
+    <button id="ia-tab-btn-persona" onclick="iaAbrirSubaba('persona')" style="padding:10px 18px; background:var(--p-turquesa-texto, #0b7570); color:#ffffff; border:none; border-radius:8px 8px 0 0; font-weight:700; font-size:0.85rem; cursor:pointer;">Persona e Tom</button>
+    <button id="ia-tab-btn-modelos" onclick="iaAbrirSubaba('modelos')" style="padding:10px 18px; background:#ffffff; color:var(--p-texto-suave, #5e5563); border:1px solid var(--p-borda, #eae3dc); border-bottom:none; border-radius:8px 8px 0 0; font-weight:600; font-size:0.85rem; cursor:pointer;">Modelos e Chaves</button>
+  </div>
+  <div id="ia-view-persona">
 <div style="display: flex; flex-direction: column; gap: 25px; font-family: system-ui, -apple-system, sans-serif;">
     <!-- 1. PARÂMETROS DO AGENTE IA -->
     <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); border-top: 4px solid var(--p-turquesa, #3ccbc5); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -277,5 +283,51 @@
     };
 
     carregarDadosIA();
+})();
+</script>
+
+  </div>
+  <div id="ia-view-modelos" style="display:none;"></div>
+</div>
+<script>
+(function() {
+  "use strict";
+  var carregadoModelos = false;
+
+  window.iaAbrirSubaba = async function(aba) {
+    var vPersona = document.getElementById('ia-view-persona');
+    var vModelos = document.getElementById('ia-view-modelos');
+    var bPersona = document.getElementById('ia-tab-btn-persona');
+    var bModelos = document.getElementById('ia-tab-btn-modelos');
+    if (!vPersona || !vModelos || !bPersona || !bModelos) return;
+
+    var ativo = { background: 'var(--p-turquesa-texto, #0b7570)', color: '#ffffff', borderColor: 'var(--p-turquesa-texto, #0b7570)', fontWeight: '700' };
+    var inativo = { background: '#ffffff', color: 'var(--p-texto-suave, #5e5563)', borderColor: 'var(--p-borda, #eae3dc)', fontWeight: '600' };
+
+    if (aba === 'persona') {
+      vPersona.style.display = 'block'; vModelos.style.display = 'none';
+      Object.assign(bPersona.style, ativo); Object.assign(bModelos.style, inativo);
+    } else {
+      vPersona.style.display = 'none'; vModelos.style.display = 'block';
+      Object.assign(bModelos.style, ativo); Object.assign(bPersona.style, inativo);
+      if (!carregadoModelos) {
+        carregadoModelos = true;
+        try {
+          var res = await fetch('/dashboards/gemini_config');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          var txt = await res.text();
+          var html; try { html = JSON.parse(txt); } catch (_) { html = txt; }
+          vModelos.innerHTML = html;
+          vModelos.querySelectorAll('script').forEach(function(antigo) {
+            var novo = document.createElement('script');
+            if (antigo.src) novo.src = antigo.src; else novo.textContent = antigo.textContent;
+            antigo.replaceWith(novo);
+          });
+        } catch (e) {
+          vModelos.innerHTML = '<div style="padding:20px; color:#b91c1c; font-weight:600;">Falha ao carregar Modelos e Chaves: ' + e.message + '</div>';
+        }
+      }
+    }
+  };
 })();
 </script>

@@ -1,0 +1,21 @@
+# ==========================================================================
+#  MODO DESENVOLVIMENTO — SEM AUTENTICACAO
+#  Aplicado em 2026-08-29. TODA a aplicacao esta publica, inclusive
+#  /admin, /docs e /v1/*.
+#  Para restaurar a protecao: ver /home/ubuntu/atendit/RESTAURAR-AUTH.md
+# ==========================================================================
+http:
+  routers:
+    api-dev-aberta:
+      rule: 'Host(`atendit.smartinovat.com`)'
+      entryPoints:
+        - websecure
+      service: api-upstream
+      priority: 1000
+      tls: {}
+
+  services:
+    api-upstream:
+      loadBalancer:
+        servers:
+          - url: "http://atendit-api:8000"

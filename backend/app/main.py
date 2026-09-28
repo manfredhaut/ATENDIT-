@@ -257,8 +257,7 @@ from app.core.security import exigir_token_interno
 from app.routes import webhook as _webhook_routes
 from app.routes import tenants as _tenants_routes
 from app.routes import ai_config as _ai_config_routes
-from app.routes import rag
-from app.routes import meta as _rag_routes
+from app.routes import meta as _meta_routes
 from app.routes import hardware as _hardware_routes
 from app.services.calendar import routes as _calendar_routes
 from app.routes import logistics as _logistics_routes
@@ -271,7 +270,7 @@ app.include_router(_conta_tenant.router)
 app.include_router(_webhook_routes.router)
 app.include_router(_tenants_routes.router)
 app.include_router(_ai_config_routes.router)
-app.include_router(_rag_routes.router)
+app.include_router(_meta_routes.router)
 app.include_router(_hardware_routes.router)
 app.include_router(_calendar_routes.router)
 app.include_router(_logistics_routes.router)
@@ -971,9 +970,18 @@ async def get_dashboard_view(view_name: str, request: Request):
     target_file = (DASHBOARDS_DIR / f"{safe_name}.html").resolve()
     if not str(target_file).startswith(str(DASHBOARDS_DIR.resolve())) or not target_file.is_file():
         return JSONResponse(status_code=404, content={"error": f"Dashboard '{view_name}' not found"})
-    with open(target_file, "r", encoding="utf-8") as f:
-        from fastapi.responses import HTMLResponse
-        return HTMLResponse(content=f.read(), media_type="text/html")
+    from fastapi.responses import HTMLResponse
+    import logging as _lg
+    bruto = target_file.read_bytes()
+    try:
+        conteudo = bruto.decode("utf-8")
+    except UnicodeDecodeError as _e:
+        # Um unico byte invalido nao pode derrubar a tela inteira com 500.
+        conteudo = bruto.decode("utf-8", errors="replace")
+        _lg.getLogger("uvicorn.error").warning(
+            "View %s com bytes invalidos (%s na posicao %s); servida com substituicao.",
+            safe_name, _e.reason, _e.start)
+    return HTMLResponse(content=conteudo, media_type="text/html")
 
 @app.post("/v1/ai/copilot")
 async def copilot_chat(request: Request):
@@ -1070,8 +1078,7 @@ async def generate_wa_pair_code(instance_name: str, phone: str):
     }
 
 from app.routes import rag
-from app.routes import meta as rag_module
-app.include_router(rag_module.router, prefix="/v1/rag")
+app.include_router(rag.router, prefix="/v1/rag")
 
 
 # ---------------------------------------------------------------------------

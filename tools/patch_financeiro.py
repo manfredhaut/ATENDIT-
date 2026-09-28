@@ -1,4 +1,13 @@
-<!-- PRESENTHIA - ABA 12 FINANCEIRO (placeholder honesto ate a Fase 4: F4.5 recebimentos, F4.7 assinatura) -->
+#!/usr/bin/env python3
+"""Substitui o mockup do Financeiro (dados falsos, botao que finge salvar) por tela honesta."""
+import shutil, sys
+from datetime import datetime
+from pathlib import Path
+
+RAIZ = Path(sys.argv[1] if len(sys.argv) > 1 else "/home/ubuntu/atendit")
+ALVO = RAIZ / "backend/app/frontend/dashboards/faturamento.html"
+
+NOVO = '''<!-- PRESENTHIA - ABA 12 FINANCEIRO (placeholder honesto ate a Fase 4: F4.5 recebimentos, F4.7 assinatura) -->
 <div class="fade-in" style="display:flex; flex-direction:column; gap:20px; max-width:900px;">
   <div style="background:#ffffff; padding:26px 30px; border-radius:var(--p-raio, 16px); border:1px solid var(--p-borda, #eae3dc); border-left:4px solid var(--p-ambar, #e3a028);">
     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
@@ -32,3 +41,13 @@
     <button onclick="carregarView('ecommerce_config', document.querySelector('[data-v=ecommerce_config]'))" style="padding:10px 18px; background:var(--p-magenta, #D0006F); color:#ffffff; border:none; border-radius:10px; font-weight:700; font-size:0.85rem; cursor:pointer;">Abrir Vitrine &amp; Loja →</button>
   </div>
 </div>
+'''
+
+atual = ALVO.read_text(encoding="utf-8", errors="replace")
+if "salvarCadastroCompleto" not in atual and "Gateway IoT" not in atual:
+    sys.exit("Nada a fazer: faturamento.html ja nao e o mockup (ou foi substituido antes).")
+bak = RAIZ / "_bak"; bak.mkdir(exist_ok=True)
+dest = bak / ("faturamento.html." + datetime.now().strftime("%Y%m%d_%H%M%S"))
+shutil.copy2(ALVO, dest)
+ALVO.write_text(NOVO, encoding="utf-8")
+print("Substituido. Backup em", dest)

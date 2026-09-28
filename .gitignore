@@ -54,3 +54,17 @@ Thumbs.db
 .vscode/
 *.sublime-project
 *.sublime-workspace
+
+# Sessao 28/09/2026: material fora de uso, dump de banco e segredo do Traefik
+_arquivo_morto/
+_bak/
+backups_pre_presenthia/
+design_drive/
+traefik/acme.json
+
+# Sessao 28/09/2026: material fora de uso, dump de banco e segredo do Traefik
+_arquivo_morto/
+_bak/
+backups_pre_presenthia/
+design_drive/
+traefik/acme.json

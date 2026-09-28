@@ -1,0 +1,19 @@
+﻿http:
+  routers:
+    app-http:
+      rule: "Host(`atendit.smartinovat.com`) || Host(`api.atendit.smartinovat.com`)"
+      entryPoints:
+        - web
+      service: app-service
+    app-https:
+      rule: "Host(`atendit.smartinovat.com`) || Host(`api.atendit.smartinovat.com`)"
+      entryPoints:
+        - websecure
+      service: app-service
+      tls: {}
+
+  services:
+    app-service:
+      loadBalancer:
+        servers:
+          - url: "http://api:8000"

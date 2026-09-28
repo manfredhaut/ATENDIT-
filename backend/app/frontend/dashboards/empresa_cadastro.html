@@ -1,3 +1,9 @@
+<div class="fade-in" style="display:flex; flex-direction:column; gap:18px;">
+  <div style="display:flex; gap:10px; border-bottom:1px solid var(--p-borda, #eae3dc); padding-bottom:2px;">
+    <button id="emp-tab-btn-perfil" onclick="empAbrirSubaba('perfil')" style="padding:10px 18px; background:var(--p-turquesa-texto, #0b7570); color:#ffffff; border:none; border-radius:8px 8px 0 0; font-weight:700; font-size:0.85rem; cursor:pointer;">Perfil</button>
+    <button id="emp-tab-btn-usuarios" onclick="empAbrirSubaba('usuarios')" style="padding:10px 18px; background:#ffffff; color:var(--p-texto-suave, #5e5563); border:1px solid var(--p-borda, #eae3dc); border-bottom:none; border-radius:8px 8px 0 0; font-weight:600; font-size:0.85rem; cursor:pointer;">Usuários e Permissões</button>
+  </div>
+  <div id="emp-view-perfil">
 <div style="display: flex; flex-direction: column; gap: 20px; animation: fadeIn 0.25s ease-in-out;">
   <div style="background: #ffffff; padding: 28px; border-radius: var(--p-raio, 16px); border: 1px solid var(--p-borda, #eae3dc); box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--p-borda, #eae3dc); padding-bottom: 16px; margin-bottom: 22px;">
@@ -152,4 +158,50 @@ async function salvarDadosEmpresa() {
     btn.textContent = '💾 Salvar Dados da Empresa';
   }
 }
+</script>
+
+  </div>
+  <div id="emp-view-usuarios" style="display:none;"></div>
+</div>
+<script>
+(function() {
+  "use strict";
+  var carregadoUsuarios = false;
+
+  window.empAbrirSubaba = async function(aba) {
+    var vPerfil = document.getElementById('emp-view-perfil');
+    var vUsuarios = document.getElementById('emp-view-usuarios');
+    var bPerfil = document.getElementById('emp-tab-btn-perfil');
+    var bUsuarios = document.getElementById('emp-tab-btn-usuarios');
+    if (!vPerfil || !vUsuarios || !bPerfil || !bUsuarios) return;
+
+    var ativo = { background: 'var(--p-turquesa-texto, #0b7570)', color: '#ffffff', borderColor: 'var(--p-turquesa-texto, #0b7570)', fontWeight: '700' };
+    var inativo = { background: '#ffffff', color: 'var(--p-texto-suave, #5e5563)', borderColor: 'var(--p-borda, #eae3dc)', fontWeight: '600' };
+
+    if (aba === 'perfil') {
+      vPerfil.style.display = 'block'; vUsuarios.style.display = 'none';
+      Object.assign(bPerfil.style, ativo); Object.assign(bUsuarios.style, inativo);
+    } else {
+      vPerfil.style.display = 'none'; vUsuarios.style.display = 'block';
+      Object.assign(bUsuarios.style, ativo); Object.assign(bPerfil.style, inativo);
+      if (!carregadoUsuarios) {
+        carregadoUsuarios = true;
+        try {
+          var res = await fetch('/dashboards/equipe');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          var txt = await res.text();
+          var html; try { html = JSON.parse(txt); } catch (_) { html = txt; }
+          vUsuarios.innerHTML = html;
+          vUsuarios.querySelectorAll('script').forEach(function(antigo) {
+            var novo = document.createElement('script');
+            if (antigo.src) novo.src = antigo.src; else novo.textContent = antigo.textContent;
+            antigo.replaceWith(novo);
+          });
+        } catch (e) {
+          vUsuarios.innerHTML = '<div style="padding:20px; color:#b91c1c; font-weight:600;">Falha ao carregar Usuários e Permissões: ' + e.message + '</div>';
+        }
+      }
+    }
+  };
+})();
 </script>

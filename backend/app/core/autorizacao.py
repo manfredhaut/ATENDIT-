@@ -175,7 +175,7 @@ PAPEIS_PERMISSOES = {
     "leitura": {
         "nome": "Leitura",
         "descricao": "Visualização de relatórios e métricas, sem permissão de disparo ou edição",
-        "views": ["faturamento", "intel_operacional"]
+        "views": ["intel_operacional"]
     }
 }
 
