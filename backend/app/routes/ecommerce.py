@@ -5,12 +5,13 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, delete
 
 from app.core.database import AsyncSessionLocal
 from app.models.catalog import Product
 from app.models.tenant import Tenant
 from app.services.calendar.routes import _exigir_dono
+from app.models.media import OperationalMedia
 
 logger = logging.getLogger("atendit.ecommerce")
 
@@ -212,17 +213,82 @@ async def upload_midia_item(tenant: str, request: Request, file: UploadFile = Fi
     permitidos = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".webm"}
     if ext not in permitidos:
         raise HTTPException(status_code=400, detail="Formato invalido. Envie imagens (JPG, PNG, WebP) ou videos curtos (MP4, WebM).")
-    
+
     out_dir = Path(__file__).resolve().parent.parent / "static" / "uploads"
     out_dir.mkdir(parents=True, exist_ok=True)
     fname = f"{slug}_{uuid.uuid4().hex[:10]}{ext}"
     dest = out_dir / fname
-    
+
     content = await file.read()
     if len(content) > 15 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Arquivo excede o limite maximo de 15MB.")
-    
+
     dest.write_bytes(content)
     is_vid = ext in {".mp4", ".webm"}
+    url = f"/static/uploads/{fname}"
+
+    async with AsyncSessionLocal() as sessao:
+        registro = OperationalMedia(
+            tenant_id=tenant_id,
+            filename=file.filename or fname,
+            url=url,
+            file_type="video" if is_vid else "image",
+            file_size=len(content),
+        )
+        sessao.add(registro)
+        await sessao.commit()
+        await sessao.refresh(registro)
+
     logger.info(f"[ECOMMERCE] Midia enviada para {slug}: {fname} ({len(content)} bytes, video={is_vid})")
-    return {"ok": True, "url": f"/static/uploads/{fname}", "is_video": is_vid}
+    return {"ok": True, "id": str(registro.id), "url": url, "is_video": is_vid, "filename": file.filename or fname}
+
+
+@router.get("/media/{tenant}", include_in_schema=False)
+async def listar_midias_operacionais(tenant: str, request: Request):
+    tenant_id, slug = await _exigir_dono(request, tenant)
+    async with AsyncSessionLocal() as sessao:
+        res = await sessao.execute(
+            select(OperationalMedia)
+            .where(OperationalMedia.tenant_id == tenant_id)
+            .order_by(desc(OperationalMedia.created_at))
+        )
+        itens = res.scalars().all()
+        return [
+            {
+                "id": str(i.id),
+                "filename": i.filename,
+                "url": i.url,
+                "file_type": i.file_type,
+                "file_size": i.file_size,
+                "created_at": i.created_at.isoformat() if i.created_at else None,
+            }
+            for i in itens
+        ]
+
+
+@router.delete("/media/{tenant}/{media_id}", include_in_schema=False)
+async def excluir_midia_operacional(tenant: str, media_id: str, request: Request):
+    tenant_id, slug = await _exigir_dono(request, tenant)
+    try:
+        m_uuid = uuid.UUID(media_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="ID invalido.")
+
+    async with AsyncSessionLocal() as sessao:
+        res = await sessao.execute(
+            select(OperationalMedia).where(OperationalMedia.id == m_uuid, OperationalMedia.tenant_id == tenant_id)
+        )
+        registro = res.scalar_one_or_none()
+        if not registro:
+            raise HTTPException(status_code=404, detail="Midia nao encontrada.")
+
+        try:
+            caminho_arquivo = Path(__file__).resolve().parent.parent / "static" / "uploads" / Path(registro.url).name
+            caminho_arquivo.unlink(missing_ok=True)
+        except Exception as exc:
+            logger.warning(f"[ECOMMERCE] Falha ao remover arquivo fisico de midia {media_id}: {exc}")
+
+        await sessao.execute(delete(OperationalMedia).where(OperationalMedia.id == m_uuid))
+        await sessao.commit()
+
+    return {"ok": True}

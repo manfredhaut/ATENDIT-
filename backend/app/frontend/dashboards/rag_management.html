@@ -9,7 +9,7 @@
 			<div style="border: 1px solid #CBD5E1; border-radius: 6px; padding: 10px 15px; background: #FFF; flex: 1; min-width: 280px; display: flex; align-items: center; box-sizing: border-box;">
 				<input type="file" id="rag-file-input" accept=".pdf,.csv,.txt,.xlsx,.docx" onchange="window.handleFileChange(this)" style="font-size: 0.88rem; color: #475569; width: 100%; cursor: pointer;">
 			</div>
-			<button onclick="window.processarEInjetarRAG()" style="background: var(--p-turquesa-texto, #0b7570); color: #FFF; border: none; padding: 13px 26px; font-size: 0.88rem; font-weight: 700; border-radius: 999px; cursor: pointer; transition: all 0.2s; white-space: nowrap; box-shadow: 0 2px 5px rgba(11,117,112,0.18);">
+			<button onclick="window.processarEInjetarRAG(event)" style="background: var(--p-turquesa-texto, #0b7570); color: #FFF; border: none; padding: 13px 26px; font-size: 0.88rem; font-weight: 700; border-radius: 999px; cursor: pointer; transition: all 0.2s; white-space: nowrap; box-shadow: 0 2px 5px rgba(11,117,112,0.18);">
 				Processar e Injetar RAG
 			</button>
 		</div>
@@ -22,8 +22,9 @@
 			<table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; table-layout: auto; min-width: 800px;">
 				<thead>
 					<tr style="border-bottom: 2px solid var(--p-borda, #eae3dc); background: var(--p-marfim, #fbf8f4);">
-						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">ID do Documento (pgvector)</th>
 						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">Nome do Arquivo</th>
+						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">Tamanho</th>
+						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">Status</th>
 						<th style="padding: 12px 15px; color: #475569; font-weight: 600; white-space: nowrap;">Data de Inserção</th>
 						<th style="padding: 12px 15px; color: #475569; font-weight: 600; text-align: center; white-space: nowrap; width: 140px;">Ação</th>
 					</tr>
@@ -49,7 +50,7 @@
 			<div style="border: 1px solid #CBD5E1; border-radius: 6px; padding: 10px 15px; background: #FFF; flex: 1; min-width: 280px; display: flex; align-items: center; box-sizing: border-box;">
 				<input type="file" id="media-file-input" accept=".pdf,.png,.jpg,.jpeg,.csv,.txt,.xlsx" style="font-size: 0.88rem; color: #475569; width: 100%; cursor: pointer;">
 			</div>
-			<button onclick="window.uploadMidiaOperacional()" style="background: var(--p-turquesa-texto, #0b7570); color: #FFF; border: none; padding: 13px 26px; font-size: 0.88rem; font-weight: 700; border-radius: 999px; cursor: pointer; transition: all 0.2s; white-space: nowrap; box-shadow: 0 2px 5px rgba(11,117,112,0.18);">
+			<button onclick="window.uploadMidiaOperacional(event)" style="background: var(--p-turquesa-texto, #0b7570); color: #FFF; border: none; padding: 13px 26px; font-size: 0.88rem; font-weight: 700; border-radius: 999px; cursor: pointer; transition: all 0.2s; white-space: nowrap; box-shadow: 0 2px 5px rgba(11,117,112,0.18);">
 				Subir Mídia de Envio
 			</button>
 		</div>
@@ -63,10 +64,10 @@
 						<th style="padding: 12px 15px; color: #475569; font-weight: 600; text-align: center; white-space: nowrap; width: 260px;">Ações no Chat</th>
 					</tr>
 				</thead>
-				<tbody id="media-documents-table-body">
+				<tbody id="media-documents-table-body" data-vazio="1">
 					<tr>
 						<td colspan="3" style="padding: 20px; text-align: center; color: var(--p-texto-suave, #5e5563); font-style: italic;">
-							Sincronizando duto de arquivos operacionais...
+							Nenhum arquivo enviado nesta sessao. O historico ainda nao e salvo entre acessos.
 						</td>
 					</tr>
 				</tbody>
@@ -90,7 +91,7 @@
 
     async function carregarDocumentos() {
         const tenantId = obterTenantId();
-        const corpo = document.getElementById("rag-documents-tbody");
+        const corpo = document.getElementById("rag-documents-table-body");
         if (!corpo) return;
         if (!tenantId) {
             corpo.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-3">Carregando contexto...</td></tr>';
@@ -120,6 +121,115 @@
         }
     }
 
+    var arquivoSelecionadoRAG = null;
+
+    window.handleFileChange = function(input) {
+        arquivoSelecionadoRAG = (input.files && input.files[0]) ? input.files[0] : null;
+    };
+
+    window.processarEInjetarRAG = async function(ev) {
+        if (!arquivoSelecionadoRAG) {
+            alert("Escolha um arquivo antes de processar.");
+            return;
+        }
+        const tenantId = obterTenantId();
+        if (!tenantId) {
+            alert("Nao foi possivel identificar a empresa. Recarregue a pagina.");
+            return;
+        }
+        const botao = ev ? ev.currentTarget : null;
+        const textoOriginal = botao ? botao.innerHTML : null;
+        if (botao) { botao.disabled = true; botao.innerHTML = "Processando..."; }
+        try {
+            const dados = new FormData();
+            dados.append("file", arquivoSelecionadoRAG);
+            const res = await fetch("/v1/rag/upload/" + tenantId, { method: "POST", body: dados });
+            if (!res.ok) {
+                const corpo = await res.json().catch(function() { return {}; });
+                throw new Error(corpo.detail || ("HTTP " + res.status));
+            }
+            arquivoSelecionadoRAG = null;
+            const campoArquivo = document.getElementById("rag-file-input");
+            if (campoArquivo) campoArquivo.value = "";
+            await carregarDocumentos();
+            alert("Documento enviado e em processamento na base de conhecimento.");
+        } catch (e) {
+            alert("Falha ao processar documento: " + e.message);
+        } finally {
+            if (botao) { botao.disabled = false; botao.innerHTML = textoOriginal; }
+        }
+    };
+
+    async function carregarMidias() {
+        const tenantId = obterTenantId();
+        const corpo = document.getElementById("media-documents-table-body");
+        if (!corpo || !tenantId) return;
+        try {
+            const resp = await fetch("/v1/ecommerce/media/" + tenantId, { headers: { "Accept": "application/json" } });
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            const itens = await resp.json();
+            corpo.innerHTML = "";
+            if (!itens || itens.length === 0) {
+                corpo.innerHTML = '<tr><td colspan="3" style="padding: 20px; text-align: center; color: var(--p-texto-suave, #5e5563); font-style: italic;">Nenhum arquivo enviado ainda.</td></tr>';
+                return;
+            }
+            itens.forEach(function(i) {
+                const tr = document.createElement("tr");
+                const urlAbsoluta = window.location.origin + i.url;
+                tr.innerHTML = "<td>" + i.filename + "</td>" +
+                               "<td>" + (i.file_type === "video" ? "Video" : "Imagem") + "</td>" +
+                               "<td style=\"text-align:center;\"><button onclick=\"navigator.clipboard.writeText('" + urlAbsoluta + "'); alert('Link copiado!')\" style=\"padding:6px 10px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; cursor:pointer; margin-right:6px;\">Copiar link</button><button onclick=\"window.excluirMidia('" + i.id + "')\" style=\"padding:6px 10px; border:1px solid #ef4444; border-radius:6px; background:#fff; color:#ef4444; cursor:pointer;\">Excluir</button></td>";
+                corpo.appendChild(tr);
+            });
+        } catch (e) {
+            corpo.innerHTML = '<tr><td colspan="3" style="padding: 20px; text-align: center; color:#b91c1c;">Falha ao carregar arquivos: ' + e.message + '</td></tr>';
+        }
+    }
+
+    window.excluirMidia = async function(mediaId) {
+        if (!confirm("Excluir este arquivo?")) return;
+        const tenantId = obterTenantId();
+        try {
+            const res = await fetch("/v1/ecommerce/media/" + tenantId + "/" + mediaId, { method: "DELETE" });
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            await carregarMidias();
+        } catch (e) {
+            alert("Falha ao excluir: " + e.message);
+        }
+    };
+
+    window.uploadMidiaOperacional = async function(ev) {
+        const input = document.getElementById("media-file-input");
+        const arquivo = input && input.files && input.files[0];
+        if (!arquivo) {
+            alert("Escolha um arquivo antes de enviar.");
+            return;
+        }
+        const tenantId = obterTenantId();
+        if (!tenantId) {
+            alert("Nao foi possivel identificar a empresa. Recarregue a pagina.");
+            return;
+        }
+        const botao = ev ? ev.currentTarget : null;
+        const textoOriginal = botao ? botao.innerHTML : null;
+        if (botao) { botao.disabled = true; botao.innerHTML = "Enviando..."; }
+        try {
+            const dados = new FormData();
+            dados.append("file", arquivo);
+            const res = await fetch("/v1/ecommerce/upload-media/" + tenantId, { method: "POST", body: dados });
+            if (!res.ok) {
+                const corpo = await res.json().catch(function() { return {}; });
+                throw new Error(corpo.detail || ("HTTP " + res.status));
+            }
+            input.value = "";
+            await carregarMidias();
+        } catch (e) {
+            alert("Falha ao enviar arquivo: " + e.message);
+        } finally {
+            if (botao) { botao.disabled = false; botao.innerHTML = textoOriginal; }
+        }
+    };
+
     window.excluirDocRAG = async function(docId) {
         if (!confirm("Expurgar este documento da base de conhecimento?")) return;
         const tenantId = obterTenantId();
@@ -134,5 +244,6 @@
 
     window.recarregarDocumentosRAG = carregarDocumentos;
     setTimeout(carregarDocumentos, 400);
+    setTimeout(carregarMidias, 450);
 })();
 </script>

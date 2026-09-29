@@ -40,3 +40,4 @@ from app.models.intel_operacional import OperationalTag, EntityTagAssignment, Co
 from app.models.feature_flag import FeatureFlag
 
 from app.models.catalog import Product
+from app.models.media import OperationalMedia

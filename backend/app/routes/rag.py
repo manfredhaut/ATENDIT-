@@ -60,12 +60,24 @@ async def delete_document(tenant_id: str, document_id: str, request: Request):
 async def upload_document(tenant_id: str, request: Request, file: UploadFile = File(...)):
     t_uuid = _validar_uuid(tenant_id)
     await _verificar_acesso(request, t_uuid)
+    from pathlib import Path as _Path
     from app.services.rag_service import rag_service
+
     conteudo = await file.read()
-    res = await rag_service.ingerir_documento(
-        tenant_id=t_uuid,
-        nome_arquivo=file.filename,
-        conteudo_bytes=conteudo,
-        mime_type=file.content_type or 'application/octet-stream'
-    )
+
+    pasta_tenant = _Path(settings.RAG_STORAGE_PATH) / str(t_uuid)
+    pasta_tenant.mkdir(parents=True, exist_ok=True)
+    extensao = _Path(file.filename or "").suffix.lower()
+    caminho_destino = pasta_tenant / f"{uuid.uuid4().hex}{extensao}"
+    caminho_destino.write_bytes(conteudo)
+
+    async with AsyncSessionLocal() as sessao:
+        res = await rag_service.indexar_documento(
+            db=sessao,
+            tenant_id=t_uuid,
+            caminho=caminho_destino,
+            filename=file.filename,
+            tamanho_bytes=len(conteudo),
+            mime_type=file.content_type or 'application/octet-stream',
+        )
     return {'status': 'success', 'data': res}
