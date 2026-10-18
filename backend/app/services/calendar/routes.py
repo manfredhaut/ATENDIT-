@@ -665,10 +665,13 @@ async def listar_waitlist(tenant: str, request: Request):
                 "cliente": w.customer_name or "Cliente",
                 "telefone": w.customer_phone,
                 "servico": st.name,
+                "service_type_id": str(w.service_type_id),
                 "prioridade": w.priority,
                 "status": w.status,
                 "janela_inicio": w.desired_start.astimezone(fuso).strftime("%d/%m %H:%M"),
                 "janela_fim": w.desired_end.astimezone(fuso).strftime("%d/%m %H:%M"),
+                "desired_start_iso": w.desired_start.isoformat(),
+                "desired_end_iso": w.desired_end.isoformat(),
                 "ofertado_em": w.notified_at.astimezone(fuso).strftime("%d/%m às %H:%M") if w.notified_at else None,
                 "horario_ofertado": w.offered_start.astimezone(fuso).strftime("%d/%m às %H:%M") if w.offered_start else None,
             })

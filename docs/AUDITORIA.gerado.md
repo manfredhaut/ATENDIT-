@@ -2,34 +2,32 @@
 
 ## 1. Rotas com resposta fixa (nao consultam banco, IA nem servico)
 
-- `POST /v1/ai/copilot` (main.py:979)
-- `GET /api/v1/presenthia/canary` (main.py:1284)
-- `GET /api/meu-perfil` (routes/conta_tenant.py:1120)
+- `POST /v1/ai/copilot` (main.py:987)
+- `GET /api/v1/presenthia/canary` (main.py:1294)
+- `GET /api/meu-perfil` (routes/conta_tenant.py:1137)
 
 ## 2. Telas com padrao de simulacao
 
-- `admin.html`: salvar simulado (setTimeout)
+- `dashboards/aviso_fase3_profissionais.html`: botoes sem nenhuma chamada ao servidor
 - `dashboards/ecommerce_config.html`: token/valor aleatorio no navegador
 - `dashboards/faturamento.html`: botoes sem nenhuma chamada ao servidor
 - `dashboards/gemini_config.html`: eval()
-- `dashboards/inicio.html`: salvar simulado (setTimeout); status/valor fixo de mockup; botoes sem nenhuma chamada ao servidor
 - `dashboards/video.html`: token/valor aleatorio no navegador; botoes sem nenhuma chamada ao servidor
 - `vitrine.html`: token/valor aleatorio no navegador
 
 ## 3. Rotas sem verificacao de sessao visivel (revisar se deveriam ser publicas)
 
 - `API_ROUTE /favicon.ico` (main.py:23)
-- `POST /v1/leads` (main.py:412)
-- `GET /health` (main.py:468)
-- `GET /` (main.py:472)
-- `GET /register` (main.py:478)
-- `POST /login` (main.py:483)
-- `POST /logout` (main.py:547)
-- `GET /login` (main.py:555)
-- `GET /LOGO%20ATENDIT%20STICH.jpg` (main.py:577)
-- `POST /v1/auth/register` (main.py:585)
-- `GET /api/v1/presenthia/canary` (main.py:1284)
-- `API_ROUTE /presenthia/console` (main.py:1298)
+- `POST /v1/leads` (main.py:411)
+- `GET /health` (main.py:467)
+- `GET /` (main.py:471)
+- `GET /register` (main.py:477)
+- `POST /login` (main.py:482)
+- `POST /logout` (main.py:546)
+- `GET /login` (main.py:554)
+- `GET /LOGO%20ATENDIT%20STICH.jpg` (main.py:576)
+- `POST /v1/auth/register` (main.py:584)
+- `API_ROUTE /presenthia/console` (main.py:1308)
 - `POST /submit/{tenant_id}` (routes/ai_config.py:56)
 - `GET /{tenant_id}` (routes/ai_config.py:130)
 - `GET /tenant/login` (routes/conta_tenant.py:246)
@@ -40,13 +38,15 @@
 - `GET /reset-senha` (routes/conta_tenant.py:903)
 - `POST /v1/auth/reset-senha` (routes/conta_tenant.py:950)
 - `GET /api/templates/segmentos` (routes/conta_tenant.py:1000)
-- `POST /api/public/{slug}/leads` (routes/conta_tenant.py:1298)
-- `GET /vitrine/{tenant_slug}` (routes/ecommerce.py:40)
-- `GET /items/{tenant}` (routes/ecommerce.py:48)
-- `POST /items/{tenant}` (routes/ecommerce.py:85)
-- `DELETE /items/{tenant}/{item_id}` (routes/ecommerce.py:143)
-- `GET /public/items/{tenant_slug}` (routes/ecommerce.py:165)
-- `POST /upload-media/{tenant}` (routes/ecommerce.py:209)
+- `POST /api/public/{slug}/leads` (routes/conta_tenant.py:1315)
+- `GET /vitrine/{tenant_slug}` (routes/ecommerce.py:41)
+- `GET /items/{tenant}` (routes/ecommerce.py:49)
+- `POST /items/{tenant}` (routes/ecommerce.py:86)
+- `DELETE /items/{tenant}/{item_id}` (routes/ecommerce.py:144)
+- `GET /public/items/{tenant_slug}` (routes/ecommerce.py:166)
+- `POST /upload-media/{tenant}` (routes/ecommerce.py:210)
+- `GET /media/{tenant}` (routes/ecommerce.py:247)
+- `DELETE /media/{tenant}/{media_id}` (routes/ecommerce.py:270)
 - `GET /status/{tenant_id}` (routes/hardware.py:6)
 - `GET /tags/{tenant}` (routes/intel_operacional.py:70)
 - `POST /tags/{tenant}` (routes/intel_operacional.py:90)
@@ -64,8 +64,6 @@
 - `GET /webhook/{tenant_id}` (routes/meta.py:28)
 - `POST /webhook/{tenant_id}` (routes/meta.py:45)
 - `GET /stats` (routes/presenthia.py:109)
-- `GET /tenants` (routes/presenthia.py:135)
-- `POST /tenants/{tenant_id}/toggle-active` (routes/presenthia.py:146)
 - `GET /flags` (routes/presenthia.py:157)
 - `POST /flags/{flag_key}/toggle` (routes/presenthia.py:168)
 - `GET /copilots` (routes/presenthia.py:180)
@@ -91,9 +89,9 @@
 - `POST /appointments/{tenant}` (services/calendar/routes.py:501)
 - `GET /crm-summary/{tenant}` (services/calendar/routes.py:565)
 - `GET /waitlist/{tenant}` (services/calendar/routes.py:647)
-- `POST /waitlist/{tenant}` (services/calendar/routes.py:679)
-- `DELETE /waitlist/{tenant}/{waitlist_id}` (services/calendar/routes.py:705)
-- `POST /waitlist/{tenant}/disparar-oferta` (services/calendar/routes.py:725)
+- `POST /waitlist/{tenant}` (services/calendar/routes.py:682)
+- `DELETE /waitlist/{tenant}/{waitlist_id}` (services/calendar/routes.py:708)
+- `POST /waitlist/{tenant}/disparar-oferta` (services/calendar/routes.py:728)
 
 ## 4. Arquivos com mais marcadores mock/demo/TODO
 
@@ -104,11 +102,11 @@
 - 11 x `frontend/dashboards/intel_operacional.html`
 - 9 x `frontend/landing.html`
 - 9 x `frontend/dashboards/link_whatsapp.html`
+- 9 x `frontend/dashboards/calendar_config.html`
 - 8 x `frontend/dashboards/empresa_cadastro.html`
 - 7 x `frontend/dashboards/leads.html`
-- 6 x `frontend/dashboards/calendar_config.html`
 - 5 x `frontend/dashboards/meta_config.html`
 - 5 x `frontend/dashboards/ia_config.html`
 - 4 x `services/template_service.py`
-- 4 x `routes/onboarding.py`
 - 4 x `main.py`
+- 4 x `frontend/dashboards/gemini_config.html`
