@@ -21,6 +21,17 @@
         </div>
     </div>
 
+    <!-- ATALHO F1.4: MODELOS POR SEGMENTO 1-CLICK -->
+    <div style="background: #ffffff; padding: 20px 26px; border-radius: 12px; border: 1px solid var(--p-borda, #eae3dc); border-left: 4px solid var(--p-turquesa, #3ccbc5); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+        <div>
+            <h3 style="font-size: 1rem; font-weight: 800; color: var(--p-texto, #231726); margin: 0 0 4px 0;">🎯 Quer acelerar? Aplique um Modelo Pronto por Segmento (1-Click)</h3>
+            <p style="font-size: 0.85rem; color: #64748b; margin: 0;">Calibre automaticamente a persona da IA, perguntas de triagem e etapas do funil para Clínica, Estética, Serviços Técnicos ou B2B.</p>
+        </div>
+        <button type="button" onclick="navegarParaPasso('modelos_segmento')" style="padding: 9px 18px; background: var(--p-turquesa-texto, #0b7570); color: #ffffff; border: none; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; white-space: nowrap;">
+            ⚡ Escolher Modelo de Segmento →
+        </button>
+    </div>
+
     <!-- CARDS DOS 5 PASSOS -->
     <div style="display: flex; flex-direction: column; gap: 16px;">
 
@@ -186,11 +197,13 @@
     }
 
     function navegarParaPasso(viewName) {
-        if (typeof window.loadView === "function") {
-            const menuItem = document.querySelector(`[onclick*="loadView('${viewName}'"]`);
+        const menuItem = document.querySelector(`[data-v="${viewName}"]`) || document.querySelector(`[onclick*="loadView('${viewName}'"]`);
+        if (typeof window.carregarView === "function") {
+            window.carregarView(viewName, menuItem);
+        } else if (typeof window.loadView === "function") {
             window.loadView(viewName, menuItem);
         } else {
-            console.warn("[ONBOARDING] loadView nao esta no escopo global.");
+            console.warn("[ONBOARDING] carregarView/loadView nao esta no escopo global.");
         }
     }
 
@@ -210,7 +223,7 @@
             });
             const res = await resp.json();
             if (res.ok) {
-                alert("✓</ Persona e Tom de Voz atualizados com sucesso!");
+                alert("✓ Persona e Tom de Voz atualizados com sucesso!");
                 await carregarStatusOnboarding();
             } else {
                 alert("Erro ao salvar persona: " + (res.mensagem || "desconhecido"));

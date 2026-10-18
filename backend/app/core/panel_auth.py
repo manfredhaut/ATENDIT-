@@ -38,6 +38,7 @@ DURACAO_SESSAO_SEGUNDOS = 12 * 60 * 60  # 12h
 CAMINHOS_PROTEGIDOS = (
     "/dashboards",
     "/v1/agent/config",
+    "/v1/ai/config",
     "/v1/ai/copilot",
     # "/v1/tenants" cobre a LISTA, o GET por slug e o update. Ate 2026-09-01 so
     # o update estava aqui: `GET /v1/tenants/` e `GET /v1/tenants/{slug}` eram

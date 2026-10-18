@@ -845,6 +845,117 @@ async def save_agent_config(request: Request):
     return {"status": "success", "message": "Parâmetros da IA gravados!", "tenant": dados}
 
 
+@app.get("/v1/ai/config")
+async def get_multi_ai_config(request: Request):
+    """Retorna a configuração de provedor, modelo, temperatura e system_instruction do tenant."""
+    from sqlalchemy import select as _sel
+    from app.core import autorizacao as _autz
+    from app.core.database import AsyncSessionLocal as _S
+    from app.models.tenant import AIConfig as _Cfg, Tenant as _T
+
+    slug = (request.query_params.get("slug") or request.query_params.get("tenant_id") or "").strip().lower()
+    if not slug:
+        slug = await _autz.slug_da_sessao(request)
+    if not slug:
+        raise HTTPException(status_code=401, detail="Sessão ausente ou expirada.")
+    await _autz.exigir_acesso_ao_tenant(request, slug=slug)
+
+    async with _S() as sessao:
+        inq = (await sessao.execute(_sel(_T).where(_T.slug == slug))).scalar_one_or_none()
+        if inq is None:
+            raise HTTPException(status_code=404, detail=f"Inquilino '{slug}' não encontrado.")
+        cfg = (await sessao.execute(_sel(_Cfg).where(_Cfg.tenant_id == inq.id))).scalar_one_or_none()
+        if cfg is None:
+            return {
+                "slug": slug,
+                "provider": "google",
+                "model": "gemini-2.5-flash",
+                "api_base_url": "",
+                "api_key": "",
+                "has_custom_key": False,
+                "temperature": 0.3,
+                "system_instruction": "",
+            }
+        md = cfg.meta_data or {}
+        prov = (cfg.provider or "google").lower()
+        if prov == "gemini":
+            prov = "google"
+        chave = cfg.api_key or ""
+        chave_mascarada = (chave[:6] + "••••••••" + chave[-4:]) if len(chave) > 12 else ""
+        return {
+            "slug": slug,
+            "provider": prov,
+            "model": cfg.model or "gemini-2.5-flash",
+            "api_base_url": md.get("api_base_url", ""),
+            "api_key": "",
+            "api_key_masked": chave_mascarada,
+            "has_custom_key": bool(chave),
+            "temperature": float(cfg.temperature if cfg.temperature is not None else 0.3),
+            "system_instruction": cfg.system_instruction or "",
+        }
+
+
+@app.post("/v1/ai/config/update")
+async def update_multi_ai_config(request: Request):
+    """Persiste provedor, modelo, chave de API, temperatura e instrução do sistema em ai_configs."""
+    from sqlalchemy import select as _sel
+    from app.core import autorizacao as _autz
+    from app.core.database import AsyncSessionLocal as _S
+    from app.models.tenant import AIConfig as _Cfg, Tenant as _T
+
+    try:
+        corpo = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "JSON inválido"})
+
+    slug = (corpo.get("slug") or corpo.get("tenant_id") or "").strip().lower()
+    if not slug or slug == "mani":
+        slug_sessao = await _autz.slug_da_sessao(request)
+        if slug_sessao:
+            slug = slug_sessao
+    if not slug:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "Slug é obrigatório"})
+
+    await _autz.exigir_acesso_ao_tenant(request, slug=slug)
+
+    async with _S() as sessao:
+        inq = (await sessao.execute(_sel(_T).where(_T.slug == slug))).scalar_one_or_none()
+        if inq is None:
+            return JSONResponse(status_code=404, content={"status": "error", "message": f"Inquilino '{slug}' não encontrado."})
+
+        cfg = (await sessao.execute(_sel(_Cfg).where(_Cfg.tenant_id == inq.id))).scalar_one_or_none()
+        if cfg is None:
+            cfg = _Cfg(tenant_id=inq.id, agent_name=inq.name or "Assistente Virtual")
+            sessao.add(cfg)
+
+        prov = (corpo.get("provider") or cfg.provider or "gemini").strip().lower()
+        cfg.provider = "gemini" if prov == "google" else prov
+        if corpo.get("model"):
+            cfg.model = str(corpo.get("model")).strip()[:100]
+        if corpo.get("temperature") is not None:
+            try:
+                cfg.temperature = float(corpo.get("temperature"))
+            except (ValueError, TypeError):
+                pass
+        if "system_instruction" in corpo:
+            cfg.system_instruction = (corpo.get("system_instruction") or "").strip()
+
+        nova_chave = (corpo.get("api_key") or "").strip()
+        if nova_chave and "•" not in nova_chave:
+            cfg.api_key = nova_chave
+
+        md = dict(cfg.meta_data or {})
+        if "api_base_url" in corpo:
+            md["api_base_url"] = (corpo.get("api_base_url") or "").strip()
+        cfg.meta_data = md
+        cfg.is_active = True
+
+        await sessao.commit()
+
+    logger.info(f"[MULTI-AI CONFIG] Configuração de modelo/chave atualizada para '{slug}'.")
+    return {"status": "success", "slug": slug}
+
+
 
 # ---------------------------------------------------------------------------
 # ROTAS DE CONEXÃO E STATUS WHATSAPP (Evolution API)

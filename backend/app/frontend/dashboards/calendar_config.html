@@ -169,15 +169,18 @@
                 </button>
 
                 <!-- MICROSOFT 365 -->
-                <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; gap:12px; flex-wrap:wrap;">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <span style="font-size:1.3rem;">📧</span>
                         <div>
                             <strong style="color:var(--p-texto, #231726); font-size:0.95rem;">Microsoft 365 (Outlook / Graph)</strong>
-                            <div style="color:#059669; font-size:0.82rem; font-weight:600;">● Conectado (manfredhaut1@hotmail.com)</div>
+                            <div id="cal-ms365-status" style="color:#64748B; font-size:0.82rem; font-weight:600;">Verificando conexão Microsoft 365…</div>
                         </div>
                     </div>
-                    <span style="background:#ECFDF5; color:#065F46; padding:4px 10px; border-radius:6px; font-size:0.8rem; font-weight:700;">Ativo</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span id="cal-ms365-badge" style="background:#F1F5F9; color:#475569; padding:4px 10px; border-radius:6px; font-size:0.8rem; font-weight:700;">Verificando</span>
+                        <button id="btn-conectar-microsoft" type="button" style="padding:7px 14px; background:white; color:#0B7570; border:1px solid #CBD5E1; border-radius:6px; font-size:0.82rem; font-weight:700; cursor:pointer;">Conectar Microsoft 365 →</button>
+                    </div>
                 </div>
 
                 <!-- CALENDLY -->
@@ -344,12 +347,15 @@ window.currentTenantSlug = window.currentTenantSlug || window.location.pathname.
         async function calCarregarStatus() {
             var box = document.getElementById('cal-estado-conexao');
             var btn = document.getElementById('btn-conectar-google');
+            var msStatus = document.getElementById('cal-ms365-status');
+            var msBadge = document.getElementById('cal-ms365-badge');
+            var msBtn = document.getElementById('btn-conectar-microsoft');
             if (!box) return;
             try {
                 var res = await /*timeout 30s*/ fetch('/calendar/status/' + window.currentTenantSlug);
                 var s = await res.json();
                 if (s.conectado) {
-                    var quem = s.email ? '<strong>' + s.email + '</strong>' : 'sua conta Google';
+                    var quem = s.email ? '<strong>' + s.email + '</strong>' : 'sua conta ' + (s.provider_label || 'principal');
                     box.innerHTML = '<div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">'
                                   + '  <div>'
                                   + '    <div style="color:#065F46; font-weight:700; font-size:0.95rem;">● Conectado ao ' + (s.provider_label || 'calendário') + '</div>'
@@ -365,6 +371,44 @@ window.currentTenantSlug = window.currentTenantSlug || window.location.pathname.
                     box.innerHTML = '<div style="color:var(--p-texto-suave, #5e5563); font-size:0.92rem;">○ Nenhuma agenda conectada ainda.</div>';
                     box.style.background = '#F8FAFC';
                     box.style.borderColor = '#E2E8F0';
+                }
+
+                // Atualiza o card Microsoft 365 / Outlook dinamicamente por tenant
+                var msConn = null;
+                if (Array.isArray(s.conexoes)) {
+                    msConn = s.conexoes.find(function(c) { return c.provider === 'microsoft' && c.ativa; });
+                } else if (s.conectado && s.provider === 'microsoft') {
+                    msConn = s;
+                }
+                if (msConn) {
+                    var msLabel = (s.provider === 'microsoft' && s.email) ? s.email : (msConn.calendar_id || 'Conta Microsoft 365 ativa');
+                    if (msStatus) {
+                        msStatus.innerHTML = '<span style="color:#059669; font-weight:700;">● Conectado</span> (' + msLabel + ')';
+                    }
+                    if (msBadge) {
+                        msBadge.textContent = 'ATIVO';
+                        msBadge.style.background = '#DCFCE7';
+                        msBadge.style.color = '#166534';
+                    }
+                    if (msBtn) {
+                        msBtn.textContent = 'Reconectar Microsoft 365';
+                        msBtn.style.background = '#FFFFFF';
+                        msBtn.style.color = '#0078D4';
+                    }
+                } else {
+                    if (msStatus) {
+                        msStatus.innerHTML = '○ Não conectado neste tenant — sincronização OAuth 2.0 via Microsoft Graph.';
+                    }
+                    if (msBadge) {
+                        msBadge.textContent = 'DISPONÍVEL';
+                        msBadge.style.background = '#F1F5F9';
+                        msBadge.style.color = '#475569';
+                    }
+                    if (msBtn) {
+                        msBtn.textContent = 'Conectar Microsoft 365';
+                        msBtn.style.background = '#0078D4';
+                        msBtn.style.color = '#FFFFFF';
+                    }
                 }
             } catch (e) {
                 box.innerHTML = '<div style="color:#B91C1C; font-size:0.9rem;">Não foi possível verificar a conexão agora.</div>';
@@ -831,6 +875,13 @@ window.currentTenantSlug = window.currentTenantSlug || window.location.pathname.
             if (btn) {
                 btn.onclick = function() {
                     window.location.href = '/calendar/oauth/google/start?tenant=' + encodeURIComponent(window.currentTenantSlug);
+                };
+            }
+
+            var btnMs = document.getElementById('btn-conectar-microsoft');
+            if (btnMs) {
+                btnMs.onclick = function() {
+                    window.location.href = '/calendar/oauth/microsoft/start?tenant=' + encodeURIComponent(window.currentTenantSlug);
                 };
             }
 

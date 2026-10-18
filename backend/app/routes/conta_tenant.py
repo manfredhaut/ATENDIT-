@@ -533,7 +533,10 @@ const htmlInicio = `<div class="fade-in" style="display: flex; flex-direction: c
       <div style="margin-top:14px; height:8px; background:#f1f5f9; border-radius:999px; overflow:hidden;">
         <div id="onb-barra" style="height:100%; width:0%; background:linear-gradient(90deg, #D0006F, #3ccbc5); border-radius:999px; transition:width .4s ease;"></div>
       </div>
-      <button onclick="carregarView('configuracao_guiada', null)" style="margin-top:14px; padding:10px 18px; background:var(--p-magenta, #D0006F); color:#ffffff; border:none; border-radius:10px; font-weight:700; font-size:0.85rem; cursor:pointer;">Abrir Configuração Guiada →</button>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button onclick="carregarView('configuracao_guiada', null)" style="padding:10px 18px; background:var(--p-magenta, #D0006F); color:#ffffff; border:none; border-radius:10px; font-weight:700; font-size:0.85rem; cursor:pointer;">Abrir Configuração Guiada →</button>
+        <button onclick="carregarView('modelos_segmento', null)" style="padding:10px 18px; background:var(--p-turquesa-texto, #0b7570); color:#ffffff; border:none; border-radius:10px; font-weight:700; font-size:0.85rem; cursor:pointer;">🎯 Modelos por Segmento (1-Click) →</button>
+      </div>
     </div>
 
     <!-- CONFIGURAÇÃO GUIADA E ATALHOS RÁPIDOS -->
@@ -664,6 +667,8 @@ async function carregarView(nome, el) {{
       + '<p style="color:#6b7280;">Tente novamente em instantes ou utilize o menu anterior.</p></div>';
   }}
 }}
+window.carregarView = carregarView;
+window.loadView = carregarView;
 
 document.getElementById('menu').addEventListener('click', (ev) => {{
   const item = ev.target.closest('.item');
