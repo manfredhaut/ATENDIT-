@@ -136,7 +136,7 @@ services:
     labels:
     - traefik.enable=true
     - traefik.http.services.api.loadbalancer.server.port=8000
-    - traefik.http.routers.presenthia.rule=Host(`presenthia-console.smartinovat.com`)
+    - traefik.http.routers.presenthia.rule=Host(`presenthia.smartinovat.com`) || Host(`presenthia-console.smartinovat.com`)
     - traefik.http.routers.presenthia.entrypoints=websecure
     - traefik.http.routers.presenthia.tls.certresolver=le
     - traefik.http.routers.presenthia.service=api

@@ -13,9 +13,29 @@ http:
       service: api-upstream
       priority: 1000
       tls: {}
+    presenthia-https:
+      rule: 'Host(`presenthia.smartinovat.com`)'
+      entryPoints:
+        - websecure
+      service: api-upstream
+      priority: 1000
+      tls:
+        certResolver: le
+    presenthia-evolution:
+      rule: 'Host(`presenthia.smartinovat.com`) && PathPrefix(`/evolution`)'
+      entryPoints:
+        - websecure
+      service: evolution-upstream
+      priority: 1100
+      tls:
+        certResolver: le
 
   services:
     api-upstream:
       loadBalancer:
         servers:
           - url: "http://atendit-api:8000"
+    evolution-upstream:
+      loadBalancer:
+        servers:
+          - url: "http://evolution-api:8080"
